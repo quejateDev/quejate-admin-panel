@@ -17,6 +17,9 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import { getUsersService } from "@/services/api/user.service";
+import useUser from "@/hooks/useUser";
+import { useEmployee } from "@/hooks/useEmployee";
 
 interface Client {
   id: string;
@@ -95,50 +98,28 @@ function LoadingSkeleton() {
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("date");
   const { toast } = useToast();
-
-  const fetchClients = async () => {
-    try {
-      const response = await fetch("/api/clients");
-      if (!response.ok) throw new Error("Error al cargar los clientes");
-      const data = await response.json();
-      setClients(data);
-    } catch (error) {
-      console.error("Error fetching clients:", error);
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar los clientes",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data, isLoading, error, deleteEmployee } = useEmployee();
 
   useEffect(() => {
-    fetchClients();
-  }, []);
+    if (data) {
+      setClients(data);
+    }
+  }, [data]);
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/clients/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Error al eliminar el cliente");
-
-      setClients((prev) => prev.filter((client) => client.id !== id));
+      await deleteEmployee(id);
       toast({
-        description: "Cliente eliminado exitosamente",
+        description: "Empleado eliminado exitosamente",
       });
     } catch (error) {
-      console.error("Error deleting client:", error);
+      console.error("Error al eliminar el empleado:", error);
       toast({
         title: "Error",
-        description: "No se pudo eliminar el cliente",
+        description: "No se pudo eliminar el empleado",
         variant: "destructive",
       });
     }
@@ -208,7 +189,7 @@ export default function ClientsPage() {
     ).length,
   };
 
-  if (loading) return <LoadingSkeleton />;
+  if (isLoading) return <LoadingSkeleton />;
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6 space-y-6">
@@ -275,22 +256,22 @@ export default function ClientsPage() {
                 accessorFn: (client) =>
                   `${client.firstName} ${client.lastName}`,
                 meta: {
-                  width: "w-[25%]"
-                }
+                  width: "w-[25%]",
+                },
               },
               {
                 header: "Email",
                 accessorKey: "email",
                 meta: {
-                  width: "w-[25%]"
-                }
+                  width: "w-[25%]",
+                },
               },
               {
                 header: "Teléfono",
                 accessorKey: "phone",
                 meta: {
-                  width: "w-[15%]"
-                }
+                  width: "w-[15%]",
+                },
               },
               {
                 header: "Activo?",
@@ -303,8 +284,8 @@ export default function ClientsPage() {
                   />
                 ),
                 meta: {
-                  width: "w-[10%]"
-                }
+                  width: "w-[10%]",
+                },
               },
               {
                 header: "Fecha de Registro",
@@ -312,8 +293,8 @@ export default function ClientsPage() {
                 cell: ({ row }) =>
                   new Date(row.original.createdAt).toLocaleDateString(),
                 meta: {
-                  width: "w-[15%]"
-                }
+                  width: "w-[15%]",
+                },
               },
             ]}
             actions={{

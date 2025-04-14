@@ -1,6 +1,6 @@
 "use client";
 
-import { getUserService } from "@/services/api/User.service";
+import { getUserService } from "@/services/api/user.service";
 import { useState } from "react";
 
 interface UserProfile {
@@ -34,16 +34,6 @@ export default function useUser() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  async function fetchUserPQRS(id: string) {
-    try {
-      const response = await fetch(`/api/pqr/user?userId=${id}`);
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error fetching user PQRs:", error);
-    }
-  }
-
 
   async function fetchUser(id: string) {
     try {
@@ -60,7 +50,6 @@ export default function useUser() {
 
   return {
     fetchUser,
-    fetchUserPQRS,
     user,
     setUser,
     isLoading,

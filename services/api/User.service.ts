@@ -1,22 +1,19 @@
 import axios from "axios";
-const Client = axios.create({
-    baseURL: '/api',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    timeout: 10000, // 10 seconds
+
+export const Client = axios.create({
+  baseURL: "/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  timeout: 10000, // 10 seconds
 });
 
-export async function getUserService(id: string) {
-    const response = await Client.get(`/users/${id}`);
-    return response.data;
+export async function getUsersService() {
+  const response = await Client.get("/users");
+  return response.data;
 }
 
-export async function followUserService(id: string, token: string) {
-    const response = await Client.post(`/users/${id}/follow`, null, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    return response.data;
+export async function getUserService(id: string) {
+  const response = await Client.get(`/users/${id}`);
+  return response.data;
 }
