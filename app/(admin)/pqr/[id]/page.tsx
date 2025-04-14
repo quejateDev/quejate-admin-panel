@@ -9,11 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import prisma from "@/lib/prisma";
 import { typeMap } from "@/constants/pqrMaps";
+import { notFound } from "next/navigation";
 
 export default async function PQRDetailPage({
   params,
 }: {
-  params: any;
+  params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
   const pqr = await prisma.pQRS.findUnique({
@@ -24,12 +25,12 @@ export default async function PQRDetailPage({
       department: true,
       creator: true,
       customFieldValues: true,
-      attachments: true
+      attachments: true,
     },
   });
 
   if (!pqr) {
-    return;
+    notFound();
   }
 
   return (
@@ -58,7 +59,9 @@ export default async function PQRDetailPage({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Estado</span>
-                  <Badge variant={pqr.status === "PENDING" ? "default" : "secondary"}>
+                  <Badge
+                    variant={pqr.status === "PENDING" ? "default" : "secondary"}
+                  >
                     {pqr.status === "IN_PROGRESS" ? "ABIERTO" : "CERRADO"}
                   </Badge>
                 </div>
@@ -75,7 +78,9 @@ export default async function PQRDetailPage({
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Nombre</span>
-                  <span>{pqr.creator?.firstName} {pqr.creator?.lastName}</span>
+                  <span>
+                    {pqr.creator?.firstName} {pqr.creator?.lastName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Correo</span>
@@ -85,6 +90,27 @@ export default async function PQRDetailPage({
                   <span className="text-muted-foreground">Teléfono</span>
                   <span>{pqr.creator?.phone}</span>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <Separator className="my-6" />
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Información de la PQRSD</h3>
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">Asunto</h4>
+                <p className="text-muted-foreground whitespace-pre-wrap">
+                  {pqr.subject || "No especificado"}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">Descripción</h4>
+                <p className="text-muted-foreground whitespace-pre-wrap">
+                  {pqr.description || "No especificado"}
+                </p>
               </div>
             </div>
           </div>
@@ -105,13 +131,8 @@ export default async function PQRDetailPage({
               ))}
             </div>
           </div>
-
-        
         </CardContent>
       </Card>
-
-      {/* Attachments Section */}
-      {/* <PQRAttachments attachments={pqr.attachments} /> */}
     </div>
   );
 }

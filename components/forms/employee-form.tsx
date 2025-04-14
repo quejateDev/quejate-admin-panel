@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface ClientFormProps {
+interface EmployeeFormProps {
   initialData?: {
     id: string;
     email: string;
@@ -38,7 +38,7 @@ interface ClientFormProps {
   mode: "create" | "edit";
 }
 
-export function ClientForm({ initialData, mode }: ClientFormProps) {
+export function EmployeeForm({ initialData, mode }: EmployeeFormProps) {
   const router = useRouter();
   const { user } = useAuthStore();
   const { createEmployee, isLoading } = useEmployees();

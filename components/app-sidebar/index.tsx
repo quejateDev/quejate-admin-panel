@@ -3,39 +3,51 @@
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter, SidebarHeader
+  SidebarFooter,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
 import useAuthStore from "@/store/useAuthStore";
 import {
   Users,
   Building2,
-  LogOut, LayoutDashboard
+  LogOut,
+  LayoutDashboard,
+  Settings,
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-
-const menuItems = [
-  {
-    title: "Dashboard",
-    url: "/pqr",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Áreas",
-    url: "/area",
-    icon: Building2,
-  },
-  {
-    title: "Usuarios",
-    url: "/users",
-    icon: Users,
-  },
-];
+import { useEffect, useState } from "react";
+import { UserRole } from "@prisma/client";
 
 export function AppSidebar() {
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
+  const [menuItems, setMenuItems] = useState([
+    {
+      title: "Dashboard",
+      url: "/pqr",
+      icon: LayoutDashboard,
+    },
+  ]);
+
+  useEffect(() => {
+    if (user?.role === UserRole.ADMIN || user?.role === UserRole.SUPER_ADMIN) {
+      setMenuItems([
+        ...menuItems,
+        {
+          title: "Áreas",
+          url: "/area",
+          icon: Building2,
+        },
+        {
+          title: "Usuarios",
+          url: "/users",
+          icon: Users,
+        },
+      ]);
+    }
+  }, [user]);
 
   function handleLogout() {
     console.log(document.cookie);

@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 
 
 export const metadata: Metadata = {
-  title: "Quejate",
-  description: "Quejate",
+  title: "Quejate Admin",
+  description: "Quejate Admin",
 };
 
 export default function RootLayout({

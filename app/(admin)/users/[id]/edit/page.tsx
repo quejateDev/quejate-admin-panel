@@ -1,6 +1,6 @@
 "use client";
 
-import { ClientForm } from "@/components/forms/client-form";
+import { EmployeeForm } from "@/components/forms/employee-form";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -85,7 +85,7 @@ export default function EditClientPage() {
           <CardTitle>Información del Empleado</CardTitle>
         </CardHeader>
         <CardContent>
-          <ClientForm mode="edit" initialData={data} />
+          <EmployeeForm mode="edit" initialData={data} />
         </CardContent>
       </Card>
     </div>

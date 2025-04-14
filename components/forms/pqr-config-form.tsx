@@ -20,15 +20,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
-import { Client } from "@/services/api/Client";
 import {
   Card,
   CardContent,
-  CardDescription, CardHeader,
-  CardTitle
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "../ui/card";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export function PQRConfigForm({ areaId, initialData }: PQRConfigFormProps) {
   const [isSaving, setIsSaving] = useState(false);
@@ -48,7 +49,7 @@ export function PQRConfigForm({ areaId, initialData }: PQRConfigFormProps) {
   const onSubmit = async (data: PQRConfigFormValues) => {
     try {
       setIsSaving(true);
-      await Client.put(`/area/${areaId}/pqr-config`, data);
+      await axios.put(`api/area/${areaId}/pqr-config`, data);
       toast({
         title: "Éxito",
         description: "Configuración actualizada correctamente",
@@ -124,7 +125,9 @@ export function PQRConfigForm({ areaId, initialData }: PQRConfigFormProps) {
               name="maxResponseTime"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tiempo máximo de respuesta (días hábiles)</FormLabel>
+                  <FormLabel>
+                    Tiempo máximo de respuesta (días hábiles)
+                  </FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>

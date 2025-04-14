@@ -1,6 +1,6 @@
 "use client";
 
-import { ClientForm } from "@/components/forms/client-form";
+import { EmployeeForm } from "@/components/forms/employee-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserPlus, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -27,7 +27,7 @@ export default function NewEmployeePage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ClientForm mode="create" />
+          <EmployeeForm mode="create" />
         </CardContent>
       </Card>
     </div>

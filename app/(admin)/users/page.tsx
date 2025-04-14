@@ -18,16 +18,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useEmployees } from "@/hooks/useEmployees";
-
-interface Client {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  createdAt: string;
-  isActive: boolean;
-}
+import { Employee } from "@/types/Employee";
 
 type SortField = "name" | "date" | "email";
 
@@ -95,7 +86,7 @@ function LoadingSkeleton() {
 }
 
 export default function ClientsPage() {
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("date");
   const { toast } = useToast();
@@ -125,7 +116,7 @@ export default function ClientsPage() {
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     try {
-      const response = await fetch(`/api/clients/${id}`, {
+      const response = await fetch(`/api/users/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -269,6 +260,17 @@ export default function ClientsPage() {
                 accessorKey: "phone",
                 meta: {
                   width: "w-[15%]",
+                },
+              },
+              {
+                header: "Rol",
+                accessorKey: "role",
+                meta: {
+                  width: "w-[15%]",
+                },
+                cell: ({ row }) => {
+                  const role = row.original.role;
+                  return role === "EMPLOYEE" ? "Empleado" : "Administrador";
                 },
               },
               {

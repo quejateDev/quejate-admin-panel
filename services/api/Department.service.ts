@@ -25,9 +25,32 @@ export type CreateDepartmentDTO = {
   entityId: string;
 };
 
+export type UpdateDepartmentDTO = {
+  name?: string;
+  description?: string;
+  entityId?: string;
+};
+
+export type DeleteDepartmentDTO = {
+  id: string;
+};
+
+export type GetDepartmentDTO = {
+  id: string;
+};
+
+export type GetDepartmentsDTO = {
+  entityId: string;
+};
+
 // return departments with all employees, forms and pqrs
-export async function getDepartmentsService(): Promise<DepartmentWithRelations[]> {
-  const response = await Client.get("/area");
+export async function getDepartmentsService(data: GetDepartmentsDTO): Promise<DepartmentWithRelations[]> {
+  const response = await Client.get("/area", { params: data });
+  return response.data;
+}
+
+export async function getDepartmentService(data: GetDepartmentDTO): Promise<DepartmentWithRelations> {
+  const response = await Client.get(`/area/${data.id}`);
   return response.data;
 }
 
@@ -36,6 +59,11 @@ export async function createDepartmentService(data: CreateDepartmentDTO): Promis
   return response.data;
 }
 
-export async function deleteDepartmentService(id: string): Promise<void> {
-  await Client.delete(`/area/${id}`);
+export async function deleteDepartmentService(data: DeleteDepartmentDTO): Promise<void> {
+  await Client.delete(`/area/${data.id}`);
+}
+
+export async function updateDepartmentService(id: string, data: UpdateDepartmentDTO): Promise<Department> {
+  const response = await Client.put(`/area/${id}`, data);
+  return response.data;
 }

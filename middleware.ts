@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getCookie, verifyToken } from '@/lib/utils'
+import { UserRole } from '@prisma/client'
 
 export async function middleware(request: NextRequest) {
   const authStorage = await getCookie('auth-storage')
@@ -8,10 +9,23 @@ export async function middleware(request: NextRequest) {
 
   const token = authParsed?.state?.token
 
-  // if (!token) {
-  //   return NextResponse.redirect(new URL('/login', request.url))
-  // }
+  const path = request.nextUrl.pathname;
 
+  if (path !== "/login") {
+    if (!token) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    const decodedToken = await verifyToken(token)
+
+    if (!decodedToken) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    if (decodedToken?.role === UserRole.CLIENT) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+  } 
 
   return NextResponse.next();
 }
