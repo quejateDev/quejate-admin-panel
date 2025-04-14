@@ -1,47 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { ClientForm } from "@/components/forms/client-form";
 import { useParams, useRouter } from "next/navigation";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, User } from "lucide-react";
+import { ArrowLeft, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEmployeeById } from "@/hooks/useEmployees";
 
 export default function EditClientPage() {
-  const [client, setClient] = useState(null);
-  const [loading, setLoading] = useState(true);
   const params = useParams();
   const router = useRouter();
-  const { toast } = useToast();
+  const { data, isLoading, error } = useEmployeeById(params.id as string);
 
-  useEffect(() => {
-    const fetchClient = async () => {
-      try {
-        const response = await fetch(`/api/clients/${params.id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setClient(data);
-        } else {
-          throw new Error("Client not found");
-        }
-      } catch (error) {
-        console.error("Error fetching client:", error);
-        toast({
-          title: "Error",
-          description: "No se pudo cargar la información del empleado",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchClient();
-  }, [params.id, toast]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto py-10 px-4 md:px-6">
         <div className="flex items-center gap-4 mb-8">
@@ -65,13 +37,15 @@ export default function EditClientPage() {
     );
   }
 
-  if (!client) {
+  if (!data) {
     return (
       <div className="container mx-auto py-10 px-4 md:px-6">
         <Card className="border-none shadow-md">
           <CardContent className="flex flex-col items-center justify-center py-10">
             <User className="h-12 w-12 text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Empleado no encontrado</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              Empleado no encontrado
+            </h2>
             <p className="text-muted-foreground mb-6">
               El empleado que estás buscando no existe o ha sido eliminado.
             </p>
@@ -111,7 +85,7 @@ export default function EditClientPage() {
           <CardTitle>Información del Empleado</CardTitle>
         </CardHeader>
         <CardContent>
-          <ClientForm mode="edit" initialData={client} />
+          <ClientForm mode="edit" initialData={data} />
         </CardContent>
       </Card>
     </div>

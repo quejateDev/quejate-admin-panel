@@ -15,18 +15,16 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import useAuthStore from "@/store/useAuthStore";
-import { useEmployee } from "@/hooks/useEmployee";
-
-const formSchema = z.object({
-  email: z.string().email("Email inválido"),
-  firstName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-  lastName: z.string().min(2, "El apellido debe tener al menos 2 caracteres"),
-  phone: z.string().optional(),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-});
+import { useEmployeeById, useEmployees } from "@/hooks/useEmployees";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ClientFormProps {
   initialData?: {
@@ -35,6 +33,7 @@ interface ClientFormProps {
     firstName: string;
     lastName: string;
     phone?: string;
+    role: "EMPLOYEE" | "ADMIN";
   };
   mode: "create" | "edit";
 }
@@ -42,7 +41,22 @@ interface ClientFormProps {
 export function ClientForm({ initialData, mode }: ClientFormProps) {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { createEmployee, updateEmployee, isLoading } = useEmployee();
+  const { createEmployee, isLoading } = useEmployees();
+  const { updateEmployee, isLoading: isUpdating } = useEmployeeById(
+    initialData?.id || ""
+  );
+
+  const formSchema = z.object({
+    email: z.string().email("Email inválido"),
+    firstName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
+    lastName: z.string().min(2, "El apellido debe tener al menos 2 caracteres"),
+    phone: z.string().optional(),
+    password:
+      mode === "create"
+        ? z.string().min(6, "La contraseña debe tener al menos 6 caracteres")
+        : z.string().optional(),
+    role: z.enum(["EMPLOYEE", "ADMIN"]),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,7 +65,8 @@ export function ClientForm({ initialData, mode }: ClientFormProps) {
       firstName: initialData?.firstName || "",
       lastName: initialData?.lastName || "",
       phone: initialData?.phone || "",
-      password: "",
+      password: mode === "create" ? "" : undefined,
+      role: initialData?.role || "EMPLOYEE",
     },
   });
 
@@ -61,22 +76,31 @@ export function ClientForm({ initialData, mode }: ClientFormProps) {
         if (!user?.entity?.id) {
           throw new Error("Entity ID is required");
         }
-        await createEmployee({
+        console.log("Creating employee with:", {
           ...values,
-          role: "CLIENT",
+          role: values.role,
           entityId: user.entity.id,
           phone: values.phone || "",
+        });
+        await createEmployee({
+          ...values,
+          role: values.role,
+          entityId: user.entity.id,
+          phone: values.phone || "",
+          password: values.password || "",
         });
       } else {
         if (!initialData?.id) {
           throw new Error("Employee ID is required for update");
         }
-        await updateEmployee({
+        const updateData = {
           id: initialData.id,
           ...values,
-          role: "CLIENT",
+          role: values.role,
           phone: values.phone || "",
-        });
+        };
+        console.log("Updating employee with:", updateData);
+        await updateEmployee(updateData);
       }
 
       toast.success(
@@ -87,8 +111,8 @@ export function ClientForm({ initialData, mode }: ClientFormProps) {
       router.push("/users");
       router.refresh();
     } catch (error) {
+      console.error("Error in onSubmit:", error);
       toast.error("Error al guardar el empleado");
-      console.error(error);
     }
   }
 
@@ -143,19 +167,46 @@ export function ClientForm({ initialData, mode }: ClientFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Teléfono</FormLabel>
-              <FormControl>
-                <Input placeholder="Ingrese el teléfono" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Teléfono</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ingrese el teléfono" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Rol</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione el rol" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="EMPLOYEE">Empleado</SelectItem>
+                      <SelectItem value="ADMIN">Administrador</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {mode === "create" && (
           <FormField
@@ -182,12 +233,11 @@ export function ClientForm({ initialData, mode }: ClientFormProps) {
             type="button"
             variant="outline"
             onClick={() => router.push("/users")}
-            disabled={isLoading}
+            disabled={false}
           >
             Cancelar
           </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" disabled={false}>
             {mode === "create" ? "Crear" : "Actualizar"}
           </Button>
         </div>

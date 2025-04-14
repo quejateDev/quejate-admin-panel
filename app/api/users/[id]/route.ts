@@ -21,6 +21,7 @@ export async function GET(
         phone: true,
         createdAt: true,
         updatedAt: true,
+        role: true,
       },
     });
 
@@ -48,6 +49,8 @@ export async function PATCH(
   const { id } = await params;
   try {
     const body = await req.json();
+
+    console.log("body", body);
 
     let newPassword = undefined;
 

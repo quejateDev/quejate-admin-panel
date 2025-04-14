@@ -17,9 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { getUsersService } from "@/services/api/user.service";
-import useUser from "@/hooks/useUser";
-import { useEmployee } from "@/hooks/useEmployee";
+import { useEmployees } from "@/hooks/useEmployees";
 
 interface Client {
   id: string;
@@ -101,7 +99,7 @@ export default function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("date");
   const { toast } = useToast();
-  const { data, isLoading, error, deleteEmployee } = useEmployee();
+  const { data, isLoading, error, deleteEmployee } = useEmployees();
 
   useEffect(() => {
     if (data) {

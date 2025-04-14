@@ -32,7 +32,7 @@ export async function deleteEmployeeService(id: string) {
 }
 
 export async function updateEmployeeService(id: string, employee: Partial<User>) {
-  const response = await Client.put(`/users/${id}`, employee);
+  const response = await Client.patch(`/users/${id}`, employee);
   return response.data;
 }
 
