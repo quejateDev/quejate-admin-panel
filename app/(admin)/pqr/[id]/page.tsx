@@ -10,6 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import prisma from "@/lib/prisma";
 import { typeMap } from "@/constants/pqrMaps";
 import { notFound } from "next/navigation";
+import { PQRResponses } from "@/components/pqr/pqr-responses";
+import { PQRStatus } from "@/components/pqr/pqr-status";
 
 export default async function PQRDetailPage({
   params,
@@ -26,6 +28,19 @@ export default async function PQRDetailPage({
       creator: true,
       customFieldValues: true,
       attachments: true,
+      comments: {
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
     },
   });
 
@@ -36,11 +51,14 @@ export default async function PQRDetailPage({
   return (
     <div className="container mx-auto p-6 space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle>Detalles de la PQRSD</CardTitle>
-          <CardDescription>
-            Ver información detallada sobre esta solicitud PQRSD
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div className="space-y-1">
+            <CardTitle>Detalles de la PQRSD</CardTitle>
+            <CardDescription>
+              Ver información detallada sobre esta solicitud PQRSD
+            </CardDescription>
+          </div>
+          <PQRStatus pqrId={pqr.id} initialStatus={pqr.status} />
         </CardHeader>
 
         <CardContent>
@@ -56,14 +74,6 @@ export default async function PQRDetailPage({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tipo</span>
                   <span>{typeMap[pqr.type as keyof typeof typeMap].label}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Estado</span>
-                  <Badge
-                    variant={pqr.status === "PENDING" ? "default" : "secondary"}
-                  >
-                    {pqr.status === "IN_PROGRESS" ? "ABIERTO" : "CERRADO"}
-                  </Badge>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Creado</span>
@@ -133,6 +143,9 @@ export default async function PQRDetailPage({
           </div>
         </CardContent>
       </Card>
+
+      {/* Responses Section */}
+      <PQRResponses pqrId={pqr.id} initialResponses={pqr.comments} />
     </div>
   );
 }

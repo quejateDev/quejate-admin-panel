@@ -111,10 +111,9 @@ export function PQRTable({ pqrs }: PQRTableProps) {
       enableSorting: true,
     },
     {
-      id: "entity",
-      header: "Entidad",
-      accessorFn: (row) => row.department?.entity?.name,
-      cell: ({ row }) => row.original.department?.entity?.name || "No asignado",
+      id: "subject",
+      header: "Asunto",
+      accessorFn: (row) => row.subject,
       enableSorting: true,
     },
     {

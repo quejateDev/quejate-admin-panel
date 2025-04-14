@@ -32,6 +32,7 @@ model User {
   Like              Like[]
   notifications     Notification[]
   PQRS              PQRS[]
+  statusHistory     PQRStatusHistory[]
   department        Department?         @relation(fields: [departmentId], references: [id])
   Entity            Entity?             @relation(fields: [entityId], references: [id])
   User_A            User[]              @relation("UserFollows")
@@ -132,6 +133,7 @@ model PQRS {
   creator           User?              @relation(fields: [creatorId], references: [id])
   department        Department         @relation(fields: [departmentId], references: [id])
   customFields      CustomField[]      @relation("CustomFieldToPQRS")
+  statusHistory     PQRStatusHistory[]
 
   @@index([creatorId])
   @@index([departmentId])
@@ -269,6 +271,20 @@ model RegionalDepartment {
   name         String         @unique(map: "regionaldepartment_name_key")
   createdat    DateTime?      @default(now()) @db.Timestamp(6)
   Municipality Municipality[]
+}
+
+model PQRStatusHistory {
+  id        String     @id @default(uuid())
+  status    PQRSStatus
+  comment   String?
+  createdAt DateTime   @default(now())
+  pqrId     String
+  userId    String
+  pqr       PQRS       @relation(fields: [pqrId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id])
+
+  @@index([pqrId])
+  @@index([userId])
 }
 
 enum UserRole {

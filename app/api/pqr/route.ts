@@ -121,12 +121,32 @@ export async function POST(req: NextRequest) {
             },
           },
           consecutiveCode: `${consecutiveCode.code}-${fechaConsecutivo}-${consecutiveCode.consecutive}`,
+          statusHistory: {
+            create: {
+              status: "PENDING",
+              comment: "PQR creada",
+              userId: body.creatorId,
+            },
+          },
         },
         include: {
           department: true, 
           customFieldValues: true,
           attachments: true,
           creator: true,
+          statusHistory: {
+            include: {
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
         },
       }),
       prisma.entityConsecutive.update({
