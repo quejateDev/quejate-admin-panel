@@ -10,7 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import useAuthStore from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
 import { EmailNotVerifiedModal } from "@/components/modals/email-not-verified-modal";
-
+import Image from "next/image";
 export default function Login() {
   const [formData, setFormData] = useState({
     email: "",
@@ -105,10 +105,13 @@ export default function Login() {
       className="flex grow bg-white"
       style={{ minHeight: "calc(100vh - 65px)" }}
     >
-      <img
+      <Image
         className="w-1/2 border-none my-auto hidden md:block"
         src="/login-banner.svg"
-      ></img>
+        alt="Login banner"
+        width={1000}
+        height={1000}
+      ></Image>
       <div className="w-full md:w-1/2 rounded min-h-full flex items-center grow px-6">
         <Card className="rounded-none w-full">
           <CardHeader className="space-y-2">
