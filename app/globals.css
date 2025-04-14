@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    
+    --primary: 237 96% 64%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 237 16% 94%;
+    --secondary-foreground: 222 47% 11%;
+    
+    --muted: 237 16% 94%;
+    --muted-foreground: 237 10% 45%;
+    
+    --accent: 237 16% 94%;
+    --accent-foreground: 222 47% 11%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    
+    --border: 237 16% 92%;
+    --input: 237 16% 92%;
+    --ring: 237 96% 64%;
+    
+    --radius: 0.75rem;
+
+    /* Sidebar específico */
+    --sidebar-width: 280px;
+    --sidebar-background: 238 48% 54%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-muted: 237 40% 80%;
+    --sidebar-accent: 237 16% 94%;
+    --sidebar-border: 237 16% 92%;
+
+    /* Navbar específico */
+    --navbar-height: 64px;
+    --navbar-background: 0 0% 100%;
+    --navbar-border: 237 16% 92%;
+    --navbar-shadow: 237 16% 92%;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 237 16% 94%;
+    
+    --primary: 237 96% 64%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 237 16% 14%;
+    --secondary-foreground: 237 16% 94%;
+    
+    --muted: 237 16% 14%;
+    --muted-foreground: 237 10% 65%;
+    
+    --accent: 237 16% 14%;
+    --accent-foreground: 237 16% 94%;
+    
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 237 16% 94%;
+    
+    --card: 222 47% 11%;
+    --card-foreground: 237 16% 94%;
+    
+    --popover: 222 47% 11%;
+    --popover-foreground: 237 16% 94%;
+    
+    --border: 237 16% 14%;
+    --input: 237 16% 14%;
+    --ring: 237 96% 64%;
+
+    /* Sidebar específico */
+    --sidebar-background: 238 48% 54%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-muted: 237 40% 80%;
+    --sidebar-accent: 237 16% 14%;
+    --sidebar-border: 237 16% 14%;
+
+    /* Navbar específico */
+    --navbar-background: 222 47% 11%;
+    --navbar-border: 237 16% 14%;
+    --navbar-shadow: 237 16% 14%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer components {
+  /* Sidebar styles */
+  .sidebar {
+    @apply fixed left-0 top-0 z-40 h-screen w-[var(--sidebar-width)] bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] transition-transform;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-[hsl(var(--sidebar-foreground))] transition-colors hover:bg-white/10;
+  }
+
+  .sidebar-link.active {
+    @apply bg-white/20;
+  }
+
+  /* Navbar styles */
+  .navbar {
+    @apply sticky top-0 z-30 flex h-[var(--navbar-height)] w-full items-center border-b border-[hsl(var(--navbar-border))] bg-[hsl(var(--navbar-background))] px-6 shadow-sm;
+  }
+
+  /* Card modern styles */
+  .card-modern {
+    @apply rounded-xl border bg-card p-6 shadow-sm transition-shadow hover:shadow-md;
+  }
+
+  /* Stats card */
+  .stats-card {
+    @apply flex flex-col gap-1 rounded-xl border bg-card p-4;
+  }
+
+  .stats-card-value {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+
+  .stats-card-label {
+    @apply text-sm text-muted-foreground;
+  }
+}
+
+.bg-grid-black {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgb(0 0 0 / 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.1) 1px, transparent 1px);
+}
+
+.bg-grid-white {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgb(255 255 255 / 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.1) 1px, transparent 1px);
+}
+
+.bg-primary-gradient {
+  background: radial-gradient(circle at top center, hsl(var(--primary)) 0%, transparent 70%),
+    linear-gradient(to bottom right, hsl(var(--primary)) 0%, transparent 70%);
+}
