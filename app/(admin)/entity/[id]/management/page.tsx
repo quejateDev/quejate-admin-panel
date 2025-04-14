@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// import { AdminManager } from '@/components/entity/admin-manager';
+// import { AdminManager } from '@/components/entity-manager';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VerificationBadge } from "@/components/ui/verification-badge";
@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { AdminManager } from "@/components/entity/admin-manager";
+import { AdminManager } from "@/components/entity-manager";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import {
@@ -55,7 +55,7 @@ export default function EntityManagementPage() {
 
   const fetchEntityData = async () => {
     try {
-      const response = await axios.get(`/api/admin/entities/${id}`);
+      const response = await axios.get(`/api/entities/${id}`);
       setEntity(response.data);
     } catch (error) {
       toast({
@@ -74,7 +74,7 @@ export default function EntityManagementPage() {
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
-      await axios.patch(`/api/admin/entities/${params.id}/users/${userId}`, {
+      await axios.patch(`/api/entities/${params.id}/users/${userId}`, {
         role: newRole,
       });
 

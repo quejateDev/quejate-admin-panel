@@ -153,7 +153,7 @@ export default function CreateEntityPage() {
         title: "Entidad creada",
         description: "La entidad ha sido creada exitosamente",
       });
-      router.push("/admin/entity");
+      router.push("/entity");
     } catch (error) {
       console.error(error);
       toast({
@@ -305,7 +305,7 @@ export default function CreateEntityPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push("/admin/entity")}
+                onClick={() => router.push("/entity")}
               >
                 Cancelar
               </Button>
