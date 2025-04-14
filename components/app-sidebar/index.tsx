@@ -17,22 +17,17 @@ import Link from "next/link";
 const menuItems = [
   {
     title: "Dashboard",
-    url: "/admin/pqr",
+    url: "/pqr",
     icon: LayoutDashboard,
   },
   {
     title: "Áreas",
-    url: "/admin/area",
+    url: "/areas",
     icon: Building2,
   },
-  // {
-  //   title: "PQRSD",
-  //   url: "/admin/pqr",
-  //   icon: MessageCircle,
-  // },
   {
     title: "Usuarios",
-    url: "/admin/users",
+    url: "/users",
     icon: Users,
   },
 ];
