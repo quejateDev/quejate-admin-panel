@@ -102,7 +102,7 @@ export default function ClientsPage() {
 
   const fetchClients = async () => {
     try {
-      const response = await fetch("/api/clients");
+      const response = await fetch("/api/admin/clients");
       if (!response.ok) throw new Error("Error al cargar los clientes");
       const data = await response.json();
       setClients(data);
@@ -124,7 +124,7 @@ export default function ClientsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/clients/${id}`, {
+      const response = await fetch(`/api/admin/clients/${id}`, {
         method: "DELETE",
       });
 
@@ -146,7 +146,7 @@ export default function ClientsPage() {
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     try {
-      const response = await fetch(`/api/clients/${id}`, {
+      const response = await fetch(`/api/admin/clients/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -257,7 +257,7 @@ export default function ClientsPage() {
                   <SelectItem value="email">Email</SelectItem>
                 </SelectContent>
               </Select>
-              <Link href="/users/new">
+              <Link href="/admin/users/new">
                 <Button className="w-full md:w-auto gap-2">
                   <Plus className="h-4 w-4" />
                   <span className="hidden md:inline">Nuevo Empleado</span>
@@ -318,7 +318,7 @@ export default function ClientsPage() {
             ]}
             actions={{
               edit: {
-                href: (client) => `/users/${client.id}/edit`,
+                href: (client) => `/admin/users/${client.id}/edit`,
               },
               delete: {
                 onDelete: handleDelete,

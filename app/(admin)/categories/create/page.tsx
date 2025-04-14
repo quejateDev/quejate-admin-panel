@@ -16,7 +16,7 @@ export default function CreateCategoryPage() {
       <Card className="p-6">
         <CategoryForm
           onSuccess={() => {
-            router.push("/categories");
+            router.push("/admin/categories");
             router.refresh();
           }}
         />

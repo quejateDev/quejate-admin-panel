@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 export default function NewEmployeePage() {
   return (
     <div className="py-6 px-4 md:px-6 flex flex-col gap-6">
-      <Link href="/users">
+      <Link href="/admin/users">
         <Button variant="ghost" size="sm" className="gap-2 bg-white">
           <ArrowLeft className="h-4 w-4" />
           Volver a Empleados

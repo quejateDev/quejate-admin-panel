@@ -19,7 +19,7 @@ export default function EditClientPage() {
   useEffect(() => {
     const fetchClient = async () => {
       try {
-        const response = await fetch(`/api/clients/${params.id}`);
+        const response = await fetch(`/api/admin/clients/${params.id}`);
         if (response.ok) {
           const data = await response.json();
           setClient(data);
@@ -75,7 +75,7 @@ export default function EditClientPage() {
             <p className="text-muted-foreground mb-6">
               El empleado que estás buscando no existe o ha sido eliminado.
             </p>
-            <Button onClick={() => router.push("/users")}>
+            <Button onClick={() => router.push("/admin/users")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Volver a la lista
             </Button>
@@ -93,7 +93,7 @@ export default function EditClientPage() {
             variant="outline"
             size="icon"
             className="h-10 w-10"
-            onClick={() => router.push("/users")}
+            onClick={() => router.push("/admin/users")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

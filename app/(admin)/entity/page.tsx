@@ -27,7 +27,7 @@ export default async function EntitiesPage() {
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Entidades</h1>
-        <Link href="/entity/create">
+        <Link href="/admin/entity/create">
           <Button>Crear Entidad</Button>
         </Link>
       </div>

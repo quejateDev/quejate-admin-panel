@@ -57,7 +57,7 @@ export default function CategoriesPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Lista de Categorias</h1>
 
-        <Link href="/categories/create">
+        <Link href="/admin/categories/create">
           <Button variant={"default"}>Crear Nueva Categoría</Button>
         </Link>
       </div>
