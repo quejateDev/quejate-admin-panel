@@ -10,35 +10,33 @@ const Client = axios.create({
 });
 
 export async function createEmployeeService(employee: {
-  username: string;
   password: string;
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   role: string;
-  departmentId: string;
 }) {
-  const response = await Client.post("/employee", employee);
+  const response = await Client.post("/users", employee);
   return response.data;
 }
 
 export async function getEmployeesService() {
-  const response = await Client.get("/employee");
+  const response = await Client.get("/users");
   return response.data;
 }
 
 export async function deleteEmployeeService(id: string) {
-  const response = await Client.delete(`/employee/${id}`);
+  const response = await Client.delete(`/users/${id}`);
   return response.data;
 }
 
-export async function updateEmployeeService(id: string, employee: User) {
-  const response = await Client.put(`/employee/${id}`, employee);
+export async function updateEmployeeService(id: string, employee: Partial<User>) {
+  const response = await Client.put(`/users/${id}`, employee);
   return response.data;
 }
 
 export async function getEmployeeService(id: string) {
-  const response = await Client.get(`/employee/${id}`);
+  const response = await Client.get(`/users/${id}`);
   return response.data;
 }

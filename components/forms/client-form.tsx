@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -18,8 +17,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ChangePasswordDialog } from "./change-password-dialog";
-import axios from "axios";
 import useAuthStore from "@/store/useAuthStore";
+import { useEmployee } from "@/hooks/useEmployee";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -42,8 +41,8 @@ interface ClientFormProps {
 
 export function ClientForm({ initialData, mode }: ClientFormProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuthStore();
+  const { createEmployee, updateEmployee, isLoading } = useEmployee();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,15 +57,27 @@ export function ClientForm({ initialData, mode }: ClientFormProps) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      setIsLoading(true);
-      const url =
-        mode === "create" ? "/api/clients" : `/api/clients/${initialData?.id}`;
-
-      await axios.post(url, {
-        ...values,
-        role: "CLIENT",
-        entityId: user?.entity?.id,
-      });
+      if (mode === "create") {
+        if (!user?.entity?.id) {
+          throw new Error("Entity ID is required");
+        }
+        await createEmployee({
+          ...values,
+          role: "CLIENT",
+          entityId: user.entity.id,
+          phone: values.phone || "",
+        });
+      } else {
+        if (!initialData?.id) {
+          throw new Error("Employee ID is required for update");
+        }
+        await updateEmployee({
+          id: initialData.id,
+          ...values,
+          role: "CLIENT",
+          phone: values.phone || "",
+        });
+      }
 
       toast.success(
         mode === "create"
@@ -78,8 +89,6 @@ export function ClientForm({ initialData, mode }: ClientFormProps) {
     } catch (error) {
       toast.error("Error al guardar el empleado");
       console.error(error);
-    } finally {
-      setIsLoading(false);
     }
   }
 

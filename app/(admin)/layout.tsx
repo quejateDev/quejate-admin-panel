@@ -1,6 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import "../globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { NavbarAdmin } from "@/components/Navbar/NavbarAdmin";
 
