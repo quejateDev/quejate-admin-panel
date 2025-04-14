@@ -60,7 +60,7 @@ export function ClientForm({ initialData, mode }: ClientFormProps) {
     try {
       setIsLoading(true);
       const url =
-        mode === "create" ? "/api/admin/clients" : `/api/admin/clients/${initialData?.id}`;
+        mode === "create" ? "/api/clients" : `/api/clients/${initialData?.id}`;
 
       await axios.post(url, {
         ...values,
@@ -73,7 +73,7 @@ export function ClientForm({ initialData, mode }: ClientFormProps) {
           ? "Empleado creado exitosamente"
           : "Empleado actualizado exitosamente"
       );
-      router.push("/admin/users");
+      router.push("/users");
       router.refresh();
     } catch (error) {
       toast.error("Error al guardar el empleado");
@@ -172,7 +172,7 @@ export function ClientForm({ initialData, mode }: ClientFormProps) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/admin/users")}
+            onClick={() => router.push("/users")}
             disabled={isLoading}
           >
             Cancelar

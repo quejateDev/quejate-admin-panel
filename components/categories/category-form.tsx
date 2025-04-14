@@ -217,7 +217,7 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/admin/categories")}
+            onClick={() => router.push("/categories")}
           >
             Cancelar
           </Button>

@@ -209,12 +209,12 @@ export function EntitiesTable({ entities, categories }: EntitiesTableProps) {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Link href={`/admin/entity/${entity.id}/management`}>
+                    <Link href={`/entity/${entity.id}/management`}>
                       <Button variant="outline" size="sm">
                         Administrar
                       </Button>
                     </Link>
-                    <Link href={`/admin/entity/${entity.id}/edit`}>
+                    <Link href={`/entity/${entity.id}/edit`}>
                       <Button
                         variant="outline"
                         size="sm"

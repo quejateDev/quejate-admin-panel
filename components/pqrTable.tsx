@@ -104,7 +104,7 @@ export default function PqrTable({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <a href={`/admin/pqr/${pqr.id}`}>
+                        <a href={`/pqr/${pqr.id}`}>
                           <Button variant="outline" size="icon">
                             <EyeIcon className="w-4 h-4" />
                           </Button>

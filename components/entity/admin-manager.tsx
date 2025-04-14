@@ -67,7 +67,7 @@ export function AdminManager({ entityId }: AdminManagerProps) {
   const { toast } = useToast();
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(`/api/admin/entities/${entityId}/users`);
+      const response = await axios.get(`/api/entities/${entityId}/users`);
       setUsers(response.data);
     } catch (error) {
       toast({
@@ -89,7 +89,7 @@ export function AdminManager({ entityId }: AdminManagerProps) {
     setIsLoading(true);
 
     try {
-      await axios.post(`/api/admin/entities/${entityId}/users`, {
+      await axios.post(`/api/entities/${entityId}/users`, {
         email,
         role: "EMPLOYEE",
       });
@@ -114,7 +114,7 @@ export function AdminManager({ entityId }: AdminManagerProps) {
 
   const removeUser = async (userId: string) => {
     try {
-      await axios.delete(`/api/admin/entities/${entityId}/users/${userId}`);
+      await axios.delete(`/api/entities/${entityId}/users/${userId}`);
 
       toast({
         title: "Éxito",
@@ -133,7 +133,7 @@ export function AdminManager({ entityId }: AdminManagerProps) {
 
   const updateUser = async (userId: string, data: { role?: string; departmentId?: string }) => {
     try {
-      await axios.patch(`/api/admin/entities/${entityId}/users/${userId}`, data);
+      await axios.patch(`/api/entities/${entityId}/users/${userId}`, data);
 
       toast({
         title: "Éxito",

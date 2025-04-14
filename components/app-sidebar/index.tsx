@@ -22,7 +22,7 @@ const menuItems = [
   },
   {
     title: "Áreas",
-    url: "/areas",
+    url: "/area",
     icon: Building2,
   },
   {

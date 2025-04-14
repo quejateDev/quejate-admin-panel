@@ -24,7 +24,7 @@ export default function LoginForm({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     if (user) {
       if (user.role === "ADMIN") {
-        router.push("/admin");
+        router.push("");
       } else {
         window.location.reload();
       }

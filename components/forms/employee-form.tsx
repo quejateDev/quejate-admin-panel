@@ -95,7 +95,7 @@ export default function EmployeeForm({
           description: "El empleado ha sido creado correctamente",
         });
       }
-      router.push("/admin/employee");
+      router.push("/employee");
     } catch (error) {
       console.error("Error:", error);
       toast({

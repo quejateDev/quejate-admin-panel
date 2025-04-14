@@ -64,7 +64,7 @@ export default function NewAreaPage() {
         title: "Área creada",
         description: "El área ha sido creada exitosamente",
       });
-      router.push("/admin/area");
+      router.push("/area");
     } catch (error) {
       console.error(error);
       toast({
@@ -137,7 +137,7 @@ export default function NewAreaPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push("/admin/area")}
+                onClick={() => router.push("/area")}
               >
                 Cancelar
               </Button>

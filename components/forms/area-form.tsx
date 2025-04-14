@@ -63,7 +63,7 @@ export function AreaForm({ initialData, isEditing }: AreaFormProps) {
           : "Área creada correctamente",
       });
 
-      router.push("/admin/area");
+      router.push("/area");
       router.refresh();
     } catch (error) {
       console.error(error);
@@ -98,7 +98,7 @@ export function AreaForm({ initialData, isEditing }: AreaFormProps) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/admin/area")}
+            onClick={() => router.push("/area")}
             disabled={isSaving}
           >
             Cancelar

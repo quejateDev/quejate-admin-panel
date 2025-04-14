@@ -146,7 +146,7 @@ export function EntityForm({ entity }: EntityFormProps) {
           : "Entidad creada correctamente",
       })
 
-      router.push("/admin/entity")
+      router.push("/entity")
       router.refresh()
     } catch (error) {
       console.error(error)
@@ -298,7 +298,7 @@ export function EntityForm({ entity }: EntityFormProps) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/admin/entity")}
+            onClick={() => router.push("/entity")}
             disabled={isSaving}
           >
             Cancelar

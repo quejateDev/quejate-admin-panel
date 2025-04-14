@@ -139,7 +139,7 @@ export function PQRTable({ pqrs }: PQRTableProps) {
         icon: EyeIcon,
         label: "Ver PQRSD",
         onClick: (item: PQRS) => {
-          window.location.href = `/admin/pqr/${item.id}`;
+          window.location.href = `/pqr/${item.id}`;
         },
         variant: "outline" as const,
       },

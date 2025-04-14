@@ -115,7 +115,7 @@ export default function CategoryList({ categories }: CategoryListProps) {
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <Link href={`/admin/categories/${category.id}/edit`}>
+                  <Link href={`/categories/${category.id}/edit`}>
                     <Button variant="outline" size="sm">
                       Editar
                     </Button>

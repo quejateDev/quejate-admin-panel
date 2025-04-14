@@ -33,7 +33,7 @@ export default function EditCategoryPage() {
           description: "Failed to fetch category",
           variant: "destructive",
         });
-        router.push("/admin/categories");
+        router.push("/categories");
       } finally {
         setIsLoading(false);
       }
@@ -63,7 +63,7 @@ export default function EditCategoryPage() {
         <CategoryForm
           category={category}
           onSuccess={() => {
-            router.push("/admin/categories");
+            router.push("/categories");
             router.refresh();
           }}
         />
