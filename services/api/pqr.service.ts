@@ -75,4 +75,9 @@ export async function createCommentService(comment: {text: string; userId: strin
   return response.data;
 }
 
+export async function assignPQRS(id: PQRS["id"], assignedToId: User["id"] | null) {
+  const response = await Client.patch(`/pqr/${id}/assign`, { assignedToId });
+  return response.data;
+}
+
 

@@ -4,19 +4,20 @@ import { getUserIdFromToken } from "@/lib/auth";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log("Fetching status history for PQR:", params.id);
+    const { id } = await params;
+    console.log("Fetching status history for PQR:", id);
     
     // First verify if the PQR exists
     const pqr = await prisma.pQRS.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true }
     });
 
     if (!pqr) {
-      console.error("PQR not found:", params.id);
+      console.error("PQR not found:", id);
       return NextResponse.json(
         { error: "PQR not found" },
         { status: 404 }
@@ -25,7 +26,7 @@ export async function GET(
 
     const history = await prisma.pQRStatusHistory.findMany({
       where: {
-        pqrId: params.id,
+        pqrId: id,
       },
       include: {
         user: {
@@ -40,7 +41,7 @@ export async function GET(
       },
     });
 
-    console.log(`Found ${history.length} history records for PQR:`, params.id);
+    console.log(`Found ${history.length} history records for PQR:`, id);
     return NextResponse.json(history);
   } catch (error) {
     console.error("Error fetching status history:", error);
@@ -53,11 +54,11 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log("Updating status for PQR:", params.id);
-    
+    const { id } = await params;
+
     const userId = await getUserIdFromToken();
     if (!userId) {
       console.error("Unauthorized attempt to update status");
@@ -81,12 +82,12 @@ export async function PATCH(
 
     // First check if PQR exists
     const existingPQR = await prisma.pQRS.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { status: true }
     });
 
     if (!existingPQR) {
-      console.error("PQR not found for status update:", params.id);
+      console.error("PQR not found for status update:", id);
       return NextResponse.json(
         { error: "PQR not found" },
         { status: 404 }
@@ -106,7 +107,7 @@ export async function PATCH(
     const [pqr, history] = await prisma.$transaction([
       prisma.pQRS.update({
         where: {
-          id: params.id,
+          id,
         },
         data: {
           status,
@@ -116,7 +117,7 @@ export async function PATCH(
         data: {
           status,
           comment,
-          pqrId: params.id,
+          pqrId: id,
           userId,
         },
         include: {

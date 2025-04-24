@@ -4,12 +4,13 @@ import { getUserIdFromToken } from "@/lib/auth";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const comments = await prisma.comment.findMany({
       where: {
-        pqrId: params.id,
+        pqrId: id,
       },
       include: {
         user: {
@@ -36,7 +37,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getUserIdFromToken();
@@ -48,12 +49,13 @@ export async function POST(
     }
 
     const { text } = await request.json();
+    const { id } = await params;
 
     const comment = await prisma.comment.create({
       data: {
         text,
         userId,
-        pqrId: params.id,
+        pqrId: id,
       },
       include: {
         user: {

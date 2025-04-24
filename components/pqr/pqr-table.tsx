@@ -22,16 +22,29 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { ColumnDef, ColumnFiltersState, SortingState } from "@tanstack/react-table";
+import { assignPQRS } from "@/services/api/pqr.service";
+import { EntityService } from "@/services/api/entity.service";
 
 interface PQRTableProps {
   pqrs: (PQRS & {
     department: {
+      id: string;
       name: string;
       entity: {
+        id: string;
         name: string;
       };
     };
     creator: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+    } | null;
+    assignedTo: {
+      id: string;
+      firstName: string;
+      lastName: string;
       email: string;
     } | null;
   })[];
@@ -54,6 +67,30 @@ export function PQRTable({ pqrs }: PQRTableProps) {
   const [rowSelection, setRowSelection] = useState({});
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const [employees, setEmployees] = useState<Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    departmentId: string | null;
+  }>>([]);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        // Asumimos que todos los PQRs son de la misma entidad y tomamos el ID del primero
+        if (pqrs.length > 0) {
+          const entityId = pqrs[0].department.entity.id;
+          const employeesList = await EntityService.getEmployees(entityId);
+          setEmployees(employeesList);
+        }
+      } catch (error) {
+        console.error("Error fetching employees:", error);
+      }
+    };
+
+    fetchEmployees();
+  }, [pqrs]);
 
   function getRemainingTimeBadge(createdAt: Date) {
     const RESPONSE_LIMIT_DAYS = 15;
@@ -77,6 +114,16 @@ export function PQRTable({ pqrs }: PQRTableProps) {
   const departments = Array.from(
     new Set(pqrs.map((pqr) => pqr.department?.name).filter(Boolean))
   );
+
+  const handleAssignment = async (pqrId: string, assignedToId: string | null) => {
+    try {
+      await assignPQRS(pqrId, assignedToId);
+      // Refresh the table data
+      window.location.reload();
+    } catch (error) {
+      console.error("Error assigning PQR:", error);
+    }
+  };
 
   const columns: ColumnDef<PQRTableItem>[] = [
     {
@@ -129,6 +176,38 @@ export function PQRTable({ pqrs }: PQRTableProps) {
       accessorFn: (row) => row.createdAt,
       cell: ({ row }) => getRemainingTimeBadge(row.original.createdAt),
       enableSorting: true,
+    },
+    {
+      id: "assignedTo",
+      header: "Asignado a",
+      accessorFn: (row) => row.assignedTo,
+      cell: ({ row }) => {
+        const pqr = row.original;
+        
+        // Filter employees by department
+        const departmentEmployees = employees
+
+        return (
+          <Select
+            value={pqr.assignedTo?.id || "unassigned"}
+            onValueChange={(value) => handleAssignment(pqr.id, value === "unassigned" ? null : value)}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Seleccionar empleado">
+                {pqr.assignedTo ? `${pqr.assignedTo.firstName} ${pqr.assignedTo.lastName}` : "Sin asignar"}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="unassigned">Sin asignar</SelectItem>
+              {departmentEmployees.map((employee) => (
+                <SelectItem key={employee.id} value={employee.id}>
+                  {employee.firstName} {employee.lastName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+      },
     },
   ];
 

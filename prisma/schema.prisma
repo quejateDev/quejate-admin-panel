@@ -32,6 +32,7 @@ model User {
   Like              Like[]
   notifications     Notification[]
   PQRS              PQRS[]
+  assignedPQRS      PQRS[]              @relation("AssignedPQRS")
   statusHistory     PQRStatusHistory[]
   department        Department?         @relation(fields: [departmentId], references: [id])
   Entity            Entity?             @relation(fields: [entityId], references: [id])
@@ -121,6 +122,7 @@ model PQRS {
   updatedAt         DateTime           @updatedAt
   creatorId         String?
   departmentId      String
+  assignedToId      String?
   private           Boolean            @default(true)
   consecutiveCode   String?
   description       String?
@@ -131,12 +133,14 @@ model PQRS {
   likes             Like[]
   PQRCustomField    PQRCustomField[]
   creator           User?              @relation(fields: [creatorId], references: [id])
+  assignedTo        User?              @relation("AssignedPQRS", fields: [assignedToId], references: [id])
   department        Department         @relation(fields: [departmentId], references: [id])
   customFields      CustomField[]      @relation("CustomFieldToPQRS")
   statusHistory     PQRStatusHistory[]
 
   @@index([creatorId])
   @@index([departmentId])
+  @@index([assignedToId])
 }
 
 model Like {

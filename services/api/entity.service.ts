@@ -57,3 +57,18 @@ export async function updateEntity(id: string, data: UpdateEntityDTO): Promise<E
   const response = await Client.put(`/entities/${id}`, data);
   return response.data;
 }
+
+interface Employee {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  departmentId: string | null;
+}
+
+export const EntityService = {
+  getEmployees: async (entityId: string): Promise<Employee[]> => {
+    const response = await Client.get(`/entity/${entityId}/employees`);
+    return response.data;
+  },
+};

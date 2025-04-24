@@ -20,6 +20,8 @@ import {
   deleteDepartmentService,
   getDepartmentsService,
 } from "@/services/api/Department.service";
+import useUser from "@/hooks/useUser";
+import useAuthStore from "@/store/useAuthStore";
 
 interface DepartmentWithEntity extends Department {
   entity: {
@@ -43,18 +45,18 @@ export function DeparmentsTable({
   const [departmentToDelete, setDepartmentToDelete] = useState<string | null>(
     null
   );
-
   async function handleDeleteClick(departmentId: string) {
     setDepartmentToDelete(departmentId);
     setIsDeleteModalOpen(true);
   }
-
+  const { user } = useAuthStore();
   async function handleDeleteConfirm() {
     if (!departmentToDelete) return;
+    if (!user?.entity?.id) return;
 
     try {
-      await deleteDepartmentService(departmentToDelete);
-      const newData = await getDepartmentsService();
+      await deleteDepartmentService({ id: departmentToDelete });
+      const newData = await getDepartmentsService({ entityId: user.entity.id });
       setDepartments(newData);
       toast({
         description: "Área eliminada correctamente",

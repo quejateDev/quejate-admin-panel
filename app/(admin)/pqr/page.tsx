@@ -96,7 +96,22 @@ export default async function PQRPage({ searchParams }: PageProps) {
             },
           },
         },
-        creator: true,
+        creator: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        assignedTo: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
