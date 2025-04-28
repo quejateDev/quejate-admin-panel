@@ -7,13 +7,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEmployeeById } from "@/hooks/useEmployees";
+import { useDepartments } from "@/hooks/useDeparments";
 
 export default function EditClientPage() {
   const params = useParams();
   const router = useRouter();
   const { data, isLoading, error } = useEmployeeById(params.id as string);
+  const { data: departments, isLoading: isLoadingDepartments } = useDepartments(
+    {
+      entityId: data?.entityId,
+    }
+  );
 
-  if (isLoading) {
+  if (isLoading || isLoadingDepartments) {
     return (
       <div className="container mx-auto py-10 px-4 md:px-6">
         <div className="flex items-center gap-4 mb-8">
@@ -85,7 +91,7 @@ export default function EditClientPage() {
           <CardTitle>Información del Empleado</CardTitle>
         </CardHeader>
         <CardContent>
-          <EmployeeForm mode="edit" initialData={data} />
+          <EmployeeForm mode="edit" initialData={data} departments={departments || []} />
         </CardContent>
       </Card>
     </div>

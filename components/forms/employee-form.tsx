@@ -34,11 +34,17 @@ interface EmployeeFormProps {
     lastName: string;
     phone?: string;
     role: "EMPLOYEE" | "ADMIN";
+    departmentId: string;
   };
   mode: "create" | "edit";
+  departments: any[];
 }
 
-export function EmployeeForm({ initialData, mode }: EmployeeFormProps) {
+export function EmployeeForm({
+  initialData,
+  mode,
+  departments,
+}: EmployeeFormProps) {
   const router = useRouter();
   const { user } = useAuthStore();
   const { createEmployee, isLoading } = useEmployees();
@@ -56,6 +62,7 @@ export function EmployeeForm({ initialData, mode }: EmployeeFormProps) {
         ? z.string().min(6, "La contraseña debe tener al menos 6 caracteres")
         : z.string().optional(),
     role: z.enum(["EMPLOYEE", "ADMIN"]),
+    departmentId: z.string().nonempty("El departamento es requerido"),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -67,39 +74,40 @@ export function EmployeeForm({ initialData, mode }: EmployeeFormProps) {
       phone: initialData?.phone || "",
       password: mode === "create" ? "" : undefined,
       role: initialData?.role || "EMPLOYEE",
+      departmentId: initialData?.departmentId || "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if (mode === "create") {
-        if (!user?.entity?.id) {
-          throw new Error("Entity ID is required");
-        }
-        console.log("Creating employee with:", {
-          ...values,
-          role: values.role,
-          entityId: user.entity.id,
-          phone: values.phone || "",
-        });
+        if (!user?.entity?.id) throw new Error("Entity ID is required");
+
         await createEmployee({
           ...values,
+          lastName: values.lastName,
+          firstName: values.firstName,
+          email: values.email,
           role: values.role,
           entityId: user.entity.id,
           phone: values.phone || "",
           password: values.password || "",
+          departmentId: values.departmentId || "",
         });
       } else {
-        if (!initialData?.id) {
-          throw new Error("Employee ID is required for update");
-        }
+        if (!initialData?.id) throw new Error("Employee ID is required for update");
+
         const updateData = {
           id: initialData.id,
           ...values,
+          lastName: values.lastName,
+          firstName: values.firstName,
+          email: values.email,
           role: values.role,
           phone: values.phone || "",
+          departmentId: values.departmentId || "",
         };
-        console.log("Updating employee with:", updateData);
+
         await updateEmployee(updateData);
       }
 
@@ -207,6 +215,34 @@ export function EmployeeForm({ initialData, mode }: EmployeeFormProps) {
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="departmentId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Departamento</FormLabel>
+              <FormControl>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccione el departamento del empleado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departments.map((department) => (
+                      <SelectItem key={department.id} value={department.id}>
+                        {department.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {mode === "create" && (
           <FormField

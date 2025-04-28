@@ -19,6 +19,11 @@ export async function GET(
         lastName: true,
         email: true,
         departmentId: true,
+        department: {
+          select: {
+            name: true,
+          },
+        },
       },
       orderBy: {
         firstName: 'asc',

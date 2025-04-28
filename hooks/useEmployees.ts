@@ -37,6 +37,7 @@ export function useEmployees(employeeId?: string) {
       phone: string;
       role: string;
       entityId: string;
+      departmentId: string;
     }) => createEmployeeService(employee),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });

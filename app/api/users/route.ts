@@ -35,6 +35,11 @@ export async function GET() {
         updatedAt: true,
         isActive: true,
         role: true,
+        department: {
+          select: {
+            name: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",

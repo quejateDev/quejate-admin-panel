@@ -1,3 +1,5 @@
+import { Department } from "@prisma/client";
+
 export type Employee = {
   id: string;
   email: string;
@@ -8,4 +10,8 @@ export type Employee = {
   createdAt: Date;
   updatedAt: Date;
   isActive: boolean;
+};
+
+export type EmployeeWithDepartment = Employee & {
+  department: Department;
 };

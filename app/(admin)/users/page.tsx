@@ -18,7 +18,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useEmployees } from "@/hooks/useEmployees";
-import { Employee } from "@/types/Employee";
+import { EmployeeWithDepartment } from "@/types/Employee";
 
 type SortField = "name" | "date" | "email";
 
@@ -86,7 +86,7 @@ function LoadingSkeleton() {
 }
 
 export default function ClientsPage() {
-  const [clients, setClients] = useState<Employee[]>([]);
+  const [clients, setClients] = useState<EmployeeWithDepartment[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("date");
   const { toast } = useToast();
@@ -260,6 +260,17 @@ export default function ClientsPage() {
                 accessorKey: "phone",
                 meta: {
                   width: "w-[15%]",
+                },
+              },
+              {
+                header: "Departamento",
+                accessorKey: "departmentId",
+                meta: {
+                  width: "w-[15%]",
+                },
+                cell: ({ row }) => {
+                  const department = row.original.department?.name;
+                  return department ? department : "No asignado";
                 },
               },
               {
