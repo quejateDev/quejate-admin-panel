@@ -38,12 +38,12 @@ export async function PATCH(
         select: { departmentId: true }
       });
 
-      if (!assignedUser || assignedUser.departmentId !== existingPQR.departmentId) {
-        return NextResponse.json(
-          { error: "Assigned user must belong to the same department" },
-          { status: 400 }
-        );
-      }
+      // if (!assignedUser || assignedUser.departmentId !== existingPQR.departmentId) {
+      //   return NextResponse.json(
+      //     { error: "Assigned user must belong to the same department" },
+      //     { status: 400 }
+      //   );
+      // }
     }
 
     // Update the PQR with the new assignment
