@@ -1,7 +1,7 @@
 import { Entity, UserRole } from "@prisma/client";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { Client } from "@/services/api/user.service";
+import { Client } from "@/services/api/User.service";
 
 interface User {
   id?: string;

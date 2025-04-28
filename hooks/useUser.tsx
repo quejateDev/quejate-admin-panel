@@ -1,6 +1,6 @@
 "use client";
 
-import { getUserService } from "@/services/api/user.service";
+import { getUserService } from "@/services/api/User.service";
 import { useState } from "react";
 
 interface UserProfile {
