@@ -2,7 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { JWT_SECRET } from "./config";
 const { cookies } = await import("next/headers");
-import jwt from "jsonwebtoken";
+import { SignJWT, jwtVerify } from "jose";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -29,9 +29,12 @@ export async function signToken({
   email: string;
   entityId: string;
 }) {
-  return jwt.sign({ id, role, email, entityId }, JWT_SECRET, {
-    expiresIn: "7d",
-  });
+  const secret = new TextEncoder().encode(JWT_SECRET);
+  const token = await new SignJWT({ id, role, email, entityId })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("7d")
+    .sign(secret);
+  return token;
 }
 
 interface JWTPayload {
@@ -43,8 +46,9 @@ interface JWTPayload {
 
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-    return decoded;
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    const { payload } = await jwtVerify<JWTPayload>(token, secret);
+    return payload;
   } catch (error) {
     console.error("Token verification error:", error);
     return null;
