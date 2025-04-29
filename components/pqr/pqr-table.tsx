@@ -138,18 +138,15 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
       cell: ({ row }) => getRemainingTimeBadge(row.original.createdAt),
       enableSorting: true,
     },
-  ];
-
-  user?.role !== "EMPLOYEE" &&
-    columns.push({
+    ...(user?.role !== "EMPLOYEE" ? [{
       id: "assignedTo",
       header: "Asignado a",
-      accessorFn: (row) => row.assignedTo,
-      cell: ({ row }) => {
+      accessorFn: (row: PQRTableItem) => row.assignedTo,
+      cell: ({ row }: { row: { original: PQRTableItem } }) => {
         const pqr = row.original;
-
-        // Filter employees by department
-        const assignedTo = employees?.find((e) => e.id === pqr.assignedTo?.id);
+        const assignedTo = employees?.find(
+          (e) => e.id === pqr.assignedTo?.id
+        );
 
         return (
           <Select
@@ -176,7 +173,8 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
           </Select>
         );
       },
-    });
+    }] : []),
+  ];
 
   const actions = {
     custom: [
