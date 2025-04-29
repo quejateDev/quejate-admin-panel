@@ -1,5 +1,5 @@
 import { Department, PQRS, User, Comment } from "@prisma/client";
-import { getGetPQRDTO } from "@/dto/pqr.dto";
+import { getPQRParams, GetPQRsDTO } from "@/dto/pqr.dto";
 import axios from "axios";
 
 const Client = axios.create({
@@ -40,12 +40,12 @@ export async function getAllPQRS() {
   return response.data;
 }
 
-export async function getPQRS() {
-  const response = await Client.get(`/pqr`);
+export async function getPQRS(params: Partial<getPQRParams>): Promise<GetPQRsDTO[]> {
+  const response = await Client.get(`/pqr`, { params });
   return response.data;
 }
 
-export async function getPQRSById(id: PQRS["id"]): Promise<getGetPQRDTO> {
+export async function getPQRSById(id: PQRS["id"]): Promise<PQRS> {
   const response = await Client.get(`/pqr/${id}`);
   return response.data;
 }
@@ -60,8 +60,8 @@ export async function getPQRSByDepartment(departmentId: Department["id"]) {
   return response.data;
 }
 
-export async function updatePQRS(id: PQRS["id"], pqrs: PQRS) {
-  const response = await Client.put(`/pqr/${id}`, pqrs);
+export async function updatePQRS(id: PQRS["id"], pqrs: Partial<PQRS>) {
+  const response = await Client.patch(`/pqr/${id}`, pqrs);
   return response.data;
 }
 

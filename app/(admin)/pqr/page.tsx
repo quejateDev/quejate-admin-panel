@@ -1,131 +1,42 @@
+"use client";
 import PqrVsDepartmentChart from "@/components/charts/pqr/pqr-vs-deparment";
 import { PqrVsTimeChart } from "@/components/charts/pqr/pqr-vs-time";
 import { PqrVsTypeChart } from "@/components/charts/pqr/pqr-vs-type";
 import { PqrFilters } from "@/components/pqr/pqr-filters";
 import { PQRTable } from "@/components/pqr/pqr-table";
-import prisma from "@/lib/prisma";
-import { verifyToken } from "@/lib/utils";
-import { getCookie } from "@/lib/utils";
-import { redirect } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { FileText, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 import { PQRSStatus } from "@prisma/client";
+import { usePQRS } from "@/hooks/pqr/usePQRs";
+import { useDepartments } from "@/hooks/useDeparments";
+import { useState } from "react";
+import { parseISO } from "date-fns";
+import { DateRange } from "react-day-picker";
 
-export const dynamic = "force-dynamic";
+export default function PQRPage() {
+  const searchParams = useSearchParams();
+  const { departmentId, entityId, startDate, endDate } = Object.fromEntries(
+    searchParams.entries()
+  );
 
-interface PageProps {
-  searchParams: Promise<{
-    categoryId?: string;
-    entityId?: string;
-    departmentId?: string;
-    startDate?: string;
-    endDate?: string;
-  }>;
-}
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
 
-export default async function PQRPage({ searchParams }: PageProps) {
-  const token = await getCookie("token");
-  if (!token) {
-    return redirect("/login");
-  }
-  const decoded = await verifyToken(token);
-  if (!decoded) {
-    return redirect("/login");
-  }
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: startDate ? parseISO(startDate) : startOfToday,
+    to: endDate ? parseISO(endDate) : endOfToday,
+  });
 
-  const { departmentId, entityId, categoryId, startDate, endDate } =
-    await searchParams;
+  const { pqrs, assignPQR } = usePQRS({
+    departmentId: departmentId,
+    startDate: dateRange?.from?.toISOString(),
+    endDate: dateRange?.to?.toISOString(),
+  });
 
-  // Build the where clause based on filters
-  const where: any = {
-    department: {
-      entityId: decoded.entityId,
-    },
-  };
-
-  // Add department filter if provided
-  if (departmentId) {
-    where.departmentId = departmentId;
-  }
-
-  // Add entity filter if provided
-  if (entityId) {
-    where.department = {
-      ...where.department,
-      entityId: entityId,
-    };
-  }
-
-  // Add category filter if provided
-  if (categoryId) {
-    where.department = {
-      ...where.department,
-      entity: {
-        categoryId: categoryId,
-      },
-    };
-  }
-
-  // Add date range filter if provided
-  if (startDate || endDate) {
-    where.createdAt = {};
-
-    if (startDate) {
-      where.createdAt.gte = new Date(startDate);
-    }
-
-    if (endDate) {
-      // Add one day to include the entire end date
-      const endDateObj = new Date(endDate);
-      endDateObj.setDate(endDateObj.getDate() + 1);
-      where.createdAt.lt = endDateObj;
-    }
-  }
-
-  const [pqrs, departments] = await Promise.all([
-    prisma.pQRS.findMany({
-      where,
-      include: {
-        department: {
-          include: {
-            entity: {
-              include: {
-                category: true,
-              },
-            },
-          },
-        },
-        creator: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    }),
-    prisma.department.findMany({
-      include: {
-        entity: true,
-      },
-      where: {
-        entityId: decoded.entityId,
-      },
-    }),
-  ]);
+  const { data: departments } = useDepartments({ entityId: entityId ?? "" });
 
   // Calculate statistics
   const totalPqrs = pqrs.length;
@@ -156,9 +67,9 @@ export default async function PQRPage({ searchParams }: PageProps) {
           </p>
         </div>
         <PqrFilters
-          departments={departments}
-          startDate={startDate ?? null}
-          endDate={endDate ?? null}
+          departments={departments ?? []}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
         />
       </div>
 
@@ -222,7 +133,8 @@ export default async function PQRPage({ searchParams }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <PqrVsTimeChart
           pqrs={pqrs.sort(
-            (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           )}
           className="col-span-2"
         />
@@ -237,7 +149,7 @@ export default async function PQRPage({ searchParams }: PageProps) {
           <CardTitle>Listado de PQRSD</CardTitle>
         </CardHeader>
         <CardContent>
-          <PQRTable pqrs={pqrs} />
+          <PQRTable pqrs={pqrs} assignPQR={assignPQR.mutateAsync} />
         </CardContent>
       </Card>
     </div>

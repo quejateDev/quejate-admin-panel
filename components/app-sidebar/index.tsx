@@ -50,8 +50,8 @@ export function AppSidebar() {
   }, [user]);
 
   function handleLogout() {
-    console.log(document.cookie);
-    // router.push("/dashboard");
+    logout();
+    router.push("/login");
   }
 
   return (

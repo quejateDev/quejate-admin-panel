@@ -1,3 +1,4 @@
+import { Employee } from "@/types/Employee";
 import { User } from "@prisma/client";
 import axios from "axios";
 
@@ -21,7 +22,7 @@ export async function createEmployeeService(employee: {
   return response.data;
 }
 
-export async function getEmployeesService() {
+export async function getEmployeesService(): Promise<Employee[]> {
   const response = await Client.get("/users");
   return response.data;
 }

@@ -6,26 +6,31 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EyeIcon, SlidersHorizontal } from "lucide-react";
 import { typeMap, statusMap } from "@/constants/pqrMaps";
 import { PQRS, PQRSStatus } from "@prisma/client";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { ColumnDef, ColumnFiltersState, SortingState } from "@tanstack/react-table";
-import { assignPQRS } from "@/services/api/pqr.service";
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+} from "@tanstack/react-table";
 import { EntityService } from "@/services/api/entity.service";
+import { useEmployees } from "@/hooks/useEmployees";
 
 interface PQRTableProps {
+  assignPQR: any;
   pqrs: (PQRS & {
     department: {
       id: string;
@@ -56,41 +61,18 @@ interface ColumnVisibility {
   [key: string]: boolean;
 }
 
-export function PQRTable({ pqrs }: PQRTableProps) {
+export function PQRTable({ pqrs, assignPQR }: PQRTableProps) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(
+    {}
+  );
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [employees, setEmployees] = useState<Array<{
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    departmentId: string | null;
-  }>>([]);
 
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        // Asumimos que todos los PQRs son de la misma entidad y tomamos el ID del primero
-        if (pqrs.length > 0) {
-          const entityId = pqrs[0].department.entity.id;
-          const employeesList = await EntityService.getEmployees(entityId);
-          setEmployees(employeesList);
-        }
-      } catch (error) {
-        console.error("Error fetching employees:", error);
-      }
-    };
-
-    fetchEmployees();
-  }, [pqrs]);
+  const { data: employees } = useEmployees();
 
   function getRemainingTimeBadge(createdAt: Date) {
     const RESPONSE_LIMIT_DAYS = 15;
@@ -115,11 +97,12 @@ export function PQRTable({ pqrs }: PQRTableProps) {
     new Set(pqrs.map((pqr) => pqr.department?.name).filter(Boolean))
   );
 
-  const handleAssignment = async (pqrId: string, assignedToId: string | null) => {
+  const handleAssignment = async (
+    pqrId: string,
+    assignedToId: string | null
+  ) => {
     try {
-      await assignPQRS(pqrId, assignedToId);
-      // Refresh the table data
-      window.location.reload();
+      await assignPQR({ pqrId, assignedToId });
     } catch (error) {
       console.error("Error assigning PQR:", error);
     }
@@ -129,22 +112,24 @@ export function PQRTable({ pqrs }: PQRTableProps) {
     {
       id: "consecutiveCode",
       header: "Consecutivo",
-      accessorFn: (row) => row.consecutiveCode,
+      accessorKey: "consecutiveCode",
       enableSorting: true,
     },
     {
       id: "type",
       header: "Tipo",
-      accessorFn: (row) => row.type,
-      cell: ({ row }) => typeMap[row.original.type as keyof typeof typeMap].label,
+      accessorKey: "type",
+      accessorFn: (row) => typeMap[row.type as keyof typeof typeMap].label,
       enableSorting: true,
     },
     {
       id: "status",
       header: "Estado",
-      accessorFn: (row) => row.status,
+      accessorKey: "status",
       cell: ({ row }) => (
-        <Badge variant={statusMap[row.original.status as PQRSStatus].variant as any}>
+        <Badge
+          variant={statusMap[row.original.status as PQRSStatus].variant as any}
+        >
           {statusMap[row.original.status as PQRSStatus].label}
         </Badge>
       ),
@@ -153,27 +138,26 @@ export function PQRTable({ pqrs }: PQRTableProps) {
     {
       id: "department",
       header: "Departamento",
-      accessorFn: (row) => row.department?.name,
-      cell: ({ row }) => row.original.department?.name || "No asignado",
+      accessorKey: "department.name",
       enableSorting: true,
     },
     {
       id: "subject",
       header: "Asunto",
-      accessorFn: (row) => row.subject,
+      accessorKey: "subject",
       enableSorting: true,
     },
     {
       id: "creator",
       header: "Creador",
-      accessorFn: (row) => row.creator?.email,
-      cell: ({ row }) => row.original.creator?.email || "Anónimo",
+      accessorKey: "creator.email",
+      accessorFn: (row) => row.creator?.email || "Anónimo",
       enableSorting: true,
     },
     {
       id: "remainingTime",
       header: "Tiempo para responder",
-      accessorFn: (row) => row.createdAt,
+      accessorKey: "createdAt",
       cell: ({ row }) => getRemainingTimeBadge(row.original.createdAt),
       enableSorting: true,
     },
@@ -183,23 +167,28 @@ export function PQRTable({ pqrs }: PQRTableProps) {
       accessorFn: (row) => row.assignedTo,
       cell: ({ row }) => {
         const pqr = row.original;
-        
+
         // Filter employees by department
-        const departmentEmployees = employees
+        const departmentEmployees = employees;
+        const assignedTo = employees?.find((e) => e.id === pqr.assignedTo?.id);
 
         return (
           <Select
             value={pqr.assignedTo?.id || "unassigned"}
-            onValueChange={(value) => handleAssignment(pqr.id, value === "unassigned" ? null : value)}
+            onValueChange={(value) =>
+              handleAssignment(pqr.id, value === "unassigned" ? null : value)
+            }
           >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Seleccionar empleado">
-                {pqr.assignedTo ? `${pqr.assignedTo.firstName} ${pqr.assignedTo.lastName}` : "Sin asignar"}
+                {assignedTo?.firstName && assignedTo?.lastName
+                  ? `${assignedTo?.firstName} ${assignedTo?.lastName}`
+                  : "Sin asignar"}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="unassigned">Sin asignar</SelectItem>
-              {departmentEmployees.map((employee) => (
+              {departmentEmployees?.map((employee) => (
                 <SelectItem key={employee.id} value={employee.id}>
                   {employee.firstName} {employee.lastName}
                 </SelectItem>
@@ -228,9 +217,11 @@ export function PQRTable({ pqrs }: PQRTableProps) {
   const filterData = (data: PQRTableItem[]) => {
     return data.filter((item) => {
       const matchesType = typeFilter === "all" || item.type === typeFilter;
-      const matchesStatus = statusFilter === "all" || item.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "all" || item.status === statusFilter;
       const matchesDepartment =
-        departmentFilter === "all" || item.department?.name === departmentFilter;
+        departmentFilter === "all" ||
+        item.department?.name === departmentFilter;
       const matchesGlobal =
         !globalFilter ||
         Object.values(item).some((val) =>
@@ -358,4 +349,4 @@ export function PQRTable({ pqrs }: PQRTableProps) {
       />
     </div>
   );
-} 
+}

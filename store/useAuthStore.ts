@@ -40,7 +40,6 @@ const useAuthStore = create<AuthStore>()(
       },
       logout: () => {
         setAuthHeaders(undefined);
-        console.log("logout");
         set({ user: null, token: undefined, isAuthenticated: false });
         // remove all cookies
         document.cookie.split(";").forEach(function (c) {

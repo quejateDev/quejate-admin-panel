@@ -56,9 +56,9 @@ export default function Login() {
           },
           userData.token
         );
-        
+
         document.cookie = `auth-storage=${JSON.stringify({
-          state: { 
+          state: {
             user: {
               id: userData.user.id,
               email: userData.user.email,
@@ -66,11 +66,11 @@ export default function Login() {
               role: userData.user.role,
               entity: userData.user.Entity,
             },
-            token: userData.token
-          }
-        })}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
-  
-        document.cookie = `token=${userData.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+            token: userData.token,
+          },
+        })}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+
+        document.cookie = `token=${userData.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
         // Optional: Show success message
         toast({
           title: "Inicio de sesión exitoso",

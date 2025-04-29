@@ -3,21 +3,59 @@ import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { sendPQRCreationEmail } from "@/services/email/Resend.service";
 import { sendPQRNotificationEmail } from "@/services/email/sendPQRNotification";
+import { getCookie, verifyToken } from "@/lib/utils";
+import { GETPQRSchema, GetPQRsDTO } from "@/dto/pqr.dto";
 
-interface FormFile extends File {
-  arrayBuffer(): Promise<ArrayBuffer>;
-}
+export async function GET(
+  req: NextRequest
+): Promise<NextResponse<GetPQRsDTO[] | { error: string }>> {
+  const { searchParams } = new URL(req.url);
+  const token = await getCookie("token");
 
-export async function GET() {
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const decoded = await verifyToken(token);
+  if (!decoded) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { organizationId, departmentId, startDate, endDate, status, type } =
+    GETPQRSchema.parse({
+      organizationId: decoded.entityId,
+      ...Object.fromEntries(searchParams),
+    });
+
   try {
     const pqrs = await prisma.pQRS.findMany({
+      where: {
+        department: {
+          id: departmentId || undefined,
+          entityId: organizationId,
+        },
+        createdAt: {
+          gte: startDate ? new Date(startDate) : undefined,
+          lte: endDate ? new Date(endDate) : undefined,
+        },
+        status: status || undefined,
+        type: type || undefined,
+      },
       orderBy: {
         createdAt: "desc",
       },
       include: {
-        department: true,
-        customFieldValues: true,
-        attachments: true,
+        department: {
+          include: {
+            entity: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        creator: true,
+        assignedTo: true,
       },
     });
 
@@ -89,7 +127,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const fechaConsecutivo = new Date().toISOString().split("T")[0].replace(/-/g, "");
+    const fechaConsecutivo = new Date()
+      .toISOString()
+      .split("T")[0]
+      .replace(/-/g, "");
 
     // Create PQR with attachments
     const [pqr, entityConsecutive] = await prisma.$transaction([
@@ -130,7 +171,7 @@ export async function POST(req: NextRequest) {
           },
         },
         include: {
-          department: true, 
+          department: true,
           customFieldValues: true,
           attachments: true,
           creator: true,

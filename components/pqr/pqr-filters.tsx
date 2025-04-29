@@ -29,22 +29,19 @@ type PqrFiltersProps = {
       entity: true;
     };
   }>[];
-  startDate: string | null;
-  endDate: string | null;
+  dateRange: DateRange | undefined;
+  setDateRange: (dateRange: DateRange | undefined) => void;
 };
 
 export function PqrFilters({
   departments,
-  endDate,
-  startDate,
+  dateRange,
+  setDateRange,
 }: PqrFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
-  const [date, setDate] = useState<DateRange | undefined>({
-    from: startDate ? parseISO(startDate) : undefined,
-    to: endDate ? parseISO(endDate) : undefined,
-  });
+  const [date, setDate] = useState<DateRange | undefined>(dateRange);
 
   function updateFilters(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -66,24 +63,8 @@ export function PqrFilters({
   }
 
   const handleDateSelect = (range: DateRange | undefined) => {
-    console.log("Date range selected:", range);
-
-    // Update local state
     setDate(range);
-
-    if (range?.from) {
-      updateFilters("startDate", range.from.toISOString());
-    } else {
-      updateFilters("startDate", null);
-    }
-
-    if (range?.to) {
-      updateFilters("endDate", range.to.toISOString());
-    } else {
-      updateFilters("endDate", null);
-    }
-
-    // Close the popover after selection
+    setDateRange(range);
     setIsOpen(false);
   };
 
@@ -111,7 +92,7 @@ export function PqrFilters({
             variant={"outline"}
             className={cn(
               "w-[240px] justify-start text-left font-normal",
-              !startDate && "text-muted-foreground"
+              !dateRange && "text-muted-foreground"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
