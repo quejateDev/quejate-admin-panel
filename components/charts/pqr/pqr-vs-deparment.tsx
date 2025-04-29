@@ -8,6 +8,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CHART_COLORS } from "@/lib/config";
 import {
   BarChart,
@@ -29,9 +30,13 @@ interface PqrVsDepartmentChartProps {
       name: string;
     };
   }>;
+  isLoading: boolean;
 }
 
-export default function PqrVsDepartmentChart({ pqrs }: PqrVsDepartmentChartProps) {
+export default function PqrVsDepartmentChart({
+  pqrs,
+  isLoading,
+}: PqrVsDepartmentChartProps) {
   function getPqrsByDepartment() {
     const pqrsByDepartment = pqrs.reduce((acc: Record<string, number>, pqr) => {
       const department = pqr.department?.name || "Sin asignar";
@@ -68,13 +73,22 @@ export default function PqrVsDepartmentChart({ pqrs }: PqrVsDepartmentChartProps
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full col-span-2">
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>PQRSD por departamento</CardTitle>
-          <CardDescription>
-            Distribución de PQRSD por departamento en gráfico de barras
-          </CardDescription>
+          {isLoading ? (
+            <Skeleton className="w-full h-[20px]" />
+          ) : (
+            <>
+              <CardTitle>PQRSD por departamento</CardTitle>
+              <CardDescription>
+                Distribución de PQRSD por departamento en gráfico de barras
+              </CardDescription>
+            </>
+          )}
         </CardHeader>
         <CardContent className="h-[400px]">
-          <ResponsiveContainer width="100%" height="100%">
+          {isLoading ? (
+            <Skeleton className="w-full h-[360px]" />
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
             <BarChart 
               data={data}
               margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
@@ -104,20 +118,30 @@ export default function PqrVsDepartmentChart({ pqrs }: PqrVsDepartmentChartProps
                   <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                 ))}
               </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Distribución porcentual</CardTitle>
-          <CardDescription>
-            Distribución de porcentual de PQRSD por departamento
-          </CardDescription>
+          {isLoading ? (
+            <Skeleton className="w-full h-[20px]" />
+          ) : (
+            <>
+              <CardTitle>Distribución porcentual</CardTitle>
+              <CardDescription>
+                Distribución de porcentual de PQRSD por departamento
+              </CardDescription>
+            </>
+          )}
         </CardHeader>
         <CardContent className="h-[400px]">
-          <ResponsiveContainer width="100%" height="100%">
+          {isLoading ? (
+            <Skeleton className="w-full h-[360px]" />
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
             <PieChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
               <Pie
                 data={data}
@@ -141,8 +165,9 @@ export default function PqrVsDepartmentChart({ pqrs }: PqrVsDepartmentChartProps
                 height={36}
                 formatter={(value) => <span className="text-sm">{value}</span>}
               />
-            </PieChart>
-          </ResponsiveContainer>
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
     </div>

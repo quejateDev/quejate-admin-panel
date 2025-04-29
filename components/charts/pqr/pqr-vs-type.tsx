@@ -22,14 +22,16 @@ import {
   Legend,
 } from "recharts";
 import { typeMap } from "@/constants/pqrMaps";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface PqrVsTypeChartProps {
   pqrs: Array<{
     type: keyof typeof typeMap;
   }>;
+  isLoading: boolean;
 }
 
-export function PqrVsTypeChart({ pqrs }: PqrVsTypeChartProps) {
+export function PqrVsTypeChart({ pqrs, isLoading }: PqrVsTypeChartProps) {
   function getPqrsByType() {
     const pqrsByType = pqrs.reduce((acc: Record<string, number>, pqr) => {
       const type = typeMap[pqr.type].label;
@@ -66,16 +68,25 @@ export function PqrVsTypeChart({ pqrs }: PqrVsTypeChartProps) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full col-span-2">
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>PQRSD por tipo</CardTitle>
-          <CardDescription>
-            Distribución de PQRSD por tipo
-          </CardDescription>
+          {isLoading ? (
+            <Skeleton className="w-full h-[20px]" />
+          ) : (
+            <>
+              <CardTitle>PQRSD por tipo</CardTitle>
+              <CardDescription>
+                Distribución de PQRSD por tipo
+              </CardDescription>
+            </>
+          )}
         </CardHeader>
         <CardContent className="h-[400px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart 
-              data={data}
-              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+          {isLoading ? (
+            <Skeleton className="w-full h-[360px]" />
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={data}
+                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
             >
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
               <XAxis 
@@ -102,26 +113,36 @@ export function PqrVsTypeChart({ pqrs }: PqrVsTypeChartProps) {
                   <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                 ))}
               </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Distribución porcentual</CardTitle>
-          <CardDescription>
-            Distribución de porcentual de PQRSD por tipo
-          </CardDescription>
+          {isLoading ? (
+            <Skeleton className="w-full h-[20px]" />
+          ) : (
+            <>
+              <CardTitle>Distribución porcentual</CardTitle>
+              <CardDescription>
+                Distribución de porcentual de PQRSD por tipo
+              </CardDescription>
+            </>
+          )}
         </CardHeader>
         <CardContent className="h-[400px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-              <Pie
-                data={data}
-                nameKey="name"
-                dataKey="Registros"
-                cx="50%"
+          {isLoading ? (
+            <Skeleton className="w-full h-[360px]" />
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <Pie
+                  data={data}
+                  nameKey="name"
+                  dataKey="Registros"
+                  cx="50%"
                 cy="50%"
                 innerRadius={60}
                 outerRadius={80}
@@ -139,8 +160,9 @@ export function PqrVsTypeChart({ pqrs }: PqrVsTypeChartProps) {
                 height={36}
                 formatter={(value) => <span className="text-sm">{value}</span>}
               />
-            </PieChart>
-          </ResponsiveContainer>
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
     </div>

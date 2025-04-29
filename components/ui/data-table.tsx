@@ -45,6 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "./skeleton";
 
 interface CustomAction<T> {
   icon: React.ElementType;
@@ -80,6 +81,7 @@ interface DataTableProps<T> {
   onPageIndexChange?: (pageIndex: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
   enableSorting?: boolean;
+  isLoading?: boolean;
 }
 
 export function DataTable<T extends { id: string }>({
@@ -95,6 +97,7 @@ export function DataTable<T extends { id: string }>({
   onPageIndexChange,
   onPageSizeChange,
   enableSorting = false,
+  isLoading = false,
 }: DataTableProps<T>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
@@ -128,10 +131,7 @@ export function DataTable<T extends { id: string }>({
               <TableRow className="bg-muted/50">
                 {table.getHeaderGroups().map((headerGroup) =>
                   headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      className="font-semibold"
-                    >
+                    <TableHead key={header.id} className="font-semibold">
                       {header.isPlaceholder ? null : (
                         <div
                           {...{
@@ -155,14 +155,21 @@ export function DataTable<T extends { id: string }>({
                   ))
                 )}
                 {actions && (
-                  <TableHead className="font-semibold">
-                    Acciones
-                  </TableHead>
+                  <TableHead className="font-semibold">Acciones</TableHead>
                 )}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows.length === 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length + (actions ? 1 : 0)}
+                    className="h-24 text-center"
+                  >
+                    <Skeleton className="h-24 w-full" />
+                  </TableCell>
+                </TableRow>
+              ) : table.getRowModel().rows.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={columns.length + (actions ? 1 : 0)}
@@ -175,9 +182,7 @@ export function DataTable<T extends { id: string }>({
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id} className="hover:bg-muted/50">
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                      >
+                      <TableCell key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

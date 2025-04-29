@@ -22,19 +22,15 @@ import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { useState, useEffect } from "react";
+import { useDepartments } from "@/hooks/useDeparments";
+import { Skeleton } from "../ui/skeleton";
 
 type PqrFiltersProps = {
-  departments: Prisma.DepartmentGetPayload<{
-    include: {
-      entity: true;
-    };
-  }>[];
   dateRange: DateRange | undefined;
   setDateRange: (dateRange: DateRange | undefined) => void;
 };
 
 export function PqrFilters({
-  departments,
   dateRange,
   setDateRange,
 }: PqrFiltersProps) {
@@ -42,6 +38,9 @@ export function PqrFilters({
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [date, setDate] = useState<DateRange | undefined>(dateRange);
+
+  const { data: departments, isLoading: isDepartmentsLoading  } =
+    useDepartments({ entityId: "" });
 
   function updateFilters(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -74,16 +73,22 @@ export function PqrFilters({
         value={searchParams.get("departmentId") || ""}
         onValueChange={(value) => updateFilters("departmentId", value)}
       >
-        <SelectTrigger className="w-[200px] bg-white">
-          <SelectValue placeholder="Filtrar por departamento" />
-        </SelectTrigger>
+        {isDepartmentsLoading ? (
+          <Skeleton className="w-[200px] h-[38px]" />
+        ) : (
+          <>
+            <SelectTrigger className="w-[200px] bg-white">
+              <SelectValue placeholder="Filtrar por departamento" />
+            </SelectTrigger>
         <SelectContent>
-          {departments.map((department) => (
+          {departments?.map((department) => (
             <SelectItem key={department.id} value={department.id}>
               {department.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </>
+      )}
       </Select>
 
       <Popover open={isOpen} onOpenChange={setIsOpen}>

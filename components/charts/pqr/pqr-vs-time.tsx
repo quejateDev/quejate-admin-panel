@@ -20,14 +20,20 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CHART_COLORS } from "@/lib/config";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 interface PqrVsTimeChartProps {
   pqrs: Array<{
     createdAt: Date;
   }>;
   className?: string;
+  isLoading?: boolean;
 }
 
-export function PqrVsTimeChart({ pqrs, className }: PqrVsTimeChartProps) {
+export function PqrVsTimeChart({
+  pqrs,
+  className,
+  isLoading,
+}: PqrVsTimeChartProps) {
   function getPqrsByDate() {
     const pqrsByDate = pqrs.reduce((acc: Record<string, number>, pqr) => {
       const date = new Date(pqr.createdAt).toISOString().split("T")[0];
@@ -42,6 +48,10 @@ export function PqrVsTimeChart({ pqrs, className }: PqrVsTimeChartProps) {
         Registros: count,
       }));
   }
+
+  // if (isLoading) {
+  //   return <PqrVsTimeChartSkeleton className={className} />;
+  // }
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -62,15 +72,27 @@ export function PqrVsTimeChart({ pqrs, className }: PqrVsTimeChartProps) {
   return (
     <Card className={cn("w-full", className)}>
       <CardHeader>
-        <CardTitle>PQRSD creados a lo largo del tiempo</CardTitle>
-        <CardDescription>
-          Observa la cantidad de PQRSD creados a lo largo del tiempo
-        </CardDescription>
+        {isLoading ? (
+          <Skeleton className="w-full h-[20px]" />
+        ) : (
+          <CardTitle>PQRSD creados a lo largo del tiempo</CardTitle>
+        )}
+
+        {isLoading ? (
+          <Skeleton className="w-full h-[20px]" />
+        ) : (
+          <CardDescription>
+            Observa la cantidad de PQRSD creados a lo largo del tiempo
+          </CardDescription>
+        )}
       </CardHeader>
       <CardContent className="h-[400px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={getPqrsByDate()}
+        {isLoading ? (
+          <Skeleton className="w-full h-[360px]" />
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={getPqrsByDate()}
             margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
           >
             <defs>
@@ -112,8 +134,13 @@ export function PqrVsTimeChart({ pqrs, className }: PqrVsTimeChartProps) {
               fill="url(#colorRegistros)"
             />
           </LineChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );
+}
+
+function PqrVsTimeChartSkeleton({ className }: { className?: string }) {
+  return <Skeleton className={cn("w-full h-[400px]", className)} />;
 }

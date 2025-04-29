@@ -9,14 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 import { PQRSStatus } from "@prisma/client";
 import { usePQRS } from "@/hooks/pqr/usePQRs";
-import { useDepartments } from "@/hooks/useDeparments";
 import { useState } from "react";
 import { parseISO } from "date-fns";
 import { DateRange } from "react-day-picker";
-
+import MetricCard from "@/components/charts/pqr/MetricCard";
 export default function PQRPage() {
   const searchParams = useSearchParams();
-  const { departmentId, entityId, startDate, endDate } = Object.fromEntries(
+  const { departmentId, startDate, endDate } = Object.fromEntries(
     searchParams.entries()
   );
 
@@ -30,13 +29,11 @@ export default function PQRPage() {
     to: endDate ? parseISO(endDate) : endOfToday,
   });
 
-  const { pqrs, assignPQR } = usePQRS({
+  const { pqrs, assignPQR, isLoading } = usePQRS({
     departmentId: departmentId,
     startDate: dateRange?.from?.toISOString(),
     endDate: dateRange?.to?.toISOString(),
   });
-
-  const { data: departments } = useDepartments({ entityId: entityId ?? "" });
 
   // Calculate statistics
   const totalPqrs = pqrs.length;
@@ -66,67 +63,41 @@ export default function PQRPage() {
             Administra y monitorea las PQRSD de tu entidad
           </p>
         </div>
-        <PqrFilters
-          departments={departments ?? []}
-          dateRange={dateRange}
-          setDateRange={setDateRange}
-        />
+        <PqrFilters dateRange={dateRange} setDateRange={setDateRange} />
       </div>
 
       {/* Statistics cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total PQRSD</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalPqrs}</div>
-            <p className="text-xs text-muted-foreground">
-              Solicitudes en el período seleccionado
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingPqrs}</div>
-            <p className="text-xs text-muted-foreground">
-              PQRSD dentro del plazo de respuesta
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Vencidas</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">
-              {overduePqrs}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              PQRSD fuera del plazo de respuesta
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Completadas</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-500">
-              {completedPqrs}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              PQRSD resueltas exitosamente
-            </p>
-          </CardContent>
-        </Card>
+        <MetricCard
+          title="Total PQRSD"
+          icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+          value={totalPqrs}
+          description="Solicitudes en el período seleccionado"
+          isLoading={isLoading}
+        />
+        <MetricCard
+          title="Pendientes"
+          icon={<Clock className="h-4 w-4 text-muted-foreground" />}
+          value={pendingPqrs}
+          description="PQRSD dentro del plazo de respuesta"
+          isLoading={isLoading}
+        />
+
+        <MetricCard
+          title="Vencidas"
+          icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
+          value={overduePqrs}
+          description="PQRSD fuera del plazo de respuesta"
+          isLoading={isLoading}
+        />
+
+        <MetricCard
+          title="Completadas"
+          icon={<CheckCircle className="h-4 w-4 text-green-500" />}
+          value={completedPqrs}
+          description="PQRSD resueltas exitosamente"
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Charts section */}
@@ -137,10 +108,11 @@ export default function PQRPage() {
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           )}
           className="col-span-2"
+          isLoading={isLoading}
         />
 
-        <PqrVsDepartmentChart pqrs={pqrs} />
-        <PqrVsTypeChart pqrs={pqrs} />
+        <PqrVsDepartmentChart pqrs={pqrs} isLoading={isLoading} />
+        <PqrVsTypeChart pqrs={pqrs} isLoading={isLoading} />
       </div>
 
       {/* Table section */}
@@ -149,7 +121,7 @@ export default function PQRPage() {
           <CardTitle>Listado de PQRSD</CardTitle>
         </CardHeader>
         <CardContent>
-          <PQRTable pqrs={pqrs} assignPQR={assignPQR.mutateAsync} />
+          <PQRTable pqrs={pqrs} assignPQR={assignPQR.mutateAsync} isLoading={isLoading} />
         </CardContent>
       </Card>
     </div>

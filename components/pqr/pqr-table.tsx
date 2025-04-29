@@ -27,6 +27,7 @@ import { GetPQRsDTO } from "@/dto/pqr.dto";
 interface PQRTableProps {
   assignPQR: any;
   pqrs: GetPQRsDTO[];
+  isLoading?: boolean;
 }
 
 type PQRTableItem = PQRTableProps["pqrs"][number];
@@ -35,7 +36,7 @@ interface ColumnVisibility {
   [key: string]: boolean;
 }
 
-export function PQRTable({ pqrs, assignPQR }: PQRTableProps) {
+export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -223,6 +224,7 @@ export function PQRTable({ pqrs, assignPQR }: PQRTableProps) {
     <div className="space-y-4">
       <Filters />
       <DataTable
+        isLoading={isLoading}
         data={paginatedData}
         columns={columns}
         actions={actions}
