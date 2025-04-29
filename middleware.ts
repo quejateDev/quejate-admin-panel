@@ -9,8 +9,6 @@ export async function middleware(request: NextRequest) {
 
   const token = authParsed?.state?.token
 
-  const headers = new Headers(request.headers);
-  headers.set("x-current-path", request.nextUrl.pathname);
   const path = request.nextUrl.pathname;
 
   // any multimdia extension
@@ -38,7 +36,7 @@ export async function middleware(request: NextRequest) {
     }
   } 
 
-  return NextResponse.next({ headers });
+  return NextResponse.next();
 }
 
 // Configure paths that trigger the middleware
