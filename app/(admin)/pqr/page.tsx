@@ -9,11 +9,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 import { PQRSStatus } from "@prisma/client";
 import { usePQRS } from "@/hooks/pqr/usePQRs";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { parseISO } from "date-fns";
 import { DateRange } from "react-day-picker";
 import MetricCard from "@/components/charts/pqr/MetricCard";
-export default function PQRPage() {
+
+function PQRPageContent() {
   const searchParams = useSearchParams();
   const { departmentId, startDate, endDate } = Object.fromEntries(
     searchParams.entries()
@@ -125,5 +126,13 @@ export default function PQRPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function PQRPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PQRPageContent />
+    </Suspense>
   );
 }
