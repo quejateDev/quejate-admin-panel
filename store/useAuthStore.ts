@@ -43,7 +43,6 @@ const useAuthStore = create<AuthStore>()(
         set({ user: null, token: undefined, isAuthenticated: false });
         // remove all cookies
         document.cookie.split(";").forEach(function (c) {
-          console.log(c);
           document.cookie = c
             .replace(/^ +/, "")
             .replace(

@@ -13,6 +13,7 @@ export function usePQR(id?: string) {
     queryKey: ["pqr", id],
     queryFn: () => getPQRSById(id!),
     enabled: !!id,
+    refetchInterval: 1000 * 60 * 5,
   });
 
   // implement a function to update the pqr

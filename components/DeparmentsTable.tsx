@@ -22,6 +22,8 @@ import {
 } from "@/services/api/Department.service";
 import useUser from "@/hooks/useUser";
 import useAuthStore from "@/store/useAuthStore";
+import { useDepartments } from "@/hooks/useDeparments";
+import useOrganizationStore from "@/store/useOrganizationStore";
 
 interface DepartmentWithEntity extends Department {
   entity: {
@@ -38,7 +40,6 @@ interface DepartmentsTableProps {
 export function DeparmentsTable({
   departments: initialDepartments,
 }: DepartmentsTableProps) {
-  const [departments, setDepartments] = useState(initialDepartments);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("date");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -49,15 +50,17 @@ export function DeparmentsTable({
     setDepartmentToDelete(departmentId);
     setIsDeleteModalOpen(true);
   }
-  const { user } = useAuthStore();
+
+  const { entity } = useOrganizationStore();
+  const { deleteDepartment } = useDepartments({
+    entityId: entity?.id ?? "",
+  });
+
   async function handleDeleteConfirm() {
     if (!departmentToDelete) return;
-    if (!user?.entity?.id) return;
 
     try {
-      await deleteDepartmentService({ id: departmentToDelete });
-      const newData = await getDepartmentsService({ entityId: user.entity.id });
-      setDepartments(newData);
+      await deleteDepartment.mutateAsync(departmentToDelete);
       toast({
         description: "Área eliminada correctamente",
       });
@@ -73,7 +76,7 @@ export function DeparmentsTable({
     }
   }
 
-  const filteredDepartments = departments
+  const filteredDepartments = initialDepartments
     .filter(
       (department) =>
         department.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

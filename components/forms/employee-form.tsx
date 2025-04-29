@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import useAuthStore from "@/store/useAuthStore";
-import { useEmployeeById, useEmployees } from "@/hooks/useEmployees";
+import { useEmployeeById, useEmployees } from "@/hooks/employee/useEmployees";
 import {
   Select,
   SelectContent,

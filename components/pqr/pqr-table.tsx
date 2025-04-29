@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ColumnDef } from "@tanstack/react-table";
-import { useEmployees } from "@/hooks/useEmployees";
+import { useEmployees } from "@/hooks/employee/useEmployees";
 import { GetPQRsDTO } from "@/dto/pqr.dto";
 import useAuthStore from "@/store/useAuthStore";
 interface PQRTableProps {

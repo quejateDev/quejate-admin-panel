@@ -13,6 +13,7 @@ import { useState, Suspense } from "react";
 import { parseISO } from "date-fns";
 import { DateRange } from "react-day-picker";
 import MetricCard from "@/components/charts/pqr/MetricCard";
+import useOrganizationStore from "@/store/useOrganizationStore";
 
 function PQRPageContent() {
   const searchParams = useSearchParams();
@@ -30,10 +31,13 @@ function PQRPageContent() {
     to: endDate ? parseISO(endDate) : endOfToday,
   });
 
+  const { entity } = useOrganizationStore();
+
   const { pqrs, assignPQR, isLoading } = usePQRS({
     departmentId: departmentId,
     startDate: dateRange?.from?.toISOString(),
     endDate: dateRange?.to?.toISOString(),
+    organizationId: entity?.id,
   });
 
   // Calculate statistics

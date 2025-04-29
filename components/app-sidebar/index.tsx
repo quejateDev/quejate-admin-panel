@@ -11,6 +11,8 @@ import { UserRole } from "@prisma/client";
 import LogoutButton from "@/components/buttons/logoutButton";
 import { getCookie } from "@/lib/utils";
 import { verifyToken } from "@/lib/utils";
+import prisma from "@/lib/prisma";
+import OrganizationSelector from "@/components/OrganizationSelector";
 
 export default async function AppSidebar() {
   const token = await getCookie("token");
@@ -21,7 +23,7 @@ export default async function AppSidebar() {
 
   if (!decoded) redirect("/login");
 
-  const { id, entityId, role } = decoded;
+  const { role } = decoded;
 
   const menuItems = [
     {
@@ -46,10 +48,21 @@ export default async function AppSidebar() {
     );
   }
 
+  const entities = await prisma.entity.findMany({
+    where: {
+      id: role === UserRole.SUPER_ADMIN ? undefined : decoded.entityId,
+    },
+  });
+
   return (
     <Sidebar className="sidebar">
-      <SidebarHeader className="p-6 flex justify-center">
+      <SidebarHeader className="py-6 flex flex-col items-center gap-6 justify-center">
         <img src="/logo.png" alt="Logo" className="w-32 brightness-0 invert" />
+
+        <OrganizationSelector
+          entities={entities}
+          userOrganizationId={decoded.entityId}
+        />
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4">

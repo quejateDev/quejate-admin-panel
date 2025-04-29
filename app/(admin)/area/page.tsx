@@ -1,41 +1,20 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+"use client";
 import { DeparmentsTable } from "@/components/DeparmentsTable";
-import prisma from "@/lib/prisma";
-import { getCookie, verifyToken } from "@/lib/utils";
-import { redirect } from "next/navigation";
 import { Building2 } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import MetricCard from "@/components/charts/pqr/MetricCard";
-export const dynamic = "force-dynamic";
+import useOrganizationStore from "@/store/useOrganizationStore";
+import { useDepartments } from "@/hooks/useDeparments";
 
-export default async function AreasPage() {
-  const token = await getCookie("token");
-  if (!token) {
-    return redirect("/login");
-  }
-  const decoded = await verifyToken(token);
-  if (!decoded) {
-    return redirect("/login");
-  }
-  const departments = await prisma.department.findMany({
-    include: {
-      entity: true,
-    },
-    where: {
-      entity: {
-        id: decoded.entityId,
-      },
-    },
-    orderBy: {
-      name: "asc",
-    },
+export default function AreasPage() {
+  const { entity } = useOrganizationStore();
+
+  const { data: departments, isLoading } = useDepartments({
+    entityId: entity?.id ?? "",
   });
 
   const stats = {
-    total: departments.length,
-    departments: departments.length,
-    entities: new Set(departments.map((d) => d.entityId)).size,
+    total: departments?.length ?? 0,
+    departments: departments?.length ?? 0,
   };
 
   return (
@@ -45,19 +24,12 @@ export default async function AreasPage() {
           title="Total Áreas"
           value={stats.total}
           description="Total de áreas en la entidad"
-          isLoading={false}
-          icon={<Building2 className="h-4 w-4 text-primary/80" />}
-        />
-        <MetricCard
-          title="Total Entidades"
-          value={stats.entities}
-          description="Total de entidades en la entidad"
-          isLoading={false}
+          isLoading={isLoading}
           icon={<Building2 className="h-4 w-4 text-primary/80" />}
         />
       </div>
 
-      <DeparmentsTable departments={departments} />
+      <DeparmentsTable departments={departments ?? []} />
     </div>
   );
 }

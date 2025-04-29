@@ -6,7 +6,7 @@ import { ArrowLeft, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEmployeeById } from "@/hooks/useEmployees";
+import { useEmployeeById } from "@/hooks/employee/useEmployees";
 import { useDepartments } from "@/hooks/useDeparments";
 
 export default function EditClientPage() {

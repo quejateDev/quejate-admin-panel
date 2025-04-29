@@ -22,8 +22,12 @@ export async function createEmployeeService(employee: {
   return response.data;
 }
 
-export async function getEmployeesService(): Promise<Employee[]> {
-  const response = await Client.get("/users");
+export async function getEmployeesService({
+  entityId,
+}: {
+  entityId: string;
+}): Promise<Employee[]> {
+  const response = await Client.get("/users", { params: { entityId } });
   return response.data;
 }
 
@@ -32,7 +36,10 @@ export async function deleteEmployeeService(id: string) {
   return response.data;
 }
 
-export async function updateEmployeeService(id: string, employee: Partial<User>) {
+export async function updateEmployeeService(
+  id: string,
+  employee: Partial<User>
+) {
   const response = await Client.patch(`/users/${id}`, employee);
   return response.data;
 }

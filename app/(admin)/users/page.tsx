@@ -17,8 +17,9 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { useEmployees } from "@/hooks/useEmployees";
+import { useEmployees } from "@/hooks/employee/useEmployees";
 import { Employee } from "@/types/Employee";
+import useOrganizationStore from "@/store/useOrganizationStore";
 
 type SortField = "name" | "date" | "email";
 
@@ -90,7 +91,9 @@ export default function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("date");
   const { toast } = useToast();
-  const { data, isLoading, error, deleteEmployee } = useEmployees();
+
+  const { entity } = useOrganizationStore();
+  const { data, isLoading, error, deleteEmployee } = useEmployees(entity?.id ?? "");
 
   useEffect(() => {
     if (data) {

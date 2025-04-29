@@ -8,17 +8,12 @@ import {
 } from "@/services/api/Employee.service";
 import { User } from "@prisma/client";
 
-export function useEmployees(employeeId?: string) {
+export function useEmployees(entityId: string) {
   const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
-    queryKey: ["employees"],
-    queryFn: () => getEmployeesService(),
-  });
-
-  const { data: employee, isLoading: isEmployeeLoading, error: employeeError } = useQuery({
-    queryKey: ["employee", employeeId],
-    queryFn: () => getEmployeeService(employeeId || ""),
-    enabled: !!employeeId,
+    queryKey: ["employees", entityId],
+    queryFn: () => getEmployeesService({ entityId }),
+    enabled: !!entityId,
   });
 
   const { mutate: deleteEmployee, error: deleteEmployeeError } = useMutation({
@@ -50,9 +45,6 @@ export function useEmployees(employeeId?: string) {
     error,
     deleteEmployee,
     createEmployee,
-    employee,
-    isEmployeeLoading,
-    employeeError,
   };
 }
 

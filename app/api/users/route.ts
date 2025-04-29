@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { verifyToken } from "@/lib/utils";
-import { getCookie } from "@/lib/utils";
 import { hash } from "bcryptjs";
 
-export async function GET() {
-  const token = await getCookie("token");
-  if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const decoded = await verifyToken(token);
-  if (!decoded) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const entityId = searchParams.get("entityId");
 
   try {
     const clients = await prisma.user.findMany({
@@ -21,9 +12,7 @@ export async function GET() {
         role: {
           in: ["EMPLOYEE", "ADMIN"],
         },
-        Entity: {
-          id: decoded.entityId,
-        },
+        entityId,
       },
       select: {
         id: true,

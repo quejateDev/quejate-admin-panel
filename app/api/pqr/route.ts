@@ -22,7 +22,6 @@ export async function GET(
 
   const { organizationId, departmentId, startDate, endDate, status, type } =
     GETPQRSchema.parse({
-      organizationId: decoded.entityId,
       ...Object.fromEntries(searchParams),
     });
 
