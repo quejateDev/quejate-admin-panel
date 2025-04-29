@@ -121,7 +121,6 @@ export function DeparmentsTable({
                 <SelectContent>
                   <SelectItem value="date">Fecha de registro</SelectItem>
                   <SelectItem value="name">Nombre</SelectItem>
-                  <SelectItem value="entity">Entidad</SelectItem>
                 </SelectContent>
               </Select>
               <Link href="/area/new" className="shrink-0">
@@ -142,9 +141,12 @@ export function DeparmentsTable({
                   header: "Nombre",
                   accessorKey: "name",
                   cell: ({ row }) => (
-                    <span className="font-medium text-primary/90">
+                    <Link
+                      href={`/area/${row.original.id}`}
+                      className="font-medium text-primary/90 hover:text-primary/90 transition-colors hover:underline"
+                    >
                       {row.original.name}
-                    </span>
+                    </Link>
                   ),
                 },
                 {
