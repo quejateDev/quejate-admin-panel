@@ -21,9 +21,12 @@ export default function OrganizationSelector({
     <div className="w-full py-2">
       <Select
         value={entity?.id ?? userOrganizationId}
-        onValueChange={(value) =>
-          setEntity(organizations?.find((e) => e.id === value)!)
-        }
+        onValueChange={(value) => {
+          const organization = organizations?.find((e) => e.id === value);
+          if (organization) {
+            setEntity(organization);
+          }
+        }}
       >
         <SelectTrigger className="w-full bg-white text-black border rounded-sm shad">
           <SelectValue placeholder="Selecciona una organización" />

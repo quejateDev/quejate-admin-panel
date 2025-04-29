@@ -10,7 +10,7 @@ const Client = axios.create({
   timeout: 10000,
 });
 
-type CreateEntityDTO = {
+export type CreateEntityDTO = {
   name: string;
   description: string;
   categoryId: string;
@@ -53,7 +53,7 @@ export async function getCategories(): Promise<Category[]> {
   return response.data;
 }
 
-export async function createEntity(data: CreateEntityDTO): Promise<Entity> {
+export async function createOrganizationService(data: CreateEntityDTO): Promise<Entity> {
   const response = await Client.post("/entities", data);
   return response.data;
 }

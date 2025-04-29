@@ -32,20 +32,29 @@ export default async function AppSidebar() {
     },
   ];
 
-  if (role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN) {
-    menuItems.push(
-      {
-        title: "Áreas",
-        url: "/area",
-        icon: Building2,
-      },
-      {
-        title: "Usuarios",
-        url: "/users",
-        icon: Users,
-      }
-    );
-  }
+  const ADMIN_MENU_ITEMS = [
+    {
+      title: "Áreas",
+      url: "/area",
+      icon: Building2,
+    },
+    {
+      title: "Usuarios",
+      url: "/users",
+      icon: Users,
+    },
+  ];
+
+  const SUPER_ADMIN_MENU_ITEMS = [
+    {
+      title: "Organizaciones",
+      url: "/entity",
+      icon: Building2,
+    },
+  ];
+
+  if (role !== UserRole.ADMIN) menuItems.push(...ADMIN_MENU_ITEMS);
+  if (role === UserRole.SUPER_ADMIN) menuItems.push(...SUPER_ADMIN_MENU_ITEMS);
 
   return (
     <Sidebar className="sidebar">

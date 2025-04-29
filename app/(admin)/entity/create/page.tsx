@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { createEntity, getCategories } from "@/services/api/organization.service";
+import { createOrganizationService, getCategories } from "@/services/api/organization.service";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -140,7 +140,7 @@ export default function CreateEntityPage() {
       }
 
       // Create entity with image URL if uploaded
-      await createEntity({
+      await createOrganizationService({
         name: formData.name,
         description: formData.description,
         categoryId: formData.categoryId,

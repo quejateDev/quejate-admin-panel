@@ -1,4 +1,4 @@
-import { deleteDepartmentService, getDepartmentsService } from "@/services/api/Department.service";
+import { CreateDepartmentDTO, createDepartmentService, deleteDepartmentService, getDepartmentsService } from "@/services/api/Department.service";
 import { Department } from "@prisma/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -30,10 +30,19 @@ export function useDepartments({ entityId }: { entityId: string }) {
     },
   });
 
+  const createDepartment = useMutation({
+    mutationFn: (department: CreateDepartmentDTO) =>
+      createDepartmentService(department),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["departments", entityId] });
+    },
+  });
+
   return {
     data,
     isLoading,
     error,
     deleteDepartment,
+    createDepartment,
   };
 }

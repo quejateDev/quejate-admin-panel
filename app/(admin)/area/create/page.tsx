@@ -12,54 +12,35 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { createDepartmentService } from "@/services/api/Department.service";
-import { getEntities } from "@/services/api/organization.service";
+import { CreateDepartmentDTO } from "@/services/api/Department.service";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Entity } from "@prisma/client";
+import { useState } from "react";
+import { useDepartments } from "@/hooks/useDeparments";
+import useOrganizationStore from "@/store/useOrganizationStore";
 
 export default function NewAreaPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [entities, setEntities] = useState<Entity[]>([]);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateDepartmentDTO>({
     name: "",
     description: "",
     entityId: "",
   });
 
-  useEffect(() => {
-    async function fetchEntities() {
-      try {
-        const data = await getEntities();
-        setEntities(data);
-      } catch (error) {
-        console.error("Error fetching entities:", error);
-        toast({
-          title: "Error",
-          description: "Error al cargar las entidades",
-          variant: "destructive",
-        });
-      }
-    }
+  const { entity } = useOrganizationStore();
 
-    fetchEntities();
-  }, []);
+  const { createDepartment } = useDepartments({ entityId: entity?.id ?? "" });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await createDepartmentService(formData);
+      await createDepartment.mutateAsync({
+        ...formData,
+        entityId: entity?.id ?? "",
+      });
       toast({
         title: "Área creada",
         description: "El área ha sido creada exitosamente",
@@ -111,27 +92,6 @@ export default function NewAreaPage() {
                   }))
                 }
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="entity">Entidad</Label>
-              <Select
-                value={formData.entityId}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, entityId: value }))
-                }
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccione una entidad" />
-                </SelectTrigger>
-                <SelectContent>
-                  {entities.map((entity) => (
-                    <SelectItem key={entity.id} value={entity.id}>
-                      {entity.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
             <div className="flex justify-end space-x-4">
               <Button
