@@ -78,7 +78,7 @@ export function PQRConfigForm({ areaId, initialData }: PQRConfigFormProps) {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
+            {/* <FormField
               control={form.control}
               name="allowAnonymous"
               render={({ field }) => (
@@ -97,7 +97,7 @@ export function PQRConfigForm({ areaId, initialData }: PQRConfigFormProps) {
                   </div>
                 </FormItem>
               )}
-            />
+            /> */}
 
             <FormField
               control={form.control}

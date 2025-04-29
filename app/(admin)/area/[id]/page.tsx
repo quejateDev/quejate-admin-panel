@@ -65,7 +65,8 @@ export default async function AreaPage({ params }: AreaPageProps) {
           customFields: area.pqrConfig?.customFields?.map(field => ({
             name: field.name,
             required: field.required,
-            type: field.type as "text" | "email" | "phone"
+            type: field.type as "text" | "email" | "phone",
+            isForAnonymous: field.isForAnonymous,
           })) || [],
         }} 
       />

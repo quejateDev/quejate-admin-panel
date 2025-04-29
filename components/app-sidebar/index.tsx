@@ -46,8 +46,6 @@ export default async function AppSidebar() {
     );
   }
 
-
-
   return (
     <Sidebar className="sidebar">
       <SidebarHeader className="p-6 flex justify-center">

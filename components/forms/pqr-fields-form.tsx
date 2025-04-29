@@ -176,23 +176,44 @@ export default function PqrFieldsForm({
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <FormField
-                          control={form.control}
-                          name={`customFields.${index}.required`}
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel>Campo Requerido</FormLabel>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
+                        <div className="flex items-center space-x-4">
+                          <FormField
+                            control={form.control}
+                            name={`customFields.${index}.isForAnonymous`}
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel className="cursor-pointer">Solo para PQR Anónimas</FormLabel>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`customFields.${index}.required`}
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel className="cursor-pointer">Campo Requerido</FormLabel>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
                         <Button
                           type="button"
                           variant="ghost"

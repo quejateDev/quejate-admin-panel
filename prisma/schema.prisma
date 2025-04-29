@@ -219,6 +219,7 @@ model CustomField {
   placeholder String?
   required    Boolean   @default(false)
   configId    String
+  isForAnonymous Boolean @default(false)
   config      PQRConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
   PQRS        PQRS[]    @relation("CustomFieldToPQRS")
 

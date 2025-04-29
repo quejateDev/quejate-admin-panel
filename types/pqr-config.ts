@@ -22,6 +22,7 @@ export const PqrFieldsSchema = z.object({
       required: z.boolean(),
       type: z.enum(["email", "phone", "text", "file", "number", "textarea"]),
       placeholder: z.string().optional(),
+      isForAnonymous: z.boolean().default(false),
     })
   ),
 });
@@ -35,4 +36,5 @@ export type CustomField = {
   required: boolean;
   type: "email" | "phone" | "text" | "file" | "number" | "textarea";
   placeholder?: string;
+  isForAnonymous?: boolean;
 };
