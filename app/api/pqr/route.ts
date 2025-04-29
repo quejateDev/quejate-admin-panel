@@ -26,6 +26,8 @@ export async function GET(
       ...Object.fromEntries(searchParams),
     });
 
+  const { role } = decoded;
+
   try {
     const pqrs = await prisma.pQRS.findMany({
       where: {
@@ -39,6 +41,7 @@ export async function GET(
         },
         status: status || undefined,
         type: type || undefined,
+        assignedToId: role !== "EMPLOYEE`" ? undefined : decoded.id,
       },
       orderBy: {
         createdAt: "desc",

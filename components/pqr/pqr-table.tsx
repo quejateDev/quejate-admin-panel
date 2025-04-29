@@ -24,6 +24,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { useEmployees } from "@/hooks/useEmployees";
 import { GetPQRsDTO } from "@/dto/pqr.dto";
+import useAuthStore from "@/store/useAuthStore";
 interface PQRTableProps {
   assignPQR: any;
   pqrs: GetPQRsDTO[];
@@ -46,6 +47,7 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
   );
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const { user } = useAuthStore();
 
   const { data: employees } = useEmployees();
 
@@ -136,7 +138,10 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
       cell: ({ row }) => getRemainingTimeBadge(row.original.createdAt),
       enableSorting: true,
     },
-    {
+  ];
+
+  user?.role !== "EMPLOYEE" &&
+    columns.push({
       id: "assignedTo",
       header: "Asignado a",
       accessorFn: (row) => row.assignedTo,
@@ -171,8 +176,7 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
           </Select>
         );
       },
-    },
-  ];
+    });
 
   const actions = {
     custom: [

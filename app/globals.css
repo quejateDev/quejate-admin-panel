@@ -35,7 +35,7 @@
     --radius: 0.75rem;
 
     /* Sidebar específico */
-    --sidebar-width: 280px;
+    --sidebar-width: 200px;
     --sidebar-background: 238 48% 54%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted: 237 40% 80%;
