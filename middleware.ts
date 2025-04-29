@@ -9,11 +9,17 @@ export async function middleware(request: NextRequest) {
 
   const token = authParsed?.state?.token
 
+  const headers = new Headers(request.headers);
+  headers.set("x-current-path", request.nextUrl.pathname);
   const path = request.nextUrl.pathname;
 
   // any multimdia extension
   if (path.includes(".")) {
     return NextResponse.next();
+  }
+
+  if (path === "/") {
+    return NextResponse.redirect(new URL('/pqr', request.url))
   }
 
   if (path !== "/login") {    
@@ -32,7 +38,7 @@ export async function middleware(request: NextRequest) {
     }
   } 
 
-  return NextResponse.next();
+  return NextResponse.next({ headers });
 }
 
 // Configure paths that trigger the middleware

@@ -1,7 +1,7 @@
 "use client";
 
-import { getUserService } from "@/services/api/User.service";
-import { useState } from "react";
+import { getUserService, updateUserService } from "@/services/api/User.service";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface UserProfile {
   id: string;
@@ -30,29 +30,34 @@ interface UserProfile {
   };
 }
 
-export default function useUser() {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export default function useUser(id: string) {
+  const queryClient = useQueryClient();
 
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["user", id],
+    queryFn: () => getUserService(id),
+  });
 
-  async function fetchUser(id: string) {
-    try {
-      const user = await getUserService(id);
-      setUser(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-    }
-  }
-  const clearUser = () => {
-    setUser(null);
-    setIsLoading(true);
-  };
+  const { mutate: updateUser } = useMutation({
+    mutationFn: (user: Partial<UserProfile>) => updateUserService(id, user),
+    onMutate: async (user: Partial<UserProfile>) => {
+      await queryClient.cancelQueries({ queryKey: ["user", id] });
+      const previousUser = queryClient.getQueryData<UserProfile>(["user", id]);
+      queryClient.setQueryData(["user", id], user);
+      return { previousUser };
+    },
+    onError: (error, user, context) => {
+      queryClient.setQueryData(["user", id], context?.previousUser);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user", id] });
+    },
+  });
 
   return {
-    fetchUser,
-    user,
-    setUser,
+    data,
     isLoading,
-    clearUser,
+    error,
+    updateUser,
   };
 }

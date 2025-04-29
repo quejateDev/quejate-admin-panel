@@ -50,7 +50,6 @@ export async function PATCH(
   try {
     const body = await req.json();
 
-    console.log("body", body);
     let newPassword = undefined;
 
     if (body.password) {

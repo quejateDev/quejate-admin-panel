@@ -5,8 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserPlus, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useDepartments } from "@/hooks/useDeparments";
 
 export default function NewEmployeePage() {
+  const { data: departments, isLoading: isDepartmentsLoading } =
+    useDepartments({ entityId: "" });
+
   return (
     <div className="py-6 px-4 md:px-6 flex flex-col gap-6">
       <Link href="/users">
@@ -27,7 +31,7 @@ export default function NewEmployeePage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <EmployeeForm mode="create" />
+          <EmployeeForm mode="create" departments={departments || []} />
         </CardContent>
       </Card>
     </div>

@@ -1,5 +1,11 @@
 import axios from "axios";
 
+interface UserProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 export const Client = axios.create({
   baseURL: "/api",
   headers: {
@@ -15,5 +21,10 @@ export async function getUsersService() {
 
 export async function getUserService(id: string) {
   const response = await Client.get(`/users/${id}`);
+  return response.data;
+}
+
+export async function updateUserService(id: string, user: Partial<UserProfile>) {
+  const response = await Client.patch(`/users/${id}`, user);
   return response.data;
 }

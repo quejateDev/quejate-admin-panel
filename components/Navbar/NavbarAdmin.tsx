@@ -14,7 +14,6 @@ import {
 import useAuthStore from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 
 export function NavbarAdmin() {
   const { user, logout } = useAuthStore();
@@ -59,7 +58,9 @@ export function NavbarAdmin() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Perfil</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/profile/${user?.id}`}>Perfil</Link>
+              </DropdownMenuItem>
               <DropdownMenuItem>Configuración</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

@@ -30,7 +30,7 @@ export function ChangePasswordDialog({ userId }: ChangePasswordDialogProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/employees/${userId}`, {
+      const response = await fetch(`/api/users/${userId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

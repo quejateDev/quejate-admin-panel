@@ -24,9 +24,9 @@ export default function Login() {
   useEffect(() => {
     if (user) {
       if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
-        router.push("/");
+        router.push("/pqr");
       } else {
-        router.push("/dashboard");
+        router.push("/pqr");
       }
     }
   }, [user]);

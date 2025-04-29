@@ -269,11 +269,11 @@ export function EmployeeForm({
             type="button"
             variant="outline"
             onClick={() => router.push("/users")}
-            disabled={false}
+            disabled={isLoading || isUpdating}
           >
             Cancelar
           </Button>
-          <Button type="submit" disabled={false}>
+          <Button type="submit" disabled={isLoading || isUpdating}>
             {mode === "create" ? "Crear" : "Actualizar"}
           </Button>
         </div>
