@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { createDepartmentService } from "@/services/api/Department.service";
-import { getEntities } from "@/services/api/entity.service";
+import { getEntities } from "@/services/api/organization.service";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Entity } from "@prisma/client";

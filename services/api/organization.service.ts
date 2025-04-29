@@ -2,10 +2,10 @@ import { Entity, Category } from "@prisma/client";
 import axios from "axios";
 
 const Client = axios.create({
-  baseURL: '/api',
+  baseURL: "/api",
   headers: {
-    'Content-Type': 'application/json',
-    'cache-control': 'no-store',
+    "Content-Type": "application/json",
+    "cache-control": "no-store",
   },
   timeout: 10000,
 });
@@ -28,7 +28,10 @@ type UpdateEntityDTO = {
   municipalityId: string;
 };
 
-export async function getEntities(params?: { departmentId?: string; municipalityId?: string }) {
+export async function getOrganizationsService(params?: {
+  departmentId?: string;
+  municipalityId?: string;
+}): Promise<Entity[]> {
   const queryParams = new URLSearchParams();
 
   if (params?.municipalityId) {
@@ -37,7 +40,9 @@ export async function getEntities(params?: { departmentId?: string; municipality
     queryParams.append("departmentId", params.departmentId);
   }
 
-  const url = queryParams.toString() ? `/entities?${queryParams.toString()}` : "/entities";
+  const url = queryParams.toString()
+    ? `/entities?${queryParams.toString()}`
+    : "/entities";
 
   const response = await Client.get(url);
   return response.data;
@@ -53,7 +58,10 @@ export async function createEntity(data: CreateEntityDTO): Promise<Entity> {
   return response.data;
 }
 
-export async function updateEntity(id: string, data: UpdateEntityDTO): Promise<Entity> {
+export async function updateEntity(
+  id: string,
+  data: UpdateEntityDTO
+): Promise<Entity> {
   const response = await Client.put(`/entities/${id}`, data);
   return response.data;
 }

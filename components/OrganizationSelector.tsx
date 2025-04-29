@@ -1,6 +1,5 @@
 "use client";
 
-import { Entity } from "@prisma/client";
 import {
   Select,
   SelectContent,
@@ -9,31 +8,30 @@ import {
   SelectValue,
 } from "./ui/select";
 import useOrganizationStore from "@/store/useOrganizationStore";
+import useOrganizations from "@/hooks/useOrganizations";
 
 export default function OrganizationSelector({
-  entities,
   userOrganizationId,
 }: {
-  entities: Entity[];
   userOrganizationId: string;
 }) {
   const { entity, setEntity } = useOrganizationStore();
-
+  const { data: organizations } = useOrganizations();
   return (
     <div className="w-full py-2">
       <Select
         value={entity?.id ?? userOrganizationId}
         onValueChange={(value) =>
-          setEntity(entities.find((e) => e.id === value)!)
+          setEntity(organizations?.find((e) => e.id === value)!)
         }
       >
-        <SelectTrigger className="w-full bg-white text-black border rounded-sm shadow-md">
+        <SelectTrigger className="w-full bg-white text-black border rounded-sm shad">
           <SelectValue placeholder="Selecciona una organización" />
         </SelectTrigger>
         <SelectContent>
-          {entities.map((entity) => (
-            <SelectItem key={entity.id} value={entity.id}>
-              {entity.name}
+          {organizations?.map((organization) => (
+            <SelectItem key={organization.id} value={organization.id}>
+              {organization.name}
             </SelectItem>
           ))}
         </SelectContent>
