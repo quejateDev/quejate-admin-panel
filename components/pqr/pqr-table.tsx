@@ -21,38 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-} from "@tanstack/react-table";
-import { EntityService } from "@/services/api/entity.service";
+import { ColumnDef } from "@tanstack/react-table";
 import { useEmployees } from "@/hooks/useEmployees";
-
+import { GetPQRsDTO } from "@/dto/pqr.dto";
 interface PQRTableProps {
   assignPQR: any;
-  pqrs: (PQRS & {
-    department: {
-      id: string;
-      name: string;
-      entity: {
-        id: string;
-        name: string;
-      };
-    };
-    creator: {
-      id: string;
-      firstName: string;
-      lastName: string;
-      email: string;
-    } | null;
-    assignedTo: {
-      id: string;
-      firstName: string;
-      lastName: string;
-      email: string;
-    } | null;
-  })[];
+  pqrs: GetPQRsDTO[];
 }
 
 type PQRTableItem = PQRTableProps["pqrs"][number];
@@ -169,7 +143,6 @@ export function PQRTable({ pqrs, assignPQR }: PQRTableProps) {
         const pqr = row.original;
 
         // Filter employees by department
-        const departmentEmployees = employees;
         const assignedTo = employees?.find((e) => e.id === pqr.assignedTo?.id);
 
         return (
@@ -188,7 +161,7 @@ export function PQRTable({ pqrs, assignPQR }: PQRTableProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="unassigned">Sin asignar</SelectItem>
-              {departmentEmployees?.map((employee) => (
+              {employees?.map((employee) => (
                 <SelectItem key={employee.id} value={employee.id}>
                   {employee.firstName} {employee.lastName}
                 </SelectItem>
@@ -248,6 +221,29 @@ export function PQRTable({ pqrs, assignPQR }: PQRTableProps) {
 
   return (
     <div className="space-y-4">
+      <Filters />
+      <DataTable
+        data={paginatedData}
+        columns={columns}
+        actions={actions}
+        emptyMessage="No se encontraron PQRSD"
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={setColumnVisibility}
+        pageCount={totalPages}
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        onPageIndexChange={setPageIndex}
+        onPageSizeChange={(newPageSize) => {
+          setPageSize(newPageSize);
+          setPageIndex(0);
+        }}
+        enableSorting={true}
+      />
+    </div>
+  );
+
+  function Filters() {
+    return (
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <Input
           placeholder="Buscar PQRSD..."
@@ -329,24 +325,6 @@ export function PQRTable({ pqrs, assignPQR }: PQRTableProps) {
           </DropdownMenu>
         </div>
       </div>
-
-      <DataTable
-        data={paginatedData}
-        columns={columns}
-        actions={actions}
-        emptyMessage="No se encontraron PQRSD"
-        columnVisibility={columnVisibility}
-        onColumnVisibilityChange={setColumnVisibility}
-        pageCount={totalPages}
-        pageIndex={pageIndex}
-        pageSize={pageSize}
-        onPageIndexChange={setPageIndex}
-        onPageSizeChange={(newPageSize) => {
-          setPageSize(newPageSize);
-          setPageIndex(0);
-        }}
-        enableSorting={true}
-      />
-    </div>
-  );
+    );
+  }
 }

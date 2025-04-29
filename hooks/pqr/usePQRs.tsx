@@ -1,7 +1,7 @@
 "use client";
 
 import { assignPQRS, getPQRS } from "@/services/api/pqr.service";
-import { getPQRParams } from "@/dto/pqr.dto";
+import { getPQRParams, GetPQRsDTO } from "@/dto/pqr.dto";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PQRS } from "@prisma/client";
 
@@ -11,6 +11,9 @@ export function usePQRS(params: Partial<getPQRParams>) {
   const pqrsQuery = useQuery({
     queryKey: ["pqrs", params],
     queryFn: () => getPQRS(params),
+    // refetch the data every minute
+    refetchInterval: 1000 * 60 * 1,
+    refetchIntervalInBackground: true,
   });
 
   const assignPQR = useMutation({
@@ -22,13 +25,11 @@ export function usePQRS(params: Partial<getPQRParams>) {
       assignedToId: string | null;
     }) => assignPQRS(pqrId, assignedToId),
     onMutate: async ({ pqrId, assignedToId }) => {
-      console.log("pqrId", pqrId);
-      console.log("assignedToId", assignedToId);
       await queryClient.cancelQueries({ queryKey: ["pqrs", params] });
 
-      const previousPQRS = queryClient.getQueryData<PQRS[]>(["pqrs", params]);
+      const previousPQRS = queryClient.getQueryData<GetPQRsDTO[]>(["pqrs", params]);
 
-      queryClient.setQueryData(["pqrs", params], (old: PQRS[] = []) =>
+      queryClient.setQueryData(["pqrs", params], (old: GetPQRsDTO[] = []) =>
         old.map((p) => (p.id === pqrId ? { ...p, assignedToId } : p))
       );
 
