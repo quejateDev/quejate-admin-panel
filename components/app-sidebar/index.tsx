@@ -48,11 +48,15 @@ export default async function AppSidebar() {
     );
   }
 
+  console.log("decoded", decoded);
+
   const entities = await prisma.entity.findMany({
     where: {
       id: role === UserRole.SUPER_ADMIN ? undefined : decoded.entityId,
     },
   });
+
+  console.log("entities", entities);
 
   return (
     <Sidebar className="sidebar">
