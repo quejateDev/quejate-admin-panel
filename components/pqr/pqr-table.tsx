@@ -24,6 +24,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { useEmployees } from "@/hooks/employee/useEmployees";
 import { GetPQRsDTO } from "@/dto/pqr.dto";
+import useOrganizationStore from "@/store/useOrganizationStore";
 import useAuthStore from "@/store/useAuthStore";
 interface PQRTableProps {
   assignPQR: any;
@@ -47,9 +48,10 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
   );
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const { user } = useAuthStore();
 
-  const { data: employees } = useEmployees();
+  const { entity } = useOrganizationStore();
+  const { user } = useAuthStore();
+  const { data: employees } = useEmployees(entity?.id ?? "");
 
   function getRemainingTimeBadge(createdAt: Date) {
     const RESPONSE_LIMIT_DAYS = 15;
@@ -138,42 +140,49 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
       cell: ({ row }) => getRemainingTimeBadge(row.original.createdAt),
       enableSorting: true,
     },
-    ...(user?.role !== "EMPLOYEE" ? [{
-      id: "assignedTo",
-      header: "Asignado a",
-      accessorFn: (row: PQRTableItem) => row.assignedTo,
-      cell: ({ row }: { row: { original: PQRTableItem } }) => {
-        const pqr = row.original;
-        const assignedTo = employees?.find(
-          (e) => e.id === pqr.assignedTo?.id
-        );
+    ...(user?.role !== "EMPLOYEE"
+      ? [
+          {
+            id: "assignedTo",
+            header: "Asignado a",
+            accessorFn: (row: PQRTableItem) => row.assignedTo,
+            cell: ({ row }: { row: { original: PQRTableItem } }) => {
+              const pqr = row.original;
+              const assignedTo = employees?.find(
+                (e) => e.id === pqr.assignedTo?.id
+              );
 
-        return (
-          <Select
-            value={pqr.assignedTo?.id || "unassigned"}
-            onValueChange={(value) =>
-              handleAssignment(pqr.id, value === "unassigned" ? null : value)
-            }
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Seleccionar empleado">
-                {assignedTo?.firstName && assignedTo?.lastName
-                  ? `${assignedTo?.firstName} ${assignedTo?.lastName}`
-                  : "Sin asignar"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="unassigned">Sin asignar</SelectItem>
-              {employees?.map((employee) => (
-                <SelectItem key={employee.id} value={employee.id}>
-                  {employee.firstName} {employee.lastName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        );
-      },
-    }] : []),
+              return (
+                <Select
+                  value={pqr.assignedTo?.id || "unassigned"}
+                  onValueChange={(value) =>
+                    handleAssignment(
+                      pqr.id,
+                      value === "unassigned" ? null : value
+                    )
+                  }
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Seleccionar empleado">
+                      {assignedTo?.firstName && assignedTo?.lastName
+                        ? `${assignedTo?.firstName} ${assignedTo?.lastName}`
+                        : "Sin asignar"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Sin asignar</SelectItem>
+                    {employees?.map((employee) => (
+                      <SelectItem key={employee.id} value={employee.id}>
+                        {employee.firstName} {employee.lastName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              );
+            },
+          },
+        ]
+      : []),
   ];
 
   const actions = {

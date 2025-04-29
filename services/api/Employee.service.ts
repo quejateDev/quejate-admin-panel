@@ -17,6 +17,8 @@ export async function createEmployeeService(employee: {
   email: string;
   phone: string;
   role: string;
+  entityId: string;
+  departmentId: string;
 }) {
   const response = await Client.post("/users", employee);
   return response.data;

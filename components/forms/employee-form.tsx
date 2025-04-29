@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import useOrganizationStore from "@/store/useOrganizationStore";
 
 interface EmployeeFormProps {
   initialData?: {
@@ -46,8 +47,9 @@ export function EmployeeForm({
   departments,
 }: EmployeeFormProps) {
   const router = useRouter();
-  const { user } = useAuthStore();
-  const { createEmployee, isLoading } = useEmployees();
+
+  const { entity } = useOrganizationStore();
+  const { createEmployee, isLoading } = useEmployees(entity?.id ?? "");
   const { updateEmployee, isLoading: isUpdating } = useEmployeeById(
     initialData?.id || ""
   );
@@ -81,15 +83,12 @@ export function EmployeeForm({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if (mode === "create") {
-        if (!user?.entity?.id) throw new Error("Entity ID is required");
-
         await createEmployee({
           ...values,
           lastName: values.lastName,
           firstName: values.firstName,
           email: values.email,
           role: values.role,
-          entityId: user.entity.id,
           phone: values.phone || "",
           password: values.password || "",
           departmentId: values.departmentId || "",

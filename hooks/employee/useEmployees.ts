@@ -31,9 +31,11 @@ export function useEmployees(entityId: string) {
       email: string;
       phone: string;
       role: string;
-      entityId: string;
       departmentId: string;
-    }) => createEmployeeService(employee),
+    }) => createEmployeeService({
+      ...employee,
+      entityId,
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
     },
