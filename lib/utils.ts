@@ -44,19 +44,25 @@ interface JWTPayload {
   entityId: string;
 }
 
-export async function verifyToken(token: string): Promise<JWTPayload | null> {
+export function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
     const secret = new TextEncoder().encode(JWT_SECRET);
-    const { payload } = await jwtVerify<JWTPayload>(token, secret);
-    return payload;
+    return jwtVerify<JWTPayload>(token, secret).then(({ payload }) => {
+      return payload;
+    });
   } catch (error) {
     console.error("Token verification error:", error);
-    return null;
+    return Promise.resolve(null);
   }
 }
 
-export async function getCookie(cookieName: string) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(cookieName);
-  return token?.value;
+export function getCookie(cookieName: string) {
+  const cookieStore = cookies();
+
+  let token: string | undefined;
+
+  return cookieStore.then((cookieStore) => {
+    token = cookieStore.get(cookieName)?.value;
+    return token;
+  });
 }
