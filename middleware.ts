@@ -1,5 +1,7 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { getCookie, verifyToken } from "./lib/utils";
+import { UserRole } from "@prisma/client";
 // import { getCookie, verifyToken } from '@/lib/utils'
 // import { UserRole } from '@prisma/client'
 
@@ -7,7 +9,29 @@ export async function middleware(request: NextRequest) {
   // const authStorage = await getCookie('auth-storage')
   // const authParsed = authStorage ? JSON.parse(authStorage) : null
 
-  // const token = authParsed?.state?.token
+  if (request.nextUrl.pathname === "/login") return NextResponse.next();
+
+  const token = await getCookie("token");
+
+  if (!token) return NextResponse.redirect(new URL("/login", request.url));
+
+  let decoded: any;
+
+  try {
+    decoded = await verifyToken(token);
+
+    console.log("decoded", decoded);
+  } catch (error) {
+    console.error("Error verifying token:", error);
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  if (!decoded) return NextResponse.redirect(new URL("/login", request.url));
+
+  if (decoded?.role === UserRole.CLIENT)
+    return NextResponse.redirect(new URL("/login", request.url));
+
+  return NextResponse.next();
 
   // const path = request.nextUrl.pathname;
 
@@ -20,7 +44,7 @@ export async function middleware(request: NextRequest) {
   //   return NextResponse.redirect(new URL('/pqr', request.url))
   // }
 
-  // if (path !== "/login") {    
+  // if (path !== "/login") {
   //   if (!token) {
   //     return NextResponse.redirect(new URL('/login', request.url))
   //   }
@@ -34,7 +58,7 @@ export async function middleware(request: NextRequest) {
   //   if (decodedToken?.role === UserRole.CLIENT) {
   //     return NextResponse.redirect(new URL('/login', request.url))
   //   }
-  // } 
+  // }
 
   return NextResponse.next();
 }
@@ -53,9 +77,9 @@ export const config = {
       source:
         "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
       // missing: [
-        // { type: "header", key: "next-router-prefetch" },
-        // { type: "header", key: "purpose", value: "prefetch" },
+      // { type: "header", key: "next-router-prefetch" },
+      // { type: "header", key: "purpose", value: "prefetch" },
       // ],
-    }
+    },
   ],
 };

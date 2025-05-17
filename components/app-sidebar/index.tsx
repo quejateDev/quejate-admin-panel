@@ -13,16 +13,30 @@ import { getCookie } from "@/lib/utils";
 import { verifyToken } from "@/lib/utils";
 import OrganizationSelector from "@/components/OrganizationSelector";
 
+interface CustomJWTPayload {
+  id: string;
+  role: string;
+  email: string;
+  entityId: string;
+}
+
 export default async function AppSidebar() {
   const token = await getCookie("token");
 
   if (!token) redirect("/login");
 
-  const decoded = await verifyToken(token);
+  let decoded: CustomJWTPayload | null = null;
 
-  if (!decoded) redirect("/login");
+  try {
+    decoded = await verifyToken(token);
+  
+    // if (!decoded) redirect("/login");
+  } catch (error) {
+    console.error("Token verification error:", error);
+    // redirect("/login");
+  }
 
-  const { role } = decoded;
+  const { role } = decoded || { role: "" };
 
   const menuItems = [
     {
@@ -61,7 +75,7 @@ export default async function AppSidebar() {
       <SidebarHeader className="py-6 flex flex-col items-center gap-6 justify-center">
         <img src="/logo.png" alt="Logo" className="w-32 brightness-0 invert" />
 
-        <OrganizationSelector userOrganizationId={decoded.entityId} />
+        <OrganizationSelector userOrganizationId={decoded?.entityId || ""} />
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4">

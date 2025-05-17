@@ -21,15 +21,15 @@ export default function Login() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
-        router.push("/pqr");
-      } else {
-        router.push("/pqr");
-      }
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (user) {
+  //     if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
+  //       router.push("/pqr");
+  //     } else {
+  //       router.push("/pqr");
+  //     }
+  //   }
+  // }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +77,8 @@ export default function Login() {
           description: "Bienvenido de nuevo!",
           variant: "default",
         });
+
+        router.push("/pqr");
       } else if (response.status === 403) {
         // Show verification modal if email is not verified
         setShowVerificationModal(true);
