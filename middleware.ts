@@ -4,24 +4,24 @@ import { getCookie, verifyToken } from "./lib/utils";
 import { UserRole } from "@prisma/client";
 
 export async function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname === "/login") return NextResponse.next();
+  // if (request.nextUrl.pathname === "/login") return NextResponse.next();
 
-  const token = await getCookie("token");
-  if (!token) return NextResponse.redirect(new URL("/login", request.url));
+  // const token = await getCookie("token");
+  // if (!token) return NextResponse.redirect(new URL("/login", request.url));
 
-  let decoded: any;
+  // let decoded: any;
 
-  try {
-    decoded = await verifyToken(token);
-  } catch (error) {
-    console.error("Error verifying token:", error);
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
+  // try {
+  //   decoded = await verifyToken(token);
+  // } catch (error) {
+  //   console.error("Error verifying token:", error);
+  //   return NextResponse.redirect(new URL("/login", request.url));
+  // }
 
-  if (!decoded) return NextResponse.redirect(new URL("/login", request.url));
+  // if (!decoded) return NextResponse.redirect(new URL("/login", request.url));
 
-  if (decoded?.role === UserRole.CLIENT)
-    return NextResponse.redirect(new URL("/login", request.url));
+  // if (decoded?.role === UserRole.CLIENT)
+  //   return NextResponse.redirect(new URL("/login", request.url));
 
   return NextResponse.next();
 }
