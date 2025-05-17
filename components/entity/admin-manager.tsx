@@ -67,7 +67,7 @@ export function AdminManager({ entityId }: AdminManagerProps) {
   const { toast } = useToast();
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(`/api/entities/${entityId}/users`);
+      const response = await axios.get(`/api/entities/${entityId}/employees`);
       setUsers(response.data);
     } catch (error) {
       toast({

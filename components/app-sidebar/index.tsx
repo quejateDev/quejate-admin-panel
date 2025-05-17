@@ -94,7 +94,11 @@ export default async function AppSidebar() {
               <nav className="space-y-1">
                 {SUPER_ADMIN_MENU_ITEMS.map((item) => {
                   return (
-                    <Link href={item.url} className="sidebar-link">
+                    <Link
+                      key={item.url}
+                      href={item.url}
+                      className="sidebar-link"
+                    >
                       <item.icon className="h-5 w-5" />
                       <span>{item.title}</span>
                     </Link>

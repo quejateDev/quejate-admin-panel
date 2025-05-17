@@ -8,6 +8,18 @@ export async function GET(request: Request, { params }: any) {
       where: { id },
       include: {
         category: true,
+        users: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
 
