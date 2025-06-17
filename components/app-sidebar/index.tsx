@@ -12,6 +12,7 @@ import LogoutButton from "@/components/buttons/logoutButton";
 import { getCookie } from "@/lib/utils";
 import { verifyToken } from "@/lib/utils";
 import OrganizationSelector from "@/components/OrganizationSelector";
+import { Logo } from "../Logo";
 
 interface CustomJWTPayload {
   id: string;
@@ -61,7 +62,7 @@ export default async function AppSidebar() {
 
   const SUPER_ADMIN_MENU_ITEMS = [
     {
-      title: "Organizaciones",
+      title: "Entidades",
       url: "/entity",
       icon: Building2,
     },
@@ -78,7 +79,7 @@ export default async function AppSidebar() {
   return (
     <Sidebar className="sidebar">
       <SidebarHeader className="py-6 flex flex-col items-center gap-6 justify-center">
-        <img src="/logo.png" alt="Logo" className="w-32 brightness-0 invert" />
+        <Logo />
 
         <OrganizationSelector userOrganizationId={decoded?.entityId || ""} />
       </SidebarHeader>
@@ -100,7 +101,7 @@ export default async function AppSidebar() {
                       className="sidebar-link"
                     >
                       <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
+                      <span className="text-sm">{item.title}</span>
                     </Link>
                   );
                 })}
@@ -124,7 +125,7 @@ export default async function AppSidebar() {
                     className={`sidebar-link ${isActive ? "active" : ""}`}
                   >
                     <item.icon className="h-5 w-5" />
-                    <span>{item.title}</span>
+                    <span className="text-sm">{item.title}</span>
                   </Link>
                 );
               })}

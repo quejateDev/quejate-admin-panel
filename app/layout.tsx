@@ -1,16 +1,21 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Sora, Be_Vietnam_Pro } from "next/font/google";
 import { Providers } from "./providers";
 import { Metadata } from "next";
 import "./globals.css"
 
-const geistSans = Geist({
+const sora = Sora({
   subsets: ["latin"],
-  variable: "--font-geist-sans",
+  variable: "--font-sora",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
+
+const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin"],
-  variable: "--font-geist-mono",
+  variable: "--font-be-vietnam-pro",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 
@@ -25,11 +30,12 @@ export default function RootLayout({
     children: React.ReactNode;
   }) {
     return (
-      <html lang="en">
+      <html lang="es" className={`${sora.variable} ${beVietnamPro.variable}`}>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <link rel="icon" href="/IsotipoVector.svg" type="image/svg+xml" />
         </head>
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <body className="font-sans antialiased"> 
           <Providers>
             {children}
           </Providers>

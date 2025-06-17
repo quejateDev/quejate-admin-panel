@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import useAuthStore from "@/store/useAuthStore";
 import { Loader2, User } from "lucide-react";
 import { ChangePasswordDialog } from "@/components/forms/change-password-dialog";
-import axios from "axios";
 import useUser from "@/hooks/useUser";
 
 interface UserProfile {
@@ -121,7 +120,7 @@ export default function ProfilePage() {
 
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Guardar Cambios
+                Guardar cambios
               </Button>
             </form>
           </CardContent>

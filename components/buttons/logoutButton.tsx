@@ -16,7 +16,7 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="sidebar-link w-full justify-center text-red-100 hover:bg-red-500/20"
+      className="sidebar-link w-full justify-center"
     >
       <LogOut className="h-5 w-5" />
       <span>Cerrar Sesión</span>

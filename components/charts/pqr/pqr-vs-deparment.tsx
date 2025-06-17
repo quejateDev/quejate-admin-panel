@@ -7,7 +7,6 @@ import {
   CardContent,
   CardDescription,
 } from "@/components/ui/card";
-import { ChartContainer } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CHART_COLORS } from "@/lib/config";
 import {
@@ -77,9 +76,9 @@ export default function PqrVsDepartmentChart({
             <Skeleton className="w-full h-[20px]" />
           ) : (
             <>
-              <CardTitle>PQRSD por departamento</CardTitle>
+              <CardTitle>PQRSD por Área</CardTitle>
               <CardDescription>
-                Distribución de PQRSD por departamento en gráfico de barras
+                Distribución de PQRSD por área en gráfico de barras
               </CardDescription>
             </>
           )}
@@ -132,7 +131,7 @@ export default function PqrVsDepartmentChart({
             <>
               <CardTitle>Distribución porcentual</CardTitle>
               <CardDescription>
-                Distribución de porcentual de PQRSD por departamento
+                Distribución de porcentual de PQRSD por àrea
               </CardDescription>
             </>
           )}
