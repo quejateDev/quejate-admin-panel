@@ -73,6 +73,7 @@ model Entity {
   Municipality      Municipality?       @relation(fields: [municipalityId], references: [id], onUpdate: NoAction)
   EntityConsecutive EntityConsecutive[]
   EntityHasUser     EntityHasUser[]
+  PQRConfig         PQRConfig?
   users             User[]
 
   @@index([categoryId])
@@ -103,13 +104,15 @@ model EntityHasUser {
 }
 
 model Category {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  imageUrl    String?
-  entities    Entity[]
+  id                String           @id @default(uuid())
+  name              String           @unique
+  description       String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  imageUrl          String?
+  oversightEntityId String?
+  OversightEntity   OversightEntity? @relation(fields: [oversightEntityId], references: [id])
+  entities          Entity[]
 }
 
 model PQRS {
@@ -208,8 +211,10 @@ model PQRConfig {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   departmentId    String        @unique
+  entityId        String?       @unique
   customFields    CustomField[]
   department      Department    @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  Entity          Entity?       @relation(fields: [entityId], references: [id], onDelete: Cascade)
 }
 
 model CustomField {
@@ -290,6 +295,17 @@ model PQRStatusHistory {
 
   @@index([pqrId])
   @@index([userId])
+}
+
+model OversightEntity {
+  id          String     @id
+  name        String     @unique
+  email       String
+  phone       String?
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  Category    Category[]
 }
 
 enum UserRole {
