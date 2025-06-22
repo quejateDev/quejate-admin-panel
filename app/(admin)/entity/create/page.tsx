@@ -286,7 +286,7 @@ export default function CreateEntityPage() {
               <Input
                 id="image"
                 type="file"
-                accept="image/*"
+                accept="image/*, .svg"
                 onChange={handleImageChange}
                 className="cursor-pointer"
               />
