@@ -75,11 +75,11 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/") && file.type !== "application/json") {
       toast({
         title: "Error",
-        description: "Solo se permiten imágenes",
+        description:
+          "Solo se permiten imágenes (PNG, JPEG, etc.) o archivos JSON",
         variant: "destructive",
       });
       return;
@@ -104,7 +104,7 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setIsSaving(true); 
+      setIsSaving(true);
       const url = category ? `/api/category/${category.id}` : "/api/category";
       const method = category ? "PUT" : "POST";
 
@@ -131,7 +131,7 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
         variant: "destructive",
       });
     } finally {
-        setIsSaving(false); // Desactivar estado de guardado
+      setIsSaving(false); // Desactivar estado de guardado
     }
   };
 
@@ -180,7 +180,7 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
                 <div className="flex flex-col gap-4">
                   <Input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.json"
                     onChange={handleImageUpload}
                     disabled={isUploading}
                     className="cursor-pointer"
@@ -222,25 +222,25 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
             Cancelar
           </Button>
           <Button
-          type="submit"
-          disabled={isUploading || isSaving} // Deshabilitar si se está subiendo o guardando
-        >
-          {isUploading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Subiendo...
-            </>
-          ) : isSaving ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Guardando...
-            </>
-          ) : category ? (
-            "Actualizar"
-          ) : (
-            "Crear"
-          )}
-        </Button>
+            type="submit"
+            disabled={isUploading || isSaving} // Deshabilitar si se está subiendo o guardando
+          >
+            {isUploading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Subiendo...
+              </>
+            ) : isSaving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Guardando...
+              </>
+            ) : category ? (
+              "Actualizar"
+            ) : (
+              "Crear"
+            )}
+          </Button>
         </div>
       </form>
     </Form>

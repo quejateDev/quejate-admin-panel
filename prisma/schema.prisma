@@ -22,17 +22,17 @@ model User {
   verificationToken String?             @unique
   resetToken        String?
   resetTokenExpiry  DateTime?
-  isVerified        Boolean             @default(false)
-  profilePicture    String?
   entityId          String?
   isActive          Boolean             @default(true)
+  isVerified        Boolean             @default(false)
+  profilePicture    String?
   comments          Comment[]
   EmailVerification EmailVerification[]
   EntityHasUser     EntityHasUser[]
   Like              Like[]
   notifications     Notification[]
-  PQRS              PQRS[]
   assignedPQRS      PQRS[]              @relation("AssignedPQRS")
+  PQRS              PQRS[]
   statusHistory     PQRStatusHistory[]
   department        Department?         @relation(fields: [departmentId], references: [id])
   Entity            Entity?             @relation(fields: [entityId], references: [id])
@@ -73,6 +73,7 @@ model Entity {
   Municipality      Municipality?       @relation(fields: [municipalityId], references: [id], onUpdate: NoAction)
   EntityConsecutive EntityConsecutive[]
   EntityHasUser     EntityHasUser[]
+  PQRConfig         PQRConfig?
   users             User[]
 
   @@index([categoryId])
@@ -103,13 +104,15 @@ model EntityHasUser {
 }
 
 model Category {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  imageUrl    String?
-  entities    Entity[]
+  id                String           @id @default(uuid())
+  name              String           @unique
+  description       String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  imageUrl          String?
+  oversightEntityId String?
+  OversightEntity   OversightEntity? @relation(fields: [oversightEntityId], references: [id])
+  entities          Entity[]
 }
 
 model PQRS {
@@ -122,21 +125,21 @@ model PQRS {
   updatedAt         DateTime           @updatedAt
   creatorId         String?
   departmentId      String
-  assignedToId      String?
   private           Boolean            @default(true)
   consecutiveCode   String?
   description       String?
   subject           String?
+  assignedToId      String?
   attachments       Attachment[]
   comments          Comment[]
   customFieldValues CustomFieldValue[]
   likes             Like[]
   PQRCustomField    PQRCustomField[]
-  creator           User?              @relation(fields: [creatorId], references: [id])
   assignedTo        User?              @relation("AssignedPQRS", fields: [assignedToId], references: [id])
+  creator           User?              @relation(fields: [creatorId], references: [id])
   department        Department         @relation(fields: [departmentId], references: [id])
-  customFields      CustomField[]      @relation("CustomFieldToPQRS")
   statusHistory     PQRStatusHistory[]
+  customFields      CustomField[]      @relation("CustomFieldToPQRS")
 
   @@index([creatorId])
   @@index([departmentId])
@@ -208,20 +211,22 @@ model PQRConfig {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   departmentId    String        @unique
+  entityId        String?       @unique
   customFields    CustomField[]
   department      Department    @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  Entity          Entity?       @relation(fields: [entityId], references: [id], onDelete: Cascade)
 }
 
 model CustomField {
-  id          String    @id @default(uuid())
-  name        String
-  type        String
-  placeholder String?
-  required    Boolean   @default(false)
-  configId    String
-  isForAnonymous Boolean @default(false)
-  config      PQRConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
-  PQRS        PQRS[]    @relation("CustomFieldToPQRS")
+  id             String    @id @default(uuid())
+  name           String
+  type           String
+  placeholder    String?
+  required       Boolean   @default(false)
+  configId       String
+  isForAnonymous Boolean   @default(false)
+  config         PQRConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  PQRS           PQRS[]    @relation("CustomFieldToPQRS")
 
   @@index([configId])
 }
@@ -290,6 +295,17 @@ model PQRStatusHistory {
 
   @@index([pqrId])
   @@index([userId])
+}
+
+model OversightEntity {
+  id          String     @id
+  name        String     @unique
+  email       String
+  phone       String?
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  Category    Category[]
 }
 
 enum UserRole {
