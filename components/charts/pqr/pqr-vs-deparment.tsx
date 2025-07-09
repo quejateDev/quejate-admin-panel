@@ -27,7 +27,16 @@ interface PqrVsDepartmentChartProps {
   pqrs: Array<{
     department?: {
       name: string;
-    };
+      entity?: {
+        id: string;
+        name: string;
+      };
+      id: string;
+      entityId: string;
+      createdAt: Date;
+      updatedAt: Date;
+      description: string | null;
+    } | null;
   }>;
   isLoading: boolean;
 }

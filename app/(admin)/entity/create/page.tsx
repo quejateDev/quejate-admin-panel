@@ -41,6 +41,7 @@ export default function CreateEntityPage() {
     image: null as File | null,
     categoryId: "",
     email: "",
+    departmentId: "",
     municipalityId: "",
   });
 
@@ -117,6 +118,15 @@ export default function CreateEntityPage() {
       });
       return;
     }
+
+    if (!formData.departmentId) {
+      toast({
+        title: "Error",
+        description: "Por favor seleccione un departamento",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setLoading(true);
 
@@ -146,7 +156,8 @@ export default function CreateEntityPage() {
         categoryId: formData.categoryId,
         imageUrl: imageUrl,
         email: formData.email,
-        municipalityId: formData.municipalityId
+        departmentId: formData.departmentId,
+        municipalityId: formData.municipalityId || undefined
       });
 
       toast({
@@ -238,12 +249,12 @@ export default function CreateEntityPage() {
             </div>
              
             <div className="space-y-2">
-              <Label htmlFor="department">Departamento</Label>
+              <Label htmlFor="department">Departamento *</Label>
               <Select
-                value={selectedDepartment || ""}
+                value={formData.departmentId}
                 onValueChange={(value) => {
                   setSelectedDepartment(value);
-                  setFormData((prev) => ({ ...prev, municipalityId: "" })); 
+                  setFormData((prev) => ({ ...prev, departmentId: value, municipalityId: "" })); 
                 }}
               >
                 <SelectTrigger>
@@ -260,7 +271,7 @@ export default function CreateEntityPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="municipality">Ciudad / Municipio</Label>
+              <Label htmlFor="municipality">Ciudad / Municipio (Opcional)</Label>
               <Select
                 value={formData.municipalityId}
                 onValueChange={(value) =>

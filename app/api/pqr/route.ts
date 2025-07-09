@@ -143,6 +143,7 @@ export async function POST(req: NextRequest) {
           anonymous: body.isAnonymous || false,
           departmentId: body.departmentId,
           creatorId: body.creatorId,
+          entityId: body.entityId,
           customFieldValues: {
             create: body.customFields.map((field: any) => ({
               name: field.name,

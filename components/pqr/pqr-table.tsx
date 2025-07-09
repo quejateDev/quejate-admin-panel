@@ -73,7 +73,7 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
 
   // Get unique departments for filter
   const departments = Array.from(
-    new Set(pqrs.map((pqr) => pqr.department?.name).filter(Boolean))
+    new Set(pqrs.map((pqr) => pqr.department?.name).filter((name): name is string => Boolean(name)))
   );
 
   const handleAssignment = async (

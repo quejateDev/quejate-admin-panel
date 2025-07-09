@@ -29,7 +29,8 @@ const formSchema = z.object({
   imageUrl: z.string().url().optional(),
   categoryId: z.string().min(1, "Debe seleccionar una categoría"),
   email: z.string().email().optional().or(z.literal("")),
-  municipalityId: z.string().min(1, "Debe seleccionar un municipio"),
+  departmentId: z.string().min(1, "Debe seleccionar un departamento"),
+  municipalityId: z.string().optional(),
 })
 
 interface EntityFormProps {
@@ -53,6 +54,7 @@ export function EntityForm({ entity }: EntityFormProps) {
       imageUrl: entity?.imageUrl || "",
       categoryId: entity?.categoryId || "",
       email: entity?.email || "",
+      departmentId: "",
       municipalityId: entity?.municipalityId || "",
     },
   })
@@ -79,6 +81,7 @@ export function EntityForm({ entity }: EntityFormProps) {
             if (foundMunicipality) {
               setSelectedDepartment(department.id)
               setMunicipalities(municipalities)
+              form.setValue("departmentId", department.id)
               break
             }
           }
@@ -99,22 +102,16 @@ export function EntityForm({ entity }: EntityFormProps) {
   }, [entity])
 
   useEffect(() => {
-    if (!selectedDepartment) {
-      setMunicipalities([])
-      return
-    }
-
     const fetchMunicipalities = async () => {
-      try {
-        const municipalitiesData = await getMunicipalitiesByDepartment(selectedDepartment)
-        setMunicipalities(municipalitiesData)
-      } catch (error) {
-        console.error("Error fetching municipalities:", error)
-        toast({
-          title: "Error",
-          description: "Error al cargar los municipios",
-          variant: "destructive",
-        })
+      if (selectedDepartment) {
+        try {
+          const municipalities = await getMunicipalitiesByDepartment(selectedDepartment)
+          setMunicipalities(municipalities)
+        } catch (error) {
+          console.error("Error loading municipalities:", error)
+        }
+      } else {
+        setMunicipalities([])
       }
     }
 
@@ -235,34 +232,44 @@ export function EntityForm({ entity }: EntityFormProps) {
         />
 
         <div className="space-y-4">
-          <div>
-            <FormLabel>Departamento</FormLabel>
-            <Select
-              value={selectedDepartment || ""}
-              onValueChange={(value) => {
-                setSelectedDepartment(value)
-                form.setValue("municipalityId", "")
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccione un departamento" />
-              </SelectTrigger>
-              <SelectContent>
-                {departments.map((department) => (
-                  <SelectItem key={department.id} value={department.id}>
-                    {department.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <FormField
+            control={form.control}
+            name="departmentId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Departamento *</FormLabel>
+                <Select
+                  value={field.value}
+                  onValueChange={(value) => {
+                    field.onChange(value)
+                    setSelectedDepartment(value)
+                    form.setValue("municipalityId", "")
+                  }}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione un departamento" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {departments.map((department) => (
+                      <SelectItem key={department.id} value={department.id}>
+                        {department.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
             name="municipalityId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Municipio</FormLabel>
+                <FormLabel>Municipio (Opcional)</FormLabel>
                 <Select
                   disabled={!selectedDepartment}
                   onValueChange={field.onChange}
