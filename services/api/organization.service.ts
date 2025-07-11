@@ -16,7 +16,8 @@ export type CreateEntityDTO = {
   categoryId: string;
   imageUrl?: string;
   email: string;
-  municipalityId: string;
+  regionalDepartmentId: string;
+  municipalityId?: string;
 };
 
 type UpdateEntityDTO = {
@@ -25,6 +26,7 @@ type UpdateEntityDTO = {
   categoryId: string;
   imageUrl?: string;
   email: string;
+  regionalDepartmentId: string;
   municipalityId: string;
 };
 

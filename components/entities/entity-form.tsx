@@ -29,7 +29,8 @@ const formSchema = z.object({
   imageUrl: z.string().url().optional(),
   categoryId: z.string().min(1, "Debe seleccionar una categoría"),
   email: z.string().email().optional().or(z.literal("")),
-  municipalityId: z.string().min(1, "Debe seleccionar un municipio"),
+  regionalDepartmentId: z.string().min(1, "Debe seleccionar un departamento"),
+  municipalityId: z.string().optional(),
 })
 
 interface EntityFormProps {
@@ -41,7 +42,7 @@ export function EntityForm({ entity }: EntityFormProps) {
   const [categories, setCategories] = useState<Category[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [municipalities, setMunicipalities] = useState<Municipality[]>([])
-  const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null)
+  const [loadingMunicipalities, setLoadingMunicipalities] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -53,6 +54,7 @@ export function EntityForm({ entity }: EntityFormProps) {
       imageUrl: entity?.imageUrl || "",
       categoryId: entity?.categoryId || "",
       email: entity?.email || "",
+      regionalDepartmentId: entity?.regionalDepartmentId || "",
       municipalityId: entity?.municipalityId || "",
     },
   })
@@ -69,18 +71,15 @@ export function EntityForm({ entity }: EntityFormProps) {
         const departmentsData = await getRegionalDepartments()
         setDepartments(departmentsData)
 
-        if (entity?.municipalityId) {
-          for (const department of departmentsData) {
-            const municipalities = await getMunicipalitiesByDepartment(department.id)
-            const foundMunicipality = municipalities.find(
-              (m: Municipality) => m.id === entity.municipalityId
-            )
-            
-            if (foundMunicipality) {
-              setSelectedDepartment(department.id)
-              setMunicipalities(municipalities)
-              break
-            }
+        if (entity?.regionalDepartmentId) {
+          setLoadingMunicipalities(true)
+          try {
+            const municipalitiesData = await getMunicipalitiesByDepartment(entity.regionalDepartmentId)
+            setMunicipalities(municipalitiesData)
+          } catch (error) {
+            console.error("Error fetching municipalities:", error)
+          } finally {
+            setLoadingMunicipalities(false)
           }
         }
       } catch (error) {
@@ -98,15 +97,18 @@ export function EntityForm({ entity }: EntityFormProps) {
     fetchInitialData()
   }, [entity])
 
+  const regionalDepartmentId = form.watch("regionalDepartmentId")
+  
   useEffect(() => {
-    if (!selectedDepartment) {
+    if (!regionalDepartmentId) {
       setMunicipalities([])
       return
     }
 
     const fetchMunicipalities = async () => {
+      setLoadingMunicipalities(true)
       try {
-        const municipalitiesData = await getMunicipalitiesByDepartment(selectedDepartment)
+        const municipalitiesData = await getMunicipalitiesByDepartment(regionalDepartmentId)
         setMunicipalities(municipalitiesData)
       } catch (error) {
         console.error("Error fetching municipalities:", error)
@@ -115,11 +117,13 @@ export function EntityForm({ entity }: EntityFormProps) {
           description: "Error al cargar los municipios",
           variant: "destructive",
         })
+      } finally {
+        setLoadingMunicipalities(false)
       }
     }
 
     fetchMunicipalities()
-  }, [selectedDepartment])
+  }, [regionalDepartmentId])
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -235,36 +239,45 @@ export function EntityForm({ entity }: EntityFormProps) {
         />
 
         <div className="space-y-4">
-          <div>
-            <FormLabel>Departamento</FormLabel>
-            <Select
-              value={selectedDepartment || ""}
-              onValueChange={(value) => {
-                setSelectedDepartment(value)
-                form.setValue("municipalityId", "")
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccione un departamento" />
-              </SelectTrigger>
-              <SelectContent>
-                {departments.map((department) => (
-                  <SelectItem key={department.id} value={department.id}>
-                    {department.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <FormField
+            control={form.control}
+            name="regionalDepartmentId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Departamento</FormLabel>
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value)
+                    form.setValue("municipalityId", "")
+                  }}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione un departamento" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {departments.map((department) => (
+                      <SelectItem key={department.id} value={department.id}>
+                        {department.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
             name="municipalityId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Municipio</FormLabel>
+                <FormLabel>Ciudad / Municipio (Opcional)</FormLabel>
                 <Select
-                  disabled={!selectedDepartment}
+                  disabled={!regionalDepartmentId}
                   onValueChange={field.onChange}
                   value={field.value}
                 >
@@ -274,11 +287,21 @@ export function EntityForm({ entity }: EntityFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {municipalities.map((municipality) => (
-                      <SelectItem key={municipality.id} value={municipality.id}>
-                        {municipality.name}
-                      </SelectItem>
-                    ))}
+                    {loadingMunicipalities ? (
+                      <div className="p-2 text-sm text-muted-foreground">
+                        Cargando municipios...
+                      </div>
+                    ) : municipalities.length > 0 ? (
+                      municipalities.map((municipality) => (
+                        <SelectItem key={municipality.id} value={municipality.id}>
+                          {municipality.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="p-2 text-sm text-muted-foreground">
+                        No hay municipios disponibles
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
                 <FormMessage />

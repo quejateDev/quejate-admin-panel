@@ -33,7 +33,7 @@ export default function CreateEntityPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [departments, setDepartments] = useState<{ id: string; name: string }[]>([]);
   const [municipalities, setMunicipalities] = useState<{ id: string; name: string }[]>([]);
-  const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
+  const [loadingMunicipalities, setLoadingMunicipalities] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -42,6 +42,7 @@ export default function CreateEntityPage() {
     categoryId: "",
     email: "",
     municipalityId: "",
+    regionalDepartmentId: "",
   });
 
   useEffect(() => {
@@ -59,39 +60,49 @@ export default function CreateEntityPage() {
       }
     };
 
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const data = await getRegionalDepartments();
         setDepartments(data);
       } catch (error) {
         console.error("Error fetching departments:", error);
+        toast({
+          title: "Error",
+          description: "Error al cargar los departamentos",
+          variant: "destructive",
+        });
       }
     };
-  
+
+    fetchCategories();
     fetchDepartments();
   }, []);
-  
+
   useEffect(() => {
-    if (!selectedDepartment) {
+    if (!formData.regionalDepartmentId) {
       setMunicipalities([]);
       return;
     }
-  
+
     const fetchMunicipalities = async () => {
+      setLoadingMunicipalities(true);
       try {
-        const data = await getMunicipalitiesByDepartment(selectedDepartment);
+        const data = await getMunicipalitiesByDepartment(formData.regionalDepartmentId);
         setMunicipalities(data);
       } catch (error) {
         console.error("Error fetching municipalities:", error);
+        toast({
+          title: "Error",
+          description: "Error al cargar los municipios",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingMunicipalities(false);
       }
     };
-  
+
     fetchMunicipalities();
-  }, [selectedDepartment]);
+  }, [formData.regionalDepartmentId]);
   
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,7 +128,16 @@ export default function CreateEntityPage() {
       });
       return;
     }
-    
+
+    if (!formData.regionalDepartmentId) {
+      toast({
+        title: "Error",
+        description: "Por favor seleccione un departamento",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -146,6 +166,7 @@ export default function CreateEntityPage() {
         categoryId: formData.categoryId,
         imageUrl: imageUrl,
         email: formData.email,
+        regionalDepartmentId: formData.regionalDepartmentId,
         municipalityId: formData.municipalityId
       });
 
@@ -240,10 +261,13 @@ export default function CreateEntityPage() {
             <div className="space-y-2">
               <Label htmlFor="department">Departamento</Label>
               <Select
-                value={selectedDepartment || ""}
+                value={formData.regionalDepartmentId}
                 onValueChange={(value) => {
-                  setSelectedDepartment(value);
-                  setFormData((prev) => ({ ...prev, municipalityId: "" })); 
+                  setFormData((prev) => ({ 
+                    ...prev, 
+                    regionalDepartmentId: value,
+                    municipalityId: ""
+                  }));
                 }}
               >
                 <SelectTrigger>
@@ -260,23 +284,33 @@ export default function CreateEntityPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="municipality">Ciudad / Municipio</Label>
+              <Label htmlFor="municipality">Ciudad / Municipio (Opcional)</Label>
               <Select
                 value={formData.municipalityId}
                 onValueChange={(value) =>
                   setFormData((prev) => ({ ...prev, municipalityId: value }))
                 }
-                disabled={!selectedDepartment}
+                disabled={!formData.regionalDepartmentId}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccione un municipio" />
                 </SelectTrigger>
                 <SelectContent>
-                  {municipalities.map((municipality) => (
-                    <SelectItem key={municipality.id} value={municipality.id}>
-                      {municipality.name}
-                    </SelectItem>
-                  ))}
+                  {loadingMunicipalities ? (
+                    <div className="p-2 text-sm text-muted-foreground">
+                      Cargando municipios...
+                    </div>
+                  ) : municipalities.length > 0 ? (
+                    municipalities.map((municipality) => (
+                      <SelectItem key={municipality.id} value={municipality.id}>
+                        {municipality.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-2 text-sm text-muted-foreground">
+                      No hay municipios disponibles
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -311,7 +345,7 @@ export default function CreateEntityPage() {
               </Button>
               <Button
                 type="submit"
-                className="bg-green-500 hover:bg-green-600"
+                className="bg-primary text-white hover:bg-primary/90"
                 disabled={loading}
               >
                 {loading ? "Creando..." : "Crear Entidad"}
