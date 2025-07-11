@@ -116,7 +116,7 @@ function PQRPageContent() {
           isLoading={isLoading}
         />
 
-        <PqrVsDepartmentChart pqrs={pqrs} isLoading={isLoading} />
+        {/* <PqrVsDepartmentChart pqrs={pqrs} isLoading={isLoading} /> */}
         <PqrVsTypeChart pqrs={pqrs} isLoading={isLoading} />
       </div>
 

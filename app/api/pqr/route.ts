@@ -142,7 +142,10 @@ export async function POST(req: NextRequest) {
           dueDate,
           anonymous: body.isAnonymous || false,
           departmentId: body.departmentId,
+          entityId: body.entityId,
           creatorId: body.creatorId,
+          subject: body.subject,
+          description: body.description,
           customFieldValues: {
             create: body.customFields.map((field: any) => ({
               name: field.name,
@@ -173,7 +176,7 @@ export async function POST(req: NextRequest) {
           },
         },
         include: {
-          department: true,
+          department: true, 
           customFieldValues: true,
           attachments: true,
           creator: true,

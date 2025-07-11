@@ -115,12 +115,6 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
       enableSorting: true,
     },
     {
-      id: "department",
-      header: "Departamento",
-      accessorKey: "department.name",
-      enableSorting: true,
-    },
-    {
       id: "subject",
       header: "Asunto",
       accessorKey: "subject",
@@ -288,20 +282,6 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
               {Object.entries(statusMap).map(([key, value]) => (
                 <SelectItem key={key} value={key}>
                   {value.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filtrar por departamento" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los departamentos</SelectItem>
-              {departments.map((department) => (
-                <SelectItem key={department} value={department}>
-                  {department}
                 </SelectItem>
               ))}
             </SelectContent>
