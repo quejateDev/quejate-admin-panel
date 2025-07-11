@@ -44,6 +44,7 @@ export async function PUT(request: Request, { params }: any) {
       categoryId,
       imageUrl,
       email,
+      regionalDepartmentId,
       municipalityId,
       isVerified,
     } = body;
@@ -56,6 +57,7 @@ export async function PUT(request: Request, { params }: any) {
         categoryId,
         imageUrl: imageUrl || undefined,
         email: email || undefined,
+        regionalDepartmentId: regionalDepartmentId,
         municipalityId: municipalityId || undefined,
         isVerified,
       },

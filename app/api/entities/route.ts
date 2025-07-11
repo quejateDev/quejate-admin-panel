@@ -58,7 +58,7 @@ export async function GET(req: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, description, imageUrl, categoryId, email } = body;
+    const { name, description, imageUrl, categoryId, email, regionalDepartmentId, municipalityId } = body;
 
     if (!categoryId) {
       return NextResponse.json(
@@ -95,6 +95,8 @@ export async function POST(request: Request) {
         imageUrl,
         categoryId,
         email,
+        regionalDepartmentId,
+        municipalityId,
         EntityConsecutive: {
           create: {
             code: consecutiveCode,
