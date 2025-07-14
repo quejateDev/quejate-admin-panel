@@ -160,7 +160,7 @@ export default function CreateEntityPage() {
       }
 
       // Create entity with image URL if uploaded
-      await createOrganizationService({
+      const createdEntity = await createOrganizationService({
         name: formData.name,
         description: formData.description,
         categoryId: formData.categoryId,
@@ -174,7 +174,14 @@ export default function CreateEntityPage() {
         title: "Entidad creada",
         description: "La entidad ha sido creada exitosamente",
       });
-      router.push("/entity");
+      
+      // Ask user if they want to configure PQRSD
+      const configurePQR = window.confirm("¿Desea configurar los PQRSD para esta entidad ahora?");
+      if (configurePQR) {
+        router.push(`/entity/${createdEntity.id}/pqr-config`);
+      } else {
+        router.push("/entity");
+      }
     } catch (error) {
       console.error(error);
       toast({

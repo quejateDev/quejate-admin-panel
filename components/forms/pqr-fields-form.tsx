@@ -95,7 +95,7 @@ export default function PqrFieldsForm({
       <CardHeader>
         <CardTitle>Campos Personalizados</CardTitle>
         <CardDescription className="flex justify-between">
-          <span>Personaliza los campos de la solicitud PQR</span>
+          <span>Personaliza los campos de la solicitud PQRSD</span>
           <Button
             type="button"
             variant="outline"
@@ -203,7 +203,7 @@ export default function PqrFieldsForm({
                                   />
                                 </FormControl>
                                 <div className="space-y-1 leading-none">
-                                  <FormLabel className="cursor-pointer">Solo para PQR Anónimas</FormLabel>
+                                  <FormLabel className="cursor-pointer">Solo para PQRSD Anónimas</FormLabel>
                                 </div>
                               </FormItem>
                             )}

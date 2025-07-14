@@ -28,7 +28,7 @@ export default async function EditEntityPage({ params }: EditEntityPageProps) {
         <Link href={`/entity/${id}/pqr-config`}>
           <Button variant="outline" className="gap-2">
             <Settings className="h-4 w-4" />
-            Configurar PQR
+            Configurar PQRSD
           </Button>
         </Link>
       </div>

@@ -15,35 +15,9 @@ export async function PUT(
     });
 
     if (!pqrConfig) {
-      const entity = await prisma.entity.findUnique({
-        where: { id },
-        include: {
-          Department: true,
-        },
-      });
-
-      if (!entity) {
-        return new NextResponse("Entity not found", { status: 404 });
-      }
-
-      let departmentId;
-      if (entity.Department.length > 0) {
-        departmentId = entity.Department[0].id;
-      } else {
-        const defaultDepartment = await prisma.department.create({
-          data: {
-            name: "Departamento General",
-            entityId: id,
-            description: "Departamento creado automáticamente para configuración PQR",
-          },
-        });
-        departmentId = defaultDepartment.id;
-      }
-
       pqrConfig = await prisma.pQRConfig.create({
         data: {
           entityId: id,
-          departmentId: departmentId,
           allowAnonymous: true,
           requireEvidence: false,
           maxResponseTime: 15,

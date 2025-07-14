@@ -73,9 +73,9 @@ export function PQRConfigForm({ areaId, initialData, isEntity = false }: PQRConf
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Configuración de PQR</CardTitle>
+        <CardTitle>Configuración de PQRSD</CardTitle>
         <CardDescription>
-          Personaliza y/o configura los pqr de el area
+          Personaliza y/o configura los PQRSD de la {isEntity ? "entidad" : "área"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -116,7 +116,7 @@ export function PQRConfigForm({ areaId, initialData, isEntity = false }: PQRConf
                   <div className="space-y-1 leading-none">
                     <FormLabel>Requerir evidencia</FormLabel>
                     <FormDescription>
-                      Exige que los usuarios adjunten evidencia al crear un PQR
+                      Exige que los usuarios adjunten evidencia al crear un PQRSD
                     </FormDescription>
                   </div>
                 </FormItem>
@@ -135,7 +135,7 @@ export function PQRConfigForm({ areaId, initialData, isEntity = false }: PQRConf
                     <Input type="number" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Tiempo límite para responder a los PQR
+                    Tiempo límite para responder a los PQRSD
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

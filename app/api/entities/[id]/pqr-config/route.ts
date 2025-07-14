@@ -19,50 +19,39 @@ export async function PUT(
 
     const entity = await prisma.entity.findUnique({
       where: { id },
-      include: {
-        Department: true,
-      },
     });
 
     if (!entity) {
       return new NextResponse("Entity not found", { status: 404 });
     }
 
-    let departmentId;
-    if (entity.Department.length > 0) {
-      departmentId = entity.Department[0].id;
-    } else {
-      const defaultDepartment = await prisma.department.create({
+    let pqrConfig = await prisma.pQRConfig.findUnique({
+      where: { entityId: id },
+    });
+
+    if (!pqrConfig) {
+      pqrConfig = await prisma.pQRConfig.create({
         data: {
-          name: "Departamento General",
           entityId: id,
-          description: "Departamento creado automáticamente para configuración PQR",
+          allowAnonymous,
+          requireEvidence,
+          maxResponseTime: parseInt(maxResponseTime),
+          notifyEmail,
+          autoAssign,
         },
       });
-      departmentId = defaultDepartment.id;
+    } else {
+      pqrConfig = await prisma.pQRConfig.update({
+        where: { id: pqrConfig.id },
+        data: {
+          allowAnonymous,
+          requireEvidence,
+          maxResponseTime: parseInt(maxResponseTime),
+          notifyEmail,
+          autoAssign,
+        },
+      });
     }
-
-    await prisma.pQRConfig.upsert({
-      where: {
-        entityId: id,
-      },
-      update: {
-        allowAnonymous,
-        requireEvidence,
-        maxResponseTime: parseInt(maxResponseTime),
-        notifyEmail,
-        autoAssign,
-      },
-      create: {
-        entityId: id,
-        departmentId: departmentId,
-        allowAnonymous,
-        requireEvidence,
-        maxResponseTime: parseInt(maxResponseTime),
-        notifyEmail,
-        autoAssign,
-      },
-    });
 
     return NextResponse.json({});
   } catch (error) {

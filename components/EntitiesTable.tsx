@@ -25,7 +25,6 @@ import ConfirmationModal from "./modals/ConfirmationModal";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "./ui/badge";
 import { Switch } from "./ui/switch";
-import { Settings } from "lucide-react";
 import axios from "axios";
 
 interface EntitiesTableProps {
@@ -221,16 +220,6 @@ export function EntitiesTable({ entities, categories }: EntitiesTableProps) {
                         size="sm"
                       >
                         Editar
-                      </Button>
-                    </Link>
-                    <Link href={`/entity/${entity.id}/pqr-config`}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1"
-                      >
-                        <Settings className="h-3 w-3" />
-                        PQR
                       </Button>
                     </Link>
                     <Button

@@ -86,7 +86,7 @@ export default function EntityPQRConfigPage() {
       </Link>
 
       <div className="flex items-center gap-2">
-        <h1 className="text-2xl font-bold">Configuración de PQR para Entidad</h1>
+        <h1 className="text-2xl font-bold">Configuración de PQRSD para Entidad</h1>
       </div>
 
       <div className="grid gap-6">
