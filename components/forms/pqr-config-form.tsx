@@ -31,25 +31,28 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-export function PQRConfigForm({ areaId, initialData }: PQRConfigFormProps) {
+export function PQRConfigForm({ areaId, initialData, isEntity = false }: PQRConfigFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
 
   const form = useForm<PQRConfigFormValues>({
     resolver: zodResolver(pqrConfigSchema),
-    defaultValues: initialData || {
-      allowAnonymous: false,
-      requireEvidence: false,
-      maxResponseTime: "72",
-      notifyEmail: true,
-      autoAssign: false,
+    defaultValues: {
+      allowAnonymous: initialData?.allowAnonymous ?? false,
+      requireEvidence: initialData?.requireEvidence ?? false,
+      maxResponseTime: initialData?.maxResponseTime ?? "72",
+      notifyEmail: initialData?.notifyEmail ?? true,
+      autoAssign: initialData?.autoAssign ?? false,
     },
   });
 
   const onSubmit = async (data: PQRConfigFormValues) => {
     try {
       setIsSaving(true);
-      await axios.put(`api/area/${areaId}/pqr-config`, data);
+      const endpoint = isEntity 
+        ? `/api/entities/${areaId}/pqr-config`
+        : `/api/area/${areaId}/pqr-config`;
+      await axios.put(endpoint, data);
       toast({
         title: "Éxito",
         description: "Configuración actualizada correctamente",
