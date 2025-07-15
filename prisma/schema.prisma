@@ -106,6 +106,7 @@ model Rating {
 model Department {
   id          String     @id @default(uuid())
   name        String
+  email       String
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   description String?
