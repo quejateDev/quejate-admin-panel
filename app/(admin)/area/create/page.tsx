@@ -103,7 +103,7 @@ export default function NewAreaPage() {
               </Button>
               <Button
                 type="submit"
-                className="bg-green-500 hover:bg-green-600"
+                className="bg-primary text-white hover:bg-primary-dark"
                 disabled={loading}
               >
                 {loading ? "Creando..." : "Crear Área"}
