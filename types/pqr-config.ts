@@ -13,18 +13,19 @@ export type PQRConfigFormValues = z.infer<typeof pqrConfigSchema>;
 export interface PQRConfigFormProps {
   areaId: string;
   initialData?: PQRConfigFormValues;
+  isEntity?: boolean;
 }
 
 export const PqrFieldsSchema = z.object({
   customFields: z.array(
     z.object({
-      name: z.string(),
-      required: z.boolean(),
-      type: z.enum(["email", "phone", "text", "file", "number", "textarea"]),
-      placeholder: z.string().optional(),
+      name: z.string().default(""),
+      required: z.boolean().default(false),
+      type: z.enum(["email", "phone", "text", "file", "number", "textarea"]).default("text"),
+      placeholder: z.string().default(""),
       isForAnonymous: z.boolean().default(false),
     })
-  ),
+  ).default([]),
 });
 
 export type PQRFieldsFormValues = {

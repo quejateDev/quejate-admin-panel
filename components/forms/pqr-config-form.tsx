@@ -31,25 +31,28 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-export function PQRConfigForm({ areaId, initialData }: PQRConfigFormProps) {
+export function PQRConfigForm({ areaId, initialData, isEntity = false }: PQRConfigFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
 
   const form = useForm<PQRConfigFormValues>({
     resolver: zodResolver(pqrConfigSchema),
-    defaultValues: initialData || {
-      allowAnonymous: false,
-      requireEvidence: false,
-      maxResponseTime: "72",
-      notifyEmail: true,
-      autoAssign: false,
+    defaultValues: {
+      allowAnonymous: initialData?.allowAnonymous ?? false,
+      requireEvidence: initialData?.requireEvidence ?? false,
+      maxResponseTime: initialData?.maxResponseTime ?? "72",
+      notifyEmail: initialData?.notifyEmail ?? true,
+      autoAssign: initialData?.autoAssign ?? false,
     },
   });
 
   const onSubmit = async (data: PQRConfigFormValues) => {
     try {
       setIsSaving(true);
-      await axios.put(`api/area/${areaId}/pqr-config`, data);
+      const endpoint = isEntity 
+        ? `/api/entities/${areaId}/pqr-config`
+        : `/api/area/${areaId}/pqr-config`;
+      await axios.put(endpoint, data);
       toast({
         title: "Éxito",
         description: "Configuración actualizada correctamente",
@@ -70,9 +73,9 @@ export function PQRConfigForm({ areaId, initialData }: PQRConfigFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Configuración de PQR</CardTitle>
+        <CardTitle>Configuración de PQRSD</CardTitle>
         <CardDescription>
-          Personaliza y/o configura los pqr de el area
+          Personaliza y/o configura los PQRSD de la {isEntity ? "entidad" : "área"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -113,7 +116,7 @@ export function PQRConfigForm({ areaId, initialData }: PQRConfigFormProps) {
                   <div className="space-y-1 leading-none">
                     <FormLabel>Requerir evidencia</FormLabel>
                     <FormDescription>
-                      Exige que los usuarios adjunten evidencia al crear un PQR
+                      Exige que los usuarios adjunten evidencia al crear un PQRSD
                     </FormDescription>
                   </div>
                 </FormItem>
@@ -132,7 +135,7 @@ export function PQRConfigForm({ areaId, initialData }: PQRConfigFormProps) {
                     <Input type="number" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Tiempo límite para responder a los PQR
+                    Tiempo límite para responder a los PQRSD
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

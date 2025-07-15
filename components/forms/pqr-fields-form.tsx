@@ -35,16 +35,20 @@ import { useRouter } from "next/navigation";
 export default function PqrFieldsForm({
   areaId,
   initialData,
+  isEntity = false,
 }: {
   areaId: string;
   initialData: PQRFieldsFormValues;
+  isEntity?: boolean;
 }) {
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
 
   const form = useForm<PQRFieldsFormValues>({
     resolver: zodResolver(PqrFieldsSchema),
-    defaultValues: initialData,
+    defaultValues: {
+      customFields: initialData?.customFields ?? [],
+    },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -55,7 +59,10 @@ export default function PqrFieldsForm({
   const onSubmit = async (values: PQRFieldsFormValues) => {
     try {
       setIsSaving(true);
-      const response = await fetch(`/api/area/${areaId}/pqr-config/fields`, {
+      const endpoint = isEntity 
+        ? `/api/entities/${areaId}/pqr-config/fields`
+        : `/api/area/${areaId}/pqr-config/fields`;
+      const response = await fetch(endpoint, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -88,12 +95,18 @@ export default function PqrFieldsForm({
       <CardHeader>
         <CardTitle>Campos Personalizados</CardTitle>
         <CardDescription className="flex justify-between">
-          <span>Personaliza los campos de la solicitud PQR</span>
+          <span>Personaliza los campos de la solicitud PQRSD</span>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => append({ name: "", type: "text", required: false })}
+            onClick={() => append({ 
+              name: "", 
+              type: "text", 
+              required: false, 
+              placeholder: "",
+              isForAnonymous: false 
+            })}
           >
             <Plus className="h-4 w-4 mr-2" />
             Agregar Campo
@@ -116,7 +129,7 @@ export default function PqrFieldsForm({
                             <FormItem>
                               <FormLabel>Nombre del Campo</FormLabel>
                               <FormControl>
-                                <Input {...field} />
+                                <Input {...field} value={field.value || ""} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -132,6 +145,7 @@ export default function PqrFieldsForm({
                               <FormControl>
                                 <Input
                                   {...field}
+                                  value={field.value || ""}
                                   placeholder="Ej: Ingrese su número de documento"
                                 />
                               </FormControl>
@@ -189,7 +203,7 @@ export default function PqrFieldsForm({
                                   />
                                 </FormControl>
                                 <div className="space-y-1 leading-none">
-                                  <FormLabel className="cursor-pointer">Solo para PQR Anónimas</FormLabel>
+                                  <FormLabel className="cursor-pointer">Solo para PQRSD Anónimas</FormLabel>
                                 </div>
                               </FormItem>
                             )}
