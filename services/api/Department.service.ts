@@ -21,12 +21,14 @@ type DepartmentWithRelations = Prisma.DepartmentGetPayload<{
 
 export type CreateDepartmentDTO = {
   name: string;
+  email: string;
   description?: string;
   entityId: string;
 };
 
 export type UpdateDepartmentDTO = {
   name?: string;
+  email?: string;
   description?: string;
   entityId?: string;
 };
