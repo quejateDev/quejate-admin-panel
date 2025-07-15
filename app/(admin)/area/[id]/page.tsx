@@ -42,6 +42,8 @@ export default async function AreaPage({ params }: AreaPageProps) {
             initialData={{
               id: area.id,
               name: area.name,
+              email: area.email,
+              description: area.description || "",
             }}
             isEditing={true}
           />

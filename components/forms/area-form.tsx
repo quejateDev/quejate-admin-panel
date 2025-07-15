@@ -21,12 +21,16 @@ import { toast } from "@/hooks/use-toast";
 // Define the form schema
 const formSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
+  email: z.string().email("Correo inválido"),
+  description: z.string().optional(),
 });
 
 interface AreaFormProps {
   initialData: {
     id: string;
     name: string;
+    email: string;
+    description?: string | null;
   };
   isEditing?: boolean;
 }
@@ -39,6 +43,8 @@ export function AreaForm({ initialData, isEditing }: AreaFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: initialData?.name || "",
+      email: initialData?.email || "",
+      description: initialData?.description || "",
     },
   });
 
@@ -86,6 +92,34 @@ export function AreaForm({ initialData, isEditing }: AreaFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nombre</FormLabel>
+              <FormControl>
+                <Input {...field} disabled={isSaving} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Correo</FormLabel>
+              <FormControl>
+                <Input {...field} disabled={isSaving} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descripción</FormLabel>
               <FormControl>
                 <Input {...field} disabled={isSaving} />
               </FormControl>

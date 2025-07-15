@@ -38,12 +38,13 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, description, entityId } = body;
+    const { name, description, email, entityId } = body;
 
     const department = await prisma.department.create({
       data: {
         name,
         description,
+        email,
         entity: {
           connect: {
             id: entityId,

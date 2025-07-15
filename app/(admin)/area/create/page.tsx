@@ -25,6 +25,7 @@ export default function NewAreaPage() {
   const [formData, setFormData] = useState<CreateDepartmentDTO>({
     name: "",
     description: "",
+    email: "",
     entityId: "",
   });
 
@@ -76,6 +77,18 @@ export default function NewAreaPage() {
                 value={formData.name}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, email: e.target.value }))
                 }
                 required
               />
