@@ -41,7 +41,7 @@ export default function CreateEntityPage() {
     image: null as File | null,
     categoryId: "",
     email: "",
-    municipalityId: "",
+    municipalityId:  null as string | null,
     regionalDepartmentId: "",
   });
 
@@ -167,7 +167,7 @@ export default function CreateEntityPage() {
         imageUrl: imageUrl,
         email: formData.email,
         regionalDepartmentId: formData.regionalDepartmentId,
-        municipalityId: formData.municipalityId
+        municipalityId: formData.municipalityId || undefined,
       });
 
       toast({
@@ -175,13 +175,8 @@ export default function CreateEntityPage() {
         description: "La entidad ha sido creada exitosamente",
       });
       
-      // Ask user if they want to configure PQRSD
-      const configurePQR = window.confirm("¿Desea configurar los PQRSD para esta entidad ahora?");
-      if (configurePQR) {
-        router.push(`/entity/${createdEntity.id}/pqr-config`);
-      } else {
-        router.push("/entity");
-      }
+      router.push("/entity");
+      
     } catch (error) {
       console.error(error);
       toast({
@@ -293,9 +288,9 @@ export default function CreateEntityPage() {
             <div className="space-y-2">
               <Label htmlFor="municipality">Ciudad / Municipio (Opcional)</Label>
               <Select
-                value={formData.municipalityId}
+                value={formData.municipalityId || ""}
                 onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, municipalityId: value }))
+                  setFormData((prev) => ({ ...prev, municipalityId: value || null }))
                 }
                 disabled={!formData.regionalDepartmentId}
               >
