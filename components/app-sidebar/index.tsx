@@ -4,7 +4,7 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { Users, Building2, LayoutDashboard, Tag } from "lucide-react";
+import { Users, Building2, LayoutDashboard, Tag, Scale } from "lucide-react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { UserRole } from "@prisma/client";
@@ -71,6 +71,11 @@ export default async function AppSidebar() {
       url: "/categories",
       icon: Tag,
     },
+    {
+      title:"Abogados",
+      url: "/lawyers",
+      icon: Scale
+    }
   ];
 
   if (role !== UserRole.ADMIN) menuItems.push(...ADMIN_MENU_ITEMS);
