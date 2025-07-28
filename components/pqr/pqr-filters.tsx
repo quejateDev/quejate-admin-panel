@@ -8,7 +8,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Prisma } from "@prisma/client";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -17,14 +16,17 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
-import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { useState, useEffect } from "react";
 import { useDepartments } from "@/hooks/useDeparments";
 import { Skeleton } from "../ui/skeleton";
-import useAuthStore from "@/store/useAuthStore";
+import { 
+  datePresets, 
+  getCurrentPreset, 
+  getDateDisplayText 
+} from "@/constants/datePresets";
 
 type PqrFiltersProps = {
   dateRange: DateRange | undefined;
@@ -37,11 +39,17 @@ export function PqrFilters({
 }: PqrFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [date, setDate] = useState<DateRange | undefined>(dateRange);
+  const [selectedPreset, setSelectedPreset] = useState<string>("");
 
   const { data: departments, isLoading: isDepartmentsLoading  } =
     useDepartments({ entityId: "" });
+
+  // Inicializar el preset seleccionado
+  useEffect(() => {
+    setSelectedPreset(getCurrentPreset(dateRange));
+  }, [dateRange]);
 
   function updateFilters(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -62,10 +70,31 @@ export function PqrFilters({
     router.push(newUrl);
   }
 
+  const handleDatePresetChange = (presetValue: string) => {
+    setSelectedPreset(presetValue);
+    
+    if (presetValue === "custom") {
+      setIsCalendarOpen(true);
+      return;
+    }
+
+    const preset = datePresets.find(p => p.value === presetValue);
+    if (preset) {
+      const range = preset.range();
+      if (range) {
+        setDate(range);
+        setDateRange(range);
+      }
+    }
+  };
+
   const handleDateSelect = (range: DateRange | undefined) => {
     setDate(range);
     setDateRange(range);
-    setIsOpen(false);
+    setIsCalendarOpen(false);
+    
+    // Actualizar el preset después de selección manual
+    setSelectedPreset(getCurrentPreset(range));
   };
 
   return (
@@ -92,42 +121,66 @@ export function PqrFilters({
       )}
       </Select>
 
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant={"outline"}
-            className={cn(
-              "w-[240px] justify-start text-left font-normal",
-              !dateRange && "text-muted-foreground"
-            )}
-          >
+      {/* Filtro de fechas rediseñado */}
+      <div className="flex gap-2">
+        {/* Selector de presets de fecha */}
+        <Select
+          value={selectedPreset}
+          onValueChange={handleDatePresetChange}
+        >
+          <SelectTrigger className="w-[180px] bg-white">
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {date?.from ? (
-              date?.to ? (
-                <>
-                  {format(date.from, "P", { locale: es })} -{" "}
-                  {format(date.to, "P", { locale: es })}
-                </>
-              ) : (
-                format(date.from, "P", { locale: es })
-              )
-            ) : (
-              <span>Filtrar por fecha</span>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            initialFocus
-            mode="range"
-            defaultMonth={date?.from ? date.from : undefined}
-            selected={date}
-            onSelect={handleDateSelect}
-            numberOfMonths={2}
-            locale={es}
-          />
-        </PopoverContent>
-      </Popover>
+            <SelectValue placeholder="Filtrar por fecha" />
+          </SelectTrigger>
+          <SelectContent>
+            {datePresets.map((preset) => (
+              <SelectItem key={preset.value} value={preset.value}>
+                {preset.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Popover del calendario para fechas personalizadas */}
+        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-[280px] justify-start text-left font-normal",
+                !date && "text-muted-foreground",
+                selectedPreset !== "custom" && "hidden"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {getDateDisplayText(selectedPreset, date)}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <div className="p-3 border-b">
+              <h4 className="font-medium text-sm text-muted-foreground">
+                Seleccionar rango personalizado
+              </h4>
+            </div>
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={date?.from ? date.from : undefined}
+              selected={date}
+              onSelect={handleDateSelect}
+              numberOfMonths={2}
+              locale={es}
+            />
+          </PopoverContent>
+        </Popover>
+
+        {/* Mostrar el rango seleccionado cuando no es personalizado */}
+        {selectedPreset && selectedPreset !== "custom" && (
+          <div className="flex items-center px-3 py-2 bg-muted/50 rounded-md text-sm text-muted-foreground">
+            {getDateDisplayText(selectedPreset, date)}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
