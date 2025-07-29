@@ -1,6 +1,5 @@
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText } from "lucide-react";
 
 type MetricCardProps = {
   title: string;
