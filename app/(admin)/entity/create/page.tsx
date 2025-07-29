@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getMunicipalitiesByDepartment, getRegionalDepartments } from "@/services/api/location.service";
+import { formatText } from "@/utils/formatText";
 
 export default function CreateEntityPage() {
   const router = useRouter();
@@ -278,7 +279,7 @@ export default function CreateEntityPage() {
                 <SelectContent>
                   {departments.map((department) => (
                     <SelectItem key={department.id} value={department.id}>
-                      {department.name}
+                      {formatText(department.name)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -305,7 +306,7 @@ export default function CreateEntityPage() {
                   ) : municipalities.length > 0 ? (
                     municipalities.map((municipality) => (
                       <SelectItem key={municipality.id} value={municipality.id}>
-                        {municipality.name}
+                        {formatText(municipality.name)}
                       </SelectItem>
                     ))
                   ) : (

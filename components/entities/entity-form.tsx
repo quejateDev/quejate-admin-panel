@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
 import { getMunicipalitiesByDepartment, getRegionalDepartments } from "@/services/api/location.service";
+import { formatText } from "@/utils/formatText";
 
 const formSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -260,7 +261,7 @@ export function EntityForm({ entity }: EntityFormProps) {
                   <SelectContent>
                     {departments.map((department) => (
                       <SelectItem key={department.id} value={department.id}>
-                        {department.name}
+                        {formatText(department.name)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -294,7 +295,7 @@ export function EntityForm({ entity }: EntityFormProps) {
                     ) : municipalities.length > 0 ? (
                       municipalities.map((municipality) => (
                         <SelectItem key={municipality.id} value={municipality.id}>
-                          {municipality.name}
+                          {formatText(municipality.name)}
                         </SelectItem>
                       ))
                     ) : (
