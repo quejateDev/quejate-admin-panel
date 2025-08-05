@@ -126,13 +126,12 @@ function PQRPageContent() {
           </div>
         )}
 
-        {selectedOrganizationId && (
           <PqrFilters 
             dateRange={dateRange} 
             setDateRange={setDateRange}
             organizationId={selectedOrganizationId}
           />
-        )}
+        
       </div>
 
       {/* Statistics cards */}
