@@ -77,7 +77,7 @@ export default async function AppSidebar() {
     }
   ];
 
-  if (role !== UserRole.ADMIN) menuItems.push(...ADMIN_MENU_ITEMS);
+  if (role === UserRole.ADMIN) menuItems.push(...ADMIN_MENU_ITEMS);
   // if (role === UserRole.SUPER_ADMIN) menuItems.push(...SUPER_ADMIN_MENU_ITEMS);
 
   return (
