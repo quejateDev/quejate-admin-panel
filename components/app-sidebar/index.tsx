@@ -11,7 +11,6 @@ import { UserRole } from "@prisma/client";
 import LogoutButton from "@/components/buttons/logoutButton";
 import { getCookie } from "@/lib/utils";
 import { verifyToken } from "@/lib/utils";
-import OrganizationSelector from "@/components/OrganizationSelector";
 import { Logo } from "../Logo";
 
 interface CustomJWTPayload {
@@ -85,8 +84,6 @@ export default async function AppSidebar() {
     <Sidebar className="sidebar">
       <SidebarHeader className="py-6 flex flex-col items-center gap-6 justify-center">
         <Logo />
-
-        <OrganizationSelector userOrganizationId={decoded?.entityId || ""} />
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4 flex flex-col gap-6">

@@ -19,7 +19,7 @@ export type GetPQRsDTO = Prisma.PQRSGetPayload<{
 }>;
 
 export const GETPQRSchema = z.object({
-  organizationId: z.string(),
+  organizationId: z.string().optional(),
   departmentId: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
