@@ -7,13 +7,15 @@ import { PQRTable } from "@/components/pqr/pqr-table";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Clock, AlertTriangle, CheckCircle } from "lucide-react";
-import { PQRSStatus } from "@prisma/client";
+import { PQRSStatus, UserRole } from "@prisma/client";
 import { usePQRS } from "@/hooks/pqr/usePQRs";
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { parseISO } from "date-fns";
 import { DateRange } from "react-day-picker";
 import MetricCard from "@/components/charts/pqr/MetricCard";
 import useOrganizationStore from "@/store/useOrganizationStore";
+import useAuthStore from "@/store/useAuthStore";
+import OrganizationSelector from "@/components/OrganizationSelector";
 
 function PQRPageContent() {
   const searchParams = useSearchParams();
@@ -32,13 +34,53 @@ function PQRPageContent() {
   });
 
   const { entity } = useOrganizationStore();
+  const { user } = useAuthStore();
+
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (user?.role === UserRole.SUPER_ADMIN) {
+      setSelectedOrganizationId(entity?.id);
+    } else {
+      setSelectedOrganizationId(user?.entity?.id);
+    }
+  }, [user, entity]);
 
   const { pqrs, assignPQR, isLoading } = usePQRS({
     departmentId: departmentId,
     startDate: dateRange?.from?.toISOString(),
     endDate: dateRange?.to?.toISOString(),
-    organizationId: entity?.id,
+    organizationId: selectedOrganizationId,
   });
+
+  if (user?.role === UserRole.SUPER_ADMIN && !selectedOrganizationId) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Gestión de PQRSD
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Administra y monitorea las PQRSD de tu entidad
+            </p>
+          </div>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Seleccionar Organización</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Selecciona una organización para ver su dashboard de PQRSD.
+            </p>
+            <OrganizationSelector userOrganizationId={user?.entity?.id || ""} />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Calculate statistics
   const totalPqrs = pqrs.length;
@@ -59,16 +101,37 @@ function PQRPageContent() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header with title and filters */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Gestión de PQRSD
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Administra y monitorea las PQRSD de tu entidad
-          </p>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Gestión de PQRSD
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Administra y monitorea las PQRSD de tu entidad
+            </p>
+          </div>
         </div>
-        <PqrFilters dateRange={dateRange} setDateRange={setDateRange} />
+
+        {user?.role === UserRole.SUPER_ADMIN && selectedOrganizationId && (
+          <div className="mb-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Organización Seleccionada</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <OrganizationSelector userOrganizationId={user?.entity?.id || ""} />
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+          <PqrFilters 
+            dateRange={dateRange} 
+            setDateRange={setDateRange}
+            organizationId={selectedOrganizationId}
+          />
+        
       </div>
 
       {/* Statistics cards */}

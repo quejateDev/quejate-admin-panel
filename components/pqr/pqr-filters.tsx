@@ -31,11 +31,13 @@ import {
 type PqrFiltersProps = {
   dateRange: DateRange | undefined;
   setDateRange: (dateRange: DateRange | undefined) => void;
+  organizationId?: string;
 };
 
 export function PqrFilters({
   dateRange,
   setDateRange,
+  organizationId,
 }: PqrFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,7 +46,7 @@ export function PqrFilters({
   const [selectedPreset, setSelectedPreset] = useState<string>("");
 
   const { data: departments, isLoading: isDepartmentsLoading  } =
-    useDepartments({ entityId: "" });
+    useDepartments({ entityId: organizationId || "" });
 
   // Inicializar el preset seleccionado
   useEffect(() => {
@@ -99,27 +101,30 @@ export function PqrFilters({
 
   return (
     <div className="flex flex-wrap gap-4">
-      <Select
-        value={searchParams.get("departmentId") || ""}
-        onValueChange={(value) => updateFilters("departmentId", value)}
-      >
-        {isDepartmentsLoading ? (
-          <Skeleton className="w-[200px] h-[38px]" />
-        ) : (
-          <>
-            <SelectTrigger className="w-[200px] bg-white">
-              <SelectValue placeholder="Filtrar por departamento" />
-            </SelectTrigger>
-        <SelectContent>
-          {departments?.map((department) => (
-            <SelectItem key={department.id} value={department.id}>
-              {department.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </>
+      {organizationId && departments && departments.length > 0 && (
+        <Select
+          value={searchParams.get("departmentId") || "all"}
+          onValueChange={(value) => updateFilters("departmentId", value === "all" ? null : value)}
+        >
+          {isDepartmentsLoading ? (
+            <Skeleton className="w-[200px] h-[38px]" />
+          ) : (
+            <>
+              <SelectTrigger className="w-[200px] bg-white">
+                <SelectValue placeholder="Filtrar por área" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las áreas</SelectItem>
+                {departments?.map((department) => (
+                  <SelectItem key={department.id} value={department.id}>
+                    {department.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </>
+          )}
+        </Select>
       )}
-      </Select>
 
       {/* Filtro de fechas rediseñado */}
       <div className="flex gap-2">

@@ -28,20 +28,28 @@ export async function GET(
   const { role } = decoded;
 
   try {
-    const pqrs = await prisma.pQRS.findMany({
-      where: {
-        department: {
-          id: departmentId || undefined,
-          entityId: organizationId,
-        },
-        createdAt: {
-          gte: startDate ? new Date(startDate) : undefined,
-          lte: endDate ? new Date(endDate) : undefined,
-        },
-        status: status || undefined,
-        type: type || undefined,
-        assignedToId: role !== "EMPLOYEE`" ? undefined : decoded.id,
+    const whereClause: any = {
+      createdAt: {
+        gte: startDate ? new Date(startDate) : undefined,
+        lte: endDate ? new Date(endDate) : undefined,
       },
+      status: status || undefined,
+      type: type || undefined,
+      assignedToId: role !== "EMPLOYEE" ? undefined : decoded.id,
+    };
+
+    if (organizationId) {
+      if (departmentId && departmentId !== "all") {
+        whereClause.departmentId = departmentId;
+      } else {
+        whereClause.department = {
+          entityId: organizationId,
+        };
+      }
+    }
+
+    const pqrs = await prisma.pQRS.findMany({
+      where: whereClause,
       orderBy: {
         createdAt: "desc",
       },
