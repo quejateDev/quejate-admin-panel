@@ -56,7 +56,6 @@ const useAuthStore = create<AuthStore>()(
       name: "auth-storage",
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
-        // When the store is rehydrated, set the auth headers if user exists
         if (state?.token) {
           setAuthHeaders(state.token);
         }
