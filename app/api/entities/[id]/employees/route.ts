@@ -16,7 +16,6 @@ export async function GET(
       select: {
         id: true,
         name: true,
-        lastName: true,
         email: true,
         departmentId: true,
         department: {

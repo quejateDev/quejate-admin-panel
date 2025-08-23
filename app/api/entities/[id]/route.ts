@@ -12,7 +12,6 @@ export async function GET(request: Request, { params }: any) {
           select: {
             id: true,
             name: true,
-            lastName: true,
             email: true,
             role: true,
             isActive: true,

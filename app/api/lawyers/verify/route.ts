@@ -38,7 +38,6 @@ export async function PATCH(request: Request) {
         user: {
           select: {
             name: true,
-            lastName: true,
             email: true,
           },
         },
