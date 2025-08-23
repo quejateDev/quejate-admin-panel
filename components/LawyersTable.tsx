@@ -50,8 +50,8 @@ export function LawyersTable({ lawyers, onVerify, isLoading = false }: LawyersTa
     }
   };
 
-  const getUserInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  const getUserInitials = (name: string) => {
+    return `${name.charAt(0)}`.toUpperCase();
   };
 
   const openImageModal = (imageUrl: string, title: string, lawyerName: string, isProfilePicture = false) => {
@@ -124,28 +124,28 @@ export function LawyersTable({ lawyers, onVerify, isLoading = false }: LawyersTa
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div 
-                          className={`${lawyer.user.profilePicture ? 'cursor-pointer hover:opacity-80' : ''} transition-opacity`}
-                          onClick={() => lawyer.user.profilePicture && openImageModal(
-                            lawyer.user.profilePicture,
+                          className={`${lawyer.user.image ? 'cursor-pointer hover:opacity-80' : ''} transition-opacity`}
+                          onClick={() => lawyer.user.image && openImageModal(
+                            lawyer.user.image,
                             "Foto de Perfil",
-                            `${lawyer.user.firstName} ${lawyer.user.lastName}`,
+                            `${lawyer.user.name}`,
                             true
                           )}
-                          title={lawyer.user.profilePicture ? "Clic para ver foto de perfil ampliada" : ""}
+                          title={lawyer.user.image ? "Clic para ver foto de perfil ampliada" : ""}
                         >
-                          <Avatar className={`h-10 w-10 ${lawyer.user.profilePicture ? 'hover:scale-105 transition-transform' : ''}`}>
+                          <Avatar className={`h-10 w-10 ${lawyer.user.image ? 'hover:scale-105 transition-transform' : ''}`}>
                             <AvatarImage 
-                              src={lawyer.user.profilePicture || undefined} 
-                              alt={`${lawyer.user.firstName} ${lawyer.user.lastName}`}
+                              src={lawyer.user.image || undefined} 
+                              alt={`${lawyer.user.name}`}
                             />
                             <AvatarFallback>
-                              {getUserInitials(lawyer.user.firstName, lawyer.user.lastName)}
+                              {getUserInitials(lawyer.user.name)}
                             </AvatarFallback>
                           </Avatar>
                         </div>
                         <div>
                           <div className="font-medium">
-                            {lawyer.user.firstName} {lawyer.user.lastName}
+                            {lawyer.user.name}
                           </div>
                         </div>
                       </div>
@@ -168,7 +168,7 @@ export function LawyersTable({ lawyers, onVerify, isLoading = false }: LawyersTa
                             onClick={() => openImageModal(
                               lawyer.identityDocumentImage!,
                               "Documento de Identidad",
-                              `${lawyer.user.firstName} ${lawyer.user.lastName}`
+                              `${lawyer.user.name}`
                             )}
                             className="h-8 w-8 p-0"
                             title="Ver documento de identidad"
@@ -188,7 +188,7 @@ export function LawyersTable({ lawyers, onVerify, isLoading = false }: LawyersTa
                             onClick={() => openImageModal(
                               lawyer.professionalCardImage!,
                               "Tarjeta Profesional",
-                              `${lawyer.user.firstName} ${lawyer.user.lastName}`
+                              `${lawyer.user.name}`
                             )}
                             className="h-8 w-8 p-0"
                             title="Ver tarjeta profesional"

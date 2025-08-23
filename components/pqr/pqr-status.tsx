@@ -30,8 +30,7 @@ interface StatusChange {
   createdAt: Date;
   comment?: string;
   user: {
-    firstName: string;
-    lastName: string;
+    name: string;
   };
 }
 

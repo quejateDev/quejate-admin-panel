@@ -11,8 +11,7 @@ interface StatusChange {
   status: "PENDING" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
   createdAt: Date;
   user: {
-    firstName: string;
-    lastName: string;
+    name: string;
   };
   comment?: string;
 }
@@ -70,15 +69,14 @@ export function PQRTimeline({ statusHistory }: PQRTimelineProps) {
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
                     <AvatarImage
-                      src={`https://ui-avatars.com/api/?name=${change.user.firstName}+${change.user.lastName}`}
+                      src={`https://ui-avatars.com/api/?name=${change.user.name}`}
                     />
                     <AvatarFallback>
-                      {change.user.firstName[0]}
-                      {change.user.lastName[0]}
+                      {change.user.name[0]}
                     </AvatarFallback>
                   </Avatar>
                   <span className="text-sm font-medium">
-                    {change.user.firstName} {change.user.lastName}
+                    {change.user.name}
                   </span>
                 </div>
                 {change.comment && (

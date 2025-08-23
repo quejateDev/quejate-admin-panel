@@ -158,8 +158,8 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
                 >
                   <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="Seleccionar empleado">
-                      {assignedTo?.firstName && assignedTo?.lastName
-                        ? `${assignedTo?.firstName} ${assignedTo?.lastName}`
+                      {assignedTo?.name
+                        ? `${assignedTo?.name}`
                         : "Sin asignar"}
                     </SelectValue>
                   </SelectTrigger>
@@ -167,7 +167,7 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
                     <SelectItem value="unassigned">Sin asignar</SelectItem>
                     {employees?.map((employee) => (
                       <SelectItem key={employee.id} value={employee.id}>
-                        {employee.firstName} {employee.lastName}
+                        {employee.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
