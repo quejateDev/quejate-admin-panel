@@ -32,8 +32,7 @@ export default async function PQRDetailPage({
         include: {
           user: {
             select: {
-              firstName: true,
-              lastName: true,
+              name: true
             },
           },
         },
@@ -89,7 +88,7 @@ export default async function PQRDetailPage({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Nombre</span>
                   <span>
-                    {pqr.creator?.firstName} {pqr.creator?.lastName}
+                    {pqr.creator?.name}
                   </span>
                 </div>
                 <div className="flex justify-between">

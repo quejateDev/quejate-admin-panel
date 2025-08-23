@@ -15,8 +15,7 @@ interface PQRResponse {
   text: string;
   createdAt: Date;
   user: {
-    firstName: string;
-    lastName: string;
+    name: string | null;
   };
 }
 
@@ -103,16 +102,15 @@ export function PQRResponses({ pqrId, initialResponses }: PQRResponsesProps) {
           {responses.map((response) => (
             <div key={response.id} className="flex gap-4">
               <Avatar>
-                <AvatarImage src={`https://ui-avatars.com/api/?name=${response.user.firstName}+${response.user.lastName}`} />
+                <AvatarImage src={`https://ui-avatars.com/api/?name=${response.user.name}`} />
                 <AvatarFallback>
-                  {response.user.firstName[0]}
-                  {response.user.lastName[0]}
+                  {response.user.name ? response.user.name[0] : "?"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 space-y-1">
                 <div className="flex items-center justify-between">
                   <p className="font-medium">
-                    {response.user.firstName} {response.user.lastName}
+                    {response.user.name}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {format(response.createdAt, "PPP", { locale: es })}
