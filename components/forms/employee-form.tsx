@@ -16,7 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ChangePasswordDialog } from "./change-password-dialog";
-import useAuthStore from "@/store/useAuthStore";
 import { useEmployeeById, useEmployees } from "@/hooks/employee/useEmployees";
 import {
   Select,
@@ -31,8 +30,7 @@ interface EmployeeFormProps {
   initialData?: {
     id: string;
     email: string;
-    firstName: string;
-    lastName: string;
+    name: string;
     phone?: string;
     role: "EMPLOYEE" | "ADMIN";
     departmentId: string;
@@ -56,8 +54,7 @@ export function EmployeeForm({
 
   const formSchema = z.object({
     email: z.string().email("Email inválido"),
-    firstName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-    lastName: z.string().min(2, "El apellido debe tener al menos 2 caracteres"),
+    name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
     phone: z.string().optional(),
     password:
       mode === "create"
@@ -71,8 +68,7 @@ export function EmployeeForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: initialData?.email || "",
-      firstName: initialData?.firstName || "",
-      lastName: initialData?.lastName || "",
+      name: initialData?.name || "",
       phone: initialData?.phone || "",
       password: mode === "create" ? "" : undefined,
       role: initialData?.role || "EMPLOYEE",
@@ -85,8 +81,7 @@ export function EmployeeForm({
       if (mode === "create") {
         await createEmployee({
           ...values,
-          lastName: values.lastName,
-          firstName: values.firstName,
+          name: values.name,
           email: values.email,
           role: values.role,
           phone: values.phone || "",
@@ -99,8 +94,7 @@ export function EmployeeForm({
         const updateData = {
           id: initialData.id,
           ...values,
-          lastName: values.lastName,
-          firstName: values.firstName,
+          name: values.name,
           email: values.email,
           role: values.role,
           phone: values.phone || "",
@@ -129,25 +123,12 @@ export function EmployeeForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="firstName"
+            name="name"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nombre</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ingrese el nombre" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="lastName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Apellido</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ingrese el apellido" {...field} />
+                  <Input placeholder="Ingrese el nombre completo" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

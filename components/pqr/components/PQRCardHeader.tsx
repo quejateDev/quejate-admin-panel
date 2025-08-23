@@ -7,9 +7,9 @@ import Image from "next/image";
 type PQRCardHeaderProps = {
   pqr: {
     creator: {
-      firstName: string;
+      name: string;
       lastName: string;
-      profilePicture?: string | null;
+      image?: string | null;
     } | null;
     anonymous: boolean;
     createdAt: Date;
@@ -20,7 +20,7 @@ type PQRCardHeaderProps = {
 
 export function PQRCardHeader({ pqr }: PQRCardHeaderProps) {
   const creatorName = !pqr.anonymous && pqr.creator
-    ? `${pqr.creator.firstName} ${pqr.creator.lastName}`
+    ? `${pqr.creator.name}`
     : "Anónimo";
 
   const formattedDate = new Date(pqr.createdAt).toLocaleDateString("es-ES", {
@@ -40,9 +40,9 @@ export function PQRCardHeader({ pqr }: PQRCardHeaderProps) {
             <div className="flex items-center justify-center h-10 w-10 rounded-full bg-gray-100">
             {pqr.anonymous ? (
               <User className="h-6 w-6 stroke-1" />
-            ) : pqr.creator?.profilePicture ? (
+            ) : pqr.creator?.image ? (
               <Image
-                src={pqr.creator.profilePicture}
+                src={pqr.creator.image}
                 alt={creatorName}
                 width={48}
                 height={48}

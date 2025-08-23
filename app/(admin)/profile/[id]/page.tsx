@@ -12,13 +12,6 @@ import { Loader2, User } from "lucide-react";
 import { ChangePasswordDialog } from "@/components/forms/change-password-dialog";
 import useUser from "@/hooks/useUser";
 
-interface UserProfile {
-  id: string;
-  email: string;
-  name: string | null;
-  lastName: string | null;
-  profilePicture: string | null;
-}
 
 export default function ProfilePage() {
   const { toast } = useToast();
@@ -72,7 +65,7 @@ export default function ProfilePage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex justify-center mb-6">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={userData?.profilePicture || undefined} />
+                  <AvatarImage src={userData?.image || undefined} />
                   <AvatarFallback>
                     <User className="h-12 w-12" />
                   </AvatarFallback>

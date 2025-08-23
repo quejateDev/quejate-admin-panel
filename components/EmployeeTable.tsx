@@ -41,7 +41,7 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
           {employees.map((employee: any) => (
             <TableRow key={employee.id}>
               <TableCell>{employee.username}</TableCell>
-              <TableCell>{`${employee.firstName} ${employee.lastName}`}</TableCell>
+              <TableCell>{`${employee.name}`}</TableCell>
               <TableCell>{employee.email}</TableCell>
               <TableCell>{employee.phone}</TableCell>
               <TableCell>

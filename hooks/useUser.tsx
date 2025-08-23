@@ -6,23 +6,20 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 interface UserProfile {
   id: string;
   username: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   isFollowing: boolean;
   followers: Array<{
     id: string;
     username: string;
-    firstName: string;
-    lastName: string;
+    name: string;
   }>;
   following: Array<{
     id: string;
     username: string;
-    firstName: string;
-    lastName: string;
+    name: string;
   }>;
-  profilePicture: string | null;
+  image: string | null;
   _count: {
     followers: number;
     following: number;

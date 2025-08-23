@@ -31,7 +31,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import axios from "axios";
-import useAuthStore from "@/store/useAuthStore";
 
 interface Department {
   id: string;
@@ -40,8 +39,7 @@ interface Department {
 
 interface EntityUser {
   id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   role: string;
   departmentId?: string;
@@ -196,13 +194,12 @@ export function AdminManager({ entityId }: AdminManagerProps) {
                   <div className="flex items-center gap-3">
                     <Avatar>
                       <AvatarFallback>
-                        {user.firstName[0]}
-                        {user.lastName[0]}
+                        {user.name[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="text-sm font-medium">
-                        {user.firstName} {user.lastName}
+                        {user.name}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {user.email}
