@@ -5,38 +5,15 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { Users, Building2, LayoutDashboard, Tag, Scale } from "lucide-react";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { UserRole } from "@prisma/client";
 import LogoutButton from "@/components/buttons/logoutButton";
-import { getCookie } from "@/lib/utils";
-import { verifyToken } from "@/lib/utils";
 import { Logo } from "../Logo";
+import { currentRole } from "@/lib/auth";
 
-interface CustomJWTPayload {
-  id: string;
-  role: string;
-  email: string;
-  entityId: string;
-}
 
 export default async function AppSidebar() {
-  const token = await getCookie("token");
-
-  if (!token) redirect("/login");
-
-  let decoded: CustomJWTPayload | null = null;
-
-  try {
-    decoded = await verifyToken(token);
-
-    // if (!decoded) redirect("/login");
-  } catch (error) {
-    console.error("Token verification error:", error);
-    // redirect("/login");
-  }
-
-  const { role } = decoded || { role: "" };
+  const role = await currentRole();
 
   const getMenuItemsByRole = () => {
     const baseMenu = [
