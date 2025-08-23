@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getCookie, verifyToken } from "./lib/utils";
-import { UserRole } from "@prisma/client";
 
 export async function middleware(request: NextRequest) {
   // if (request.nextUrl.pathname === "/login") return NextResponse.next();
