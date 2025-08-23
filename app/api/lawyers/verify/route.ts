@@ -37,7 +37,7 @@ export async function PATCH(request: Request) {
         isVerified: true,
         user: {
           select: {
-            firstName: true,
+            name: true,
             lastName: true,
             email: true,
           },

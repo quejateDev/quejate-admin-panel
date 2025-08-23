@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getUserIdFromToken } from "@/lib/auth";
+import { currentUser } from "@/lib/auth";
 
 export async function GET(
   request: Request,
@@ -31,8 +31,7 @@ export async function GET(
       include: {
         user: {
           select: {
-            firstName: true,
-            lastName: true,
+            name: true,
           },
         },
       },
@@ -59,7 +58,9 @@ export async function PATCH(
   try {
     const { id } = await params;
 
-    const userId = await getUserIdFromToken();
+    const user = await currentUser();
+    const userId = user?.id;
+    
     if (!userId) {
       console.error("Unauthorized attempt to update status");
       return NextResponse.json(
@@ -123,8 +124,7 @@ export async function PATCH(
         include: {
           user: {
             select: {
-              firstName: true,
-              lastName: true,
+              name: true,
             },
           },
         },

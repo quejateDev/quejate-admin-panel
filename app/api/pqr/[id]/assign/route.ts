@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getUserIdFromToken } from "@/lib/auth";
+import { currentUser } from "@/lib/auth";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await getUserIdFromToken();
+    const user = await currentUser();
+    const userId = user?.id;
+    
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -64,8 +66,7 @@ export async function PATCH(
         assignedTo: {
           select: {
             id: true,
-            firstName: true,
-            lastName: true,
+            name: true,
             email: true,
           },
         },

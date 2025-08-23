@@ -3,59 +3,32 @@ import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { sendPQRCreationEmail } from "@/services/email/Resend.service";
 import { sendPQRNotificationEmail } from "@/services/email/sendPQRNotification";
-import { getCookie, verifyToken } from "@/lib/utils";
-import { GETPQRSchema, GetPQRsDTO } from "@/dto/pqr.dto";
 
-export async function GET(
-  req: NextRequest
-): Promise<NextResponse<GetPQRsDTO[] | { error: string }>> {
-  const { searchParams } = new URL(req.url);
-  const token = await getCookie("token");
-
-  if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  const decoded = await verifyToken(token);
-  if (!decoded) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { organizationId, departmentId, startDate, endDate, status, type } =
-    GETPQRSchema.parse({
-      ...Object.fromEntries(searchParams),
-    });
-
-  const { role } = decoded;
-
+export async function GET(request: NextRequest) {
   try {
-    const whereClause: any = {
-      createdAt: {
-        gte: startDate ? new Date(startDate) : undefined,
-        lte: endDate ? new Date(endDate) : undefined,
-      },
-      status: status || undefined,
-      type: type || undefined,
-      assignedToId: role !== "EMPLOYEE" ? undefined : decoded.id,
-    };
-
-    if (organizationId) {
-      if (departmentId && departmentId !== "all") {
-        whereClause.departmentId = departmentId;
-      } else {
-        whereClause.department = {
-          entityId: organizationId,
-        };
-      }
-    }
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    
+    const skip = (page - 1) * limit;
+    const take = Math.min(limit, 50);
 
     const pqrs = await prisma.pQRS.findMany({
-      where: whereClause,
-      orderBy: {
-        createdAt: "desc",
+      where: {
+        private: false,
+        creatorId: { not: null }
       },
       include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
         department: {
-          include: {
+          select: {
+            name: true,
             entity: {
               select: {
                 id: true,
@@ -64,15 +37,64 @@ export async function GET(
             },
           },
         },
-        creator: true,
-        assignedTo: true,
+        entity: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        likes: {
+          select: {
+            id: true,
+            userId: true
+          },
+        },
+        customFieldValues: {
+          select: {
+            name: true,
+            value: true,
+          },
+        },
+        attachments: {
+          select: {
+            name: true,
+            url: true,
+            type: true,
+            size: true,
+          },
+        }, 
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
       },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take,
     });
 
-    return NextResponse.json(pqrs);
+    const totalCount = await prisma.pQRS.count({
+      where: {
+        private: false,
+        creatorId: { not: null }
+      }
+    });
+
+    const hasMore = skip + take < totalCount;
+
+    return NextResponse.json({
+      pqrs,
+      hasMore,
+      nextPage: hasMore ? page + 1 : null
+    });
+
   } catch (error) {
-    console.error("Error fetching PQRs:", error);
-    return NextResponse.json({ error: "Error fetching PQRs" }, { status: 500 });
+    console.error("Error fetching PQRSD:", error);
+    return NextResponse.json({ error: "Error fetching PQRSD" }, { status: 500 });
   }
 }
 
@@ -224,10 +246,6 @@ export async function POST(req: NextRequest) {
         entity.email,
         entity.name,
         pqr,
-        pqr.creator,
-        pqr.customFieldValues,
-        pqr.attachments,
-        pqr.consecutiveCode
       );
     } else {
       throw new Error("No email found for this entity");

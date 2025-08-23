@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getUserIdFromToken } from "@/lib/auth";
+import { currentUser } from "@/lib/auth";
 
 export async function GET(
   request: Request,
@@ -15,8 +15,7 @@ export async function GET(
       include: {
         user: {
           select: {
-            firstName: true,
-            lastName: true,
+            name: true,
           },
         },
       },
@@ -40,7 +39,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await getUserIdFromToken();
+    const user = await currentUser();
+    const userId = user?.id;
+    
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -60,8 +61,7 @@ export async function POST(
       include: {
         user: {
           select: {
-            firstName: true,
-            lastName: true,
+            name: true,
           },
         },
       },

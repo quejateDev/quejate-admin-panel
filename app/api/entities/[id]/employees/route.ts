@@ -15,7 +15,7 @@ export async function GET(
       },
       select: {
         id: true,
-        firstName: true,
+        name: true,
         lastName: true,
         email: true,
         departmentId: true,
@@ -26,7 +26,7 @@ export async function GET(
         },
       },
       orderBy: {
-        firstName: 'asc',
+        name: 'asc',
       },
     });
 

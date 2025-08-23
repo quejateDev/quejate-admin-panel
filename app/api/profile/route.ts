@@ -1,26 +1,27 @@
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
-import { getCookie, verifyToken } from "@/lib/utils";
+import { currentUser } from "@/lib/auth";
+
 export async function GET() {
   try {
-    const token = await getCookie("token");
-    if (!token) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-    const decoded = await verifyToken(token);
-    if (!decoded) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    const currentUs = await currentUser();
+    const userId = currentUs?.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "No autorizado" },
+        { status: 401 }
+      );
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: userId },
       select: {
         id: true,
         email: true,
-        firstName: true,
-        lastName: true,
-        profilePicture: true,
+        name: true,
+        image: true,
       },
     });
 
@@ -33,30 +34,29 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   try {
-    const token = await getCookie("token");
-    if (!token) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-    const decoded = await verifyToken(token);
-    if (!decoded) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    const currentUs = await currentUser();
+    const userId = currentUs?.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "No autorizado" },
+        { status: 401 }
+      );
     }
 
     const body = await req.json();
-    const { firstName, lastName } = body;
+    const { name } = body;
 
     const user = await prisma.user.update({
-      where: { id: decoded.id },
+      where: { id: userId },
       data: {
-        firstName,
-        lastName,
+        name,
       },
       select: {
         id: true,
         email: true,
-        firstName: true,
-        lastName: true,
-        profilePicture: true,
+        name: true,
+        image: true,
       },
     });
 

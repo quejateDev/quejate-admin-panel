@@ -55,8 +55,7 @@ export async function POST(request: NextRequest, { params }: any) {
         creator: {
           select: {
             id: true,
-            firstName: true,
-            lastName: true,
+            name: true,
           },
         },
       },
@@ -66,7 +65,7 @@ export async function POST(request: NextRequest, { params }: any) {
       if (userId !== updatedPQR.creator.id) {
         const likingUser = await prisma.user.findUnique({
           where: { id: userId },
-          select: { firstName: true, lastName: true }
+          select: { name: true }
         });
     
         if (likingUser) {
@@ -74,11 +73,11 @@ export async function POST(request: NextRequest, { params }: any) {
             data: {
               type: "like",
               userId: updatedPQR.creator.id,
-              message: `A ${likingUser.firstName} ${likingUser.lastName} le gusta tu PQRSD`,
+              message: `A ${likingUser.name} le gusta tu PQRSD`,
               data: {
                 pqrId: pqrId,
                 followerId: userId,
-                followerName: `${likingUser.firstName} ${likingUser.lastName}`,
+                followerName: `${likingUser.name}`,
               },
             },
           });

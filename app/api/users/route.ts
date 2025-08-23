@@ -17,8 +17,7 @@ export async function GET(request: Request) {
       select: {
         id: true,
         email: true,
-        firstName: true,
-        lastName: true,
+        name: true,
         phone: true,
         createdAt: true,
         updatedAt: true,
@@ -47,14 +46,13 @@ export async function GET(request: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { email, firstName, lastName, phone, password, role, entityId } =
+    const { email, name, phone, password, role, entityId } =
       await req.json();
 
     const client = await prisma.user.create({
       data: {
         email,
-        firstName,
-        lastName,
+        name,
         phone,
         password: await hash(password, 10),
         role: "EMPLOYEE",
