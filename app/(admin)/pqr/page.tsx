@@ -83,18 +83,20 @@ function PQRPageContent() {
   }
 
   // Calculate statistics
-  const totalPqrs = pqrs.length;
-  const pendingPqrs = pqrs.filter((pqr) => {
+  const totalPqrs = pqrs?.length || 0;
+  const pendingPqrs = (pqrs || []).filter((pqr) => {
     const dueDate = new Date(pqr.createdAt);
     dueDate.setDate(dueDate.getDate() + 15);
     return new Date() < dueDate;
   }).length;
-  const overduePqrs = pqrs.filter((pqr) => {
+  
+  const overduePqrs = (pqrs || []).filter((pqr) => {
     const dueDate = new Date(pqr.createdAt);
     dueDate.setDate(dueDate.getDate() + 15);
     return new Date() >= dueDate;
   }).length;
-  const completedPqrs = pqrs.filter(
+  
+  const completedPqrs = (pqrs || []).filter(
     (pqr) => pqr.status === PQRSStatus.RESOLVED
   ).length;
 
