@@ -27,7 +27,7 @@ import {
 
 interface EntityUser {
   id: string;
-  firstName: string;
+  name: string;
   lastName: string;
   email: string;
   role: string;
@@ -151,7 +151,7 @@ export default function EntityManagementPage() {
                   {entity.users.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell>
-                        {user.firstName} {user.lastName}
+                        {user.name} {user.lastName}
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>

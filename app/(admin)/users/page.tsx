@@ -151,15 +151,15 @@ export default function ClientsPage() {
   const filteredClients = clients
     .filter(
       (client) =>
-        client.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         client.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         client.email.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
       switch (sortBy) {
         case "name":
-          return `${a.firstName} ${a.lastName}`.localeCompare(
-            `${b.firstName} ${b.lastName}`
+          return `${a.name} ${a.lastName}`.localeCompare(
+            `${b.name} ${b.lastName}`
           );
         case "email":
           return a.email.localeCompare(b.email);
@@ -246,7 +246,7 @@ export default function ClientsPage() {
               {
                 header: "Nombre",
                 accessorFn: (client) =>
-                  `${client.firstName} ${client.lastName}`,
+                  `${client.name} ${client.lastName}`,
                 meta: {
                   width: "w-[25%]",
                 },

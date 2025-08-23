@@ -15,7 +15,7 @@ import useUser from "@/hooks/useUser";
 interface UserProfile {
   id: string;
   email: string;
-  firstName: string | null;
+  name: string | null;
   lastName: string | null;
   profilePicture: string | null;
 }
@@ -26,14 +26,14 @@ export default function ProfilePage() {
   const { data: userData, updateUser, isLoading } = useUser(user?.id || "");
 
   const [formData, setFormData] = useState({
-    firstName: userData?.firstName || "",
+    name: userData?.name || "",
     lastName: userData?.lastName || "",
     email: userData?.email || "",
   });
 
   useEffect(() => {
     setFormData({
-      firstName: userData?.firstName || "",
+      name: userData?.name || "",
       lastName: userData?.lastName || "",
       email: userData?.email || "",
     });
@@ -91,14 +91,14 @@ export default function ProfilePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="firstName">Nombre</Label>
+                <Label htmlFor="name">Nombre</Label>
                 <Input
-                  id="firstName"
-                  value={formData.firstName}
+                  id="name"
+                  value={formData.name}
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      firstName: e.target.value,
+                      name: e.target.value,
                     }))
                   }
                 />
