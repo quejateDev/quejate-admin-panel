@@ -1,46 +1,47 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import authConfig from "./auth.config";
+import NextAuth from "next-auth"
+import { apiAuthPrefix, authRoutes, DEFAULT_LOGIN_REDIRECT, privateRoutes } from "./route";
+const { auth } = NextAuth(authConfig)
 
-export async function middleware(request: NextRequest) {
-  // if (request.nextUrl.pathname === "/login") return NextResponse.next();
+export default auth((req) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
 
-  // const token = await getCookie("token");
-  // if (!token) return NextResponse.redirect(new URL("/login", request.url));
+  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
 
-  // let decoded: any;
+  const isPrivateRoute = privateRoutes.includes(nextUrl.pathname) || 
+                        privateRoutes.some(route => 
+                          route.endsWith('*') && 
+                          nextUrl.pathname.startsWith(route.slice(0, -1))
+                        );
+                        
+  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
-  // try {
-  //   decoded = await verifyToken(token);
-  // } catch (error) {
-  //   console.error("Error verifying token:", error);
-  //   return NextResponse.redirect(new URL("/login", request.url));
-  // }
+  if (nextUrl.pathname === "/") {
+    return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+  }
 
-  // if (!decoded) return NextResponse.redirect(new URL("/login", request.url));
+  if(isApiAuthRoute) {
+    return null;
+  }
 
-  // if (decoded?.role === UserRole.CLIENT)
-  //   return NextResponse.redirect(new URL("/login", request.url));
+  if(isAuthRoute){
+    if (isLoggedIn) {
+      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+    }
+    return null;
+  }
 
-  return NextResponse.next();
-}
+  if (isPrivateRoute && !isLoggedIn) {
+    return Response.redirect(new URL("/auth/login", nextUrl));
+  }
 
-// Configure paths that trigger the middleware
+  return null;
+})
+
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     */
-    {
-      source:
-        "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
-      // missing: [
-      // { type: "header", key: "next-router-prefetch" },
-      // { type: "header", key: "purpose", value: "prefetch" },
-      // ],
-    },
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/(api|trpc)(.*)',
   ],
-};
+}

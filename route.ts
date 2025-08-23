@@ -3,9 +3,9 @@ export const publicRoutes = [
     "/auth/new-verification",
 ];
 
-// export const privateRoutes = [
-//   ""
-// ];
+export const privateRoutes = [
+  "/pqr"
+];
 
 
 export const authRoutes = [
