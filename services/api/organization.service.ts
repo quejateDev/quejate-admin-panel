@@ -70,8 +70,7 @@ export async function updateEntity(
 
 interface Employee {
   id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   departmentId: string | null;
 }

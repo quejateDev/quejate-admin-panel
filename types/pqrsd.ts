@@ -7,8 +7,7 @@ export interface PQR {
   createdAt: Date;
   updatedAt: Date;
   creator: {
-    firstName: string;
-    lastName: string;
+    name: string;
     avatarUrl?: string;
   } | null;
   department: {
@@ -25,8 +24,7 @@ export interface PQR {
     text: string;
     createdAt: Date;
     user: {
-      firstName: string;
-      lastName: string;
+      name: string;
     };
   }[];
   _count: {

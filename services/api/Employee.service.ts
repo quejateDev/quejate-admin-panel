@@ -12,8 +12,7 @@ const Client = axios.create({
 
 export async function createEmployeeService(employee: {
   password: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   phone: string;
   role: string;

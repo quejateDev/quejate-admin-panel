@@ -2,8 +2,7 @@ import axios from "axios";
 
 interface UserProfile {
   id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
 }
 export const Client = axios.create({

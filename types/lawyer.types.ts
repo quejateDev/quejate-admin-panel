@@ -8,10 +8,9 @@ export interface Lawyer {
   professionalCardImage: string | null;
   user: {
     id: string;
-    firstName: string;
-    lastName: string;
+    name: string;
     email: string;
-    profilePicture: string | null;
+    image: string | null;
     isActive: boolean;
   };
   createdAt: string;
