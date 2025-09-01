@@ -24,7 +24,15 @@ export default function KPICard({
     <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-        {icon && <span className="text-2xl">{icon}</span>}
+        {icon && (
+          <div className="text-quaternary">
+            {typeof icon === 'string' ? (
+              <span className="text-2xl">{icon}</span>
+            ) : (
+              icon
+            )}
+          </div>
+        )}
       </div>
       
       <div className="mb-2">
@@ -38,7 +46,7 @@ export default function KPICard({
           }`}>
             {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
           </span>
-          <span className="ml-2 text-sm text-gray-500">vs período anterior</span>
+          <span className="ml-2 text-sm text-gray-500">vs mes anterior</span>
         </div>
       )}
 
