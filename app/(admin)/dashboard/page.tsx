@@ -13,6 +13,8 @@ export default async function DashboardPage() {
       redirect('/dashboard/superadmin');
     case 'ADMIN':
       redirect('/dashboard/admin');
+    case 'EMPLOYEE':
+      redirect('/pqr');
     default:
       redirect('/unauthorized');
   }
