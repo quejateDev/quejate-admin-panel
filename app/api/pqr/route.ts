@@ -3,21 +3,81 @@ import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { sendPQRCreationEmail } from "@/services/email/Resend.service";
 import { sendPQRNotificationEmail } from "@/services/email/sendPQRNotification";
+import { currentUser, currentRole } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
+    // Get current user and role
+    const user = await currentUser();
+    const role = await currentRole();
+
+    if (!user || !role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
+    const departmentId = searchParams.get('departmentId');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+    const organizationId = searchParams.get('organizationId');
     
     const skip = (page - 1) * limit;
     const take = Math.min(limit, 50);
 
+    // Build where clause based on user role
+    const whereClause: any = {
+      creatorId: { not: null }
+    };
+
+    // Add date filters if provided
+    if (startDate && endDate) {
+      whereClause.createdAt = {
+        gte: new Date(startDate),
+        lte: new Date(endDate)
+      };
+    }
+
+    // Add department filter if provided
+    if (departmentId) {
+      whereClause.departmentId = departmentId;
+    }
+
+    // Role-based filtering
+    if (role === 'SUPER_ADMIN') {
+      // Super admin can see all PQRs - no additional filters needed
+      // If organizationId is provided, filter by it (for UI filtering purposes)
+      if (organizationId) {
+        whereClause.entityId = organizationId;
+      }
+    } else if (role === 'ADMIN' || role === 'EMPLOYEE') {
+      // Admin and employees can only see PQRs from their entity
+      // Get user entity using existing endpoint logic
+      const userWithEntity = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: {
+          entityId: true,
+        }
+      });
+
+      if (userWithEntity?.entityId) {
+        whereClause.entityId = userWithEntity.entityId;
+      } else {
+        // If user has no entityId, return empty results
+        return NextResponse.json({
+          pqrs: [],
+          hasMore: false,
+          nextPage: null
+        });
+      }
+    } else {
+      // Other roles (CLIENT, etc.) should not access this endpoint
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const pqrs = await prisma.pQRS.findMany({
-      where: {
-        private: false,
-        creatorId: { not: null }
-      },
+      where: whereClause,
       include: {
         creator: {
           select: {
@@ -78,13 +138,15 @@ export async function GET(request: NextRequest) {
     });
 
     const totalCount = await prisma.pQRS.count({
-      where: {
-        private: false,
-        creatorId: { not: null }
-      }
+      where: whereClause
     });
 
     const hasMore = skip + take < totalCount;
+
+    // For compatibility with existing service, return just the pqrs array if no pagination params
+    if (!searchParams.get('page') && !searchParams.get('limit')) {
+      return NextResponse.json(pqrs);
+    }
 
     return NextResponse.json({
       pqrs,
