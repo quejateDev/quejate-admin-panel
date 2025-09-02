@@ -11,15 +11,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import useAuthStore from "@/store/useAuthStore";
 import Link from "next/link";
 import { signOut } from "next-auth/react"
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export function NavbarAdmin() {
-  const { user } = useAuthStore();
+  const user  = useCurrentUser();
 
   const handleLogout = () => {
-      signOut({ callbackUrl: "auth/login" });
+      signOut({ callbackUrl: "/auth/login" });
     };
 
   return (
