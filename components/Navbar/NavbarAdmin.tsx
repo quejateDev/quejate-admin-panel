@@ -12,17 +12,15 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import useAuthStore from "@/store/useAuthStore";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { signOut } from "next-auth/react"
 
 export function NavbarAdmin() {
-  const { user, logout } = useAuthStore();
-  const router = useRouter();
+  const { user } = useAuthStore();
 
   const handleLogout = () => {
-    logout();
-    router.push("auth/login");
-  };
+      signOut({ callbackUrl: "auth/login" });
+    };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
