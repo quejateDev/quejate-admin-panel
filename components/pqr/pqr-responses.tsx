@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import useAuthStore from "@/store/useAuthStore";
 import { toast } from "@/hooks/use-toast";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface PQRResponse {
   id: string;
@@ -28,7 +28,7 @@ export function PQRResponses({ pqrId, initialResponses }: PQRResponsesProps) {
   const [responses, setResponses] = useState<PQRResponse[]>(initialResponses);
   const [newResponse, setNewResponse] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useAuthStore();
+  const user = useCurrentUser();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

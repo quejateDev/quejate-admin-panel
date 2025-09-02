@@ -21,7 +21,6 @@ import {
   getDepartmentsService,
 } from "@/services/api/Department.service";
 import useUser from "@/hooks/useUser";
-import useAuthStore from "@/store/useAuthStore";
 import { useDepartments } from "@/hooks/useDeparments";
 import useOrganizationStore from "@/store/useOrganizationStore";
 

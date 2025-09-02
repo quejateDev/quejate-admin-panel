@@ -25,7 +25,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useEmployees } from "@/hooks/employee/useEmployees";
 import { GetPQRsDTO } from "@/dto/pqr.dto";
 import useOrganizationStore from "@/store/useOrganizationStore";
-import useAuthStore from "@/store/useAuthStore";
+import { useCurrentUser } from "@/hooks/use-current-user";
 interface PQRTableProps {
   assignPQR: any;
   pqrs: GetPQRsDTO[];
@@ -50,7 +50,7 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
   const [pageSize, setPageSize] = useState(10);
 
   const { entity } = useOrganizationStore();
-  const { user } = useAuthStore();
+  const user = useCurrentUser();
   const { data: employees } = useEmployees(entity?.id ?? "");
 
   function getRemainingTimeBadge(createdAt: Date) {
@@ -71,10 +71,6 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
     }
   }
 
-  // Get unique departments for filter
-  const departments = Array.from(
-    new Set(pqrs.map((pqr) => pqr.department?.name).filter(Boolean))
-  );
 
   const handleAssignment = async (
     pqrId: string,

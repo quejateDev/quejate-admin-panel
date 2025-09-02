@@ -1,21 +1,16 @@
 "use client";
-import PqrVsDepartmentChart from "@/components/charts/pqr/pqr-vs-deparment";
-import { PqrVsTimeChart } from "@/components/charts/pqr/pqr-vs-time";
-import { PqrVsTypeChart } from "@/components/charts/pqr/pqr-vs-type";
 import { PqrFilters } from "@/components/pqr/pqr-filters";
 import { PQRTable } from "@/components/pqr/pqr-table";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Clock, AlertTriangle, CheckCircle } from "lucide-react";
-import { PQRSStatus, UserRole } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 import { usePQRS } from "@/hooks/pqr/usePQRs";
 import { useState, Suspense, useEffect } from "react";
 import { parseISO } from "date-fns";
 import { DateRange } from "react-day-picker";
-import MetricCard from "@/components/charts/pqr/MetricCard";
-import useOrganizationStore from "@/store/useOrganizationStore";
-import useAuthStore from "@/store/useAuthStore";
 import OrganizationSelector from "@/components/OrganizationSelector";
+import { useUserWithEntity } from "@/hooks/use-user-with-entity";
+import useOrganizationStore from "@/store/useOrganizationStore";
 
 function PQRPageContent() {
   const searchParams = useSearchParams();
@@ -34,7 +29,7 @@ function PQRPageContent() {
   });
 
   const { entity } = useOrganizationStore();
-  const { user } = useAuthStore();
+  const { userWithEntity: user, isLoading: userLoading } = useUserWithEntity();
 
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | undefined>();
 
@@ -42,7 +37,7 @@ function PQRPageContent() {
     if (user?.role === UserRole.SUPER_ADMIN) {
       setSelectedOrganizationId(entity?.id);
     } else {
-      setSelectedOrganizationId(user?.entity?.id);
+      setSelectedOrganizationId(user?.Entity?.id);
     }
   }, [user, entity]);
 
@@ -52,6 +47,16 @@ function PQRPageContent() {
     endDate: dateRange?.to?.toISOString(),
     organizationId: selectedOrganizationId,
   });
+
+  if (userLoading) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex justify-center items-center p-8">
+          <div className="text-muted-foreground">Cargando datos...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (user?.role === UserRole.SUPER_ADMIN && !selectedOrganizationId) {
     return (
@@ -75,30 +80,13 @@ function PQRPageContent() {
             <p className="text-muted-foreground mb-4">
               Selecciona una organización para ver su dashboard de PQRSD.
             </p>
-            <OrganizationSelector userOrganizationId={user?.entity?.id || ""} />
+            <OrganizationSelector userOrganizationId={user?.Entity?.id || ""} />
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  // Calculate statistics
-  const totalPqrs = pqrs?.length || 0;
-  const pendingPqrs = (pqrs || []).filter((pqr) => {
-    const dueDate = new Date(pqr.createdAt);
-    dueDate.setDate(dueDate.getDate() + 15);
-    return new Date() < dueDate;
-  }).length;
-  
-  const overduePqrs = (pqrs || []).filter((pqr) => {
-    const dueDate = new Date(pqr.createdAt);
-    dueDate.setDate(dueDate.getDate() + 15);
-    return new Date() >= dueDate;
-  }).length;
-  
-  const completedPqrs = (pqrs || []).filter(
-    (pqr) => pqr.status === PQRSStatus.RESOLVED
-  ).length;
 
   return (
     <div className="flex flex-col gap-6">
@@ -122,7 +110,7 @@ function PQRPageContent() {
                 <CardTitle className="text-lg">Organización Seleccionada</CardTitle>
               </CardHeader>
               <CardContent>
-                <OrganizationSelector userOrganizationId={user?.entity?.id || ""} />
+                <OrganizationSelector userOrganizationId={user?.Entity?.id || ""} />
               </CardContent>
             </Card>
           </div>
@@ -136,56 +124,7 @@ function PQRPageContent() {
         
       </div>
 
-      {/* Statistics cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Total PQRSD"
-          icon={<FileText className="h-4 w-4 text-muted-foreground" />}
-          value={totalPqrs}
-          description="Solicitudes en el período seleccionado"
-          isLoading={isLoading}
-        />
-        <MetricCard
-          title="Pendientes"
-          icon={<Clock className="h-4 w-4 text-muted-foreground" />}
-          value={pendingPqrs}
-          description="PQRSD dentro del plazo de respuesta"
-          isLoading={isLoading}
-        />
-
-        <MetricCard
-          title="Vencidas"
-          icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
-          value={overduePqrs}
-          description="PQRSD fuera del plazo de respuesta"
-          isLoading={isLoading}
-        />
-
-        <MetricCard
-          title="Completadas"
-          icon={<CheckCircle className="h-4 w-4 text-green-500" />}
-          value={completedPqrs}
-          description="PQRSD resueltas exitosamente"
-          isLoading={isLoading}
-        />
-      </div>
-
-      {/* Charts section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PqrVsTimeChart
-          pqrs={pqrs.sort(
-            (a, b) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )}
-          className="col-span-2"
-          isLoading={isLoading}
-        />
-
-        {/* <PqrVsDepartmentChart pqrs={pqrs} isLoading={isLoading} /> */}
-        <PqrVsTypeChart pqrs={pqrs} isLoading={isLoading} />
-      </div>
-
-      {/* Table section */}
+      
       <Card>
         <CardHeader>
           <CardTitle>Listado de PQRSD</CardTitle>
