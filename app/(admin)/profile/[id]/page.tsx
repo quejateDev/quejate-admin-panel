@@ -7,15 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import useAuthStore from "@/store/useAuthStore";
 import { Loader2, User } from "lucide-react";
 import { ChangePasswordDialog } from "@/components/forms/change-password-dialog";
 import useUser from "@/hooks/useUser";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 
 export default function ProfilePage() {
   const { toast } = useToast();
-  const { user } = useAuthStore();
+  const user = useCurrentUser();
   const { data: userData, updateUser, isLoading } = useUser(user?.id || "");
 
   const [formData, setFormData] = useState({
