@@ -11,6 +11,17 @@ export interface SuperAdminKPI {
   };
 }
 
+export interface AdminKPI {
+  totalPQRDS: number;
+  totalEmployees: number;
+  totalDepartments: number;
+  trends?: {
+    pqrsTrend: number;
+    employeesTrend: number;
+    departmentsTrend: number;
+  };
+}
+
 export interface SuperAdminCharts {
   usersByMonth: Array<{
     month: number;
@@ -33,6 +44,27 @@ export interface SuperAdminCharts {
   pqrsByMonth: Array<{
     month: number;
     monthName: string;
+    count: number;
+  }>;
+}
+
+export interface AdminCharts {
+  pqrsByMonth: Array<{
+    month: number;
+    monthName: string;
+    count: number;
+  }>;
+  pqrsByDepartment: Array<{
+    departmentId: string;
+    departmentName: string;
+    count: number;
+  }>;
+  pqrsByType: Array<{
+    type: string;
+    count: number;
+  }>;
+  pqrsByStatus: Array<{
+    status: string;
     count: number;
   }>;
 }
