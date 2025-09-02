@@ -45,9 +45,7 @@ function PQRPageContent() {
           <h1 className="text-3xl font-bold tracking-tight">
             Gestión de PQRSD
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Administra y monitorea las PQRSD de tu entidad
-          </p>
+          
         </div>
         <PqrFilters dateRange={dateRange} setDateRange={setDateRange} />
       </div>
