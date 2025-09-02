@@ -4,7 +4,7 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { Users, Building2, LayoutDashboard, Tag, Scale } from "lucide-react";
+import { Users, Building2, LayoutDashboard, Tag, Scale, FileText } from "lucide-react";
 import Link from "next/link";
 import { UserRole } from "@prisma/client";
 import LogoutButton from "@/components/buttons/logoutButton";
@@ -19,7 +19,7 @@ export default async function AppSidebar() {
     const baseMenu = [
       {
         title: "Dashboard",
-        url: "/pqr",
+        url: "/dashboard",
         icon: LayoutDashboard,
       },
     ];
@@ -37,6 +37,11 @@ export default async function AppSidebar() {
           url: "/users",
           icon: Users,
         },
+        {
+          title: "PQRSD",
+          url: "/pqr",
+          icon: FileText,
+        },
       ];
     }
 
@@ -52,6 +57,11 @@ export default async function AppSidebar() {
           title: "Usuarios",
           url: "/users",
           icon: Users,
+        },
+        {
+          title: "PQRSD",
+          url: "/pqr",
+          icon: FileText,
         },
       ];
     }
