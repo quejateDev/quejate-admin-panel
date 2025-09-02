@@ -66,6 +66,15 @@ export default async function AppSidebar() {
       ];
     }
 
+    if (role === UserRole.EMPLOYEE) {
+      return [
+        {
+          title: "PQRSD",
+          url: "/pqr",
+          icon: FileText,
+        },
+      ];
+    }
 
     return baseMenu;
   };
