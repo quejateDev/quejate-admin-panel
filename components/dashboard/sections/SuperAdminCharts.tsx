@@ -83,12 +83,12 @@ export default function SuperAdminChartsSection() {
               xKey="monthName"
               yKey="count"
               color="#3b82f6"
-              title="PQRs por mes"
+              title="PQRSD por mes"
               height={300}
             />
           ) : (
             <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
-              <p className="text-gray-500">No hay datos de PQRs disponibles</p>
+              <p className="text-gray-500">No hay datos de PQRSD disponibles</p>
             </div>
           )}
         </div>
