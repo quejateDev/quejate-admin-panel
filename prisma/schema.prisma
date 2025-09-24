@@ -34,8 +34,8 @@ model User {
   PQRS              PQRS[]
   statusHistory     PQRStatusHistory[]
   givenRatings      Rating[]             @relation("ClientGivenRatings")
-  department        Department?          @relation(fields: [departmentId], references: [id])
-  Entity            Entity?              @relation(fields: [entityId], references: [id])
+  department        Department?          @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  Entity            Entity?              @relation(fields: [entityId], references: [id], onDelete: SetNull)
   favorites         UserFavoriteEntity[]
   following         User[]              @relation("UserFollows")
   followers         User[]              @relation("UserFollows")
@@ -50,7 +50,7 @@ model Lawyer {
   id                    String          @id @default(uuid())
   userId                String          @unique
   documentType          DocumentType
-  identityDocument      String
+  identityDocument      String          @unique
   specialties           String[]
   description           String?
   feePerHour            Float?
@@ -59,7 +59,8 @@ model Lawyer {
   updatedAt             DateTime        @updatedAt
   isVerified            Boolean         @default(false)
   identityDocumentImage String
-  professionalCardImage String
+  professionalCardImage String          
+  licenseNumber         String          @unique
   user                  User            @relation(fields: [userId], references: [id])
   lawyerRequests        LawyerRequest[]
   receivedRatings       Rating[]        @relation("LawyerReceivedRatings")
@@ -95,7 +96,7 @@ model Rating {
   score     Int
   createdAt DateTime @default(now())
   comment   String?
-  client    User     @relation("ClientGivenRatings", fields: [clientId], references: [id])
+  client    User     @relation("ClientGivenRatings", fields: [clientId], references: [id], onDelete: Cascade)
   lawyer    Lawyer   @relation("LawyerReceivedRatings", fields: [lawyerId], references: [id])
 
   @@unique([lawyerId, clientId])
@@ -141,6 +142,7 @@ model Entity {
   pqrs                 PQRS[]
   users                User[]
   favoritedBy          UserFavoriteEntity[]
+  isActive            Boolean              @default(true)
 
   @@index([categoryId])
 }
@@ -151,7 +153,7 @@ model UserFavoriteEntity {
   entityId  String
   createdAt DateTime @default(now())
   entity    Entity   @relation(fields: [entityId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, entityId])
 }
@@ -187,6 +189,7 @@ model Category {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   imageUrl    String?
+  isActive    Boolean  @default(true)
   entities    Entity[]
 }
 
@@ -222,12 +225,15 @@ model PQRS {
   entityId          String
   attachments       Attachment[]
   comments          Comment[]
+  guestName        String?
+  guestEmail       String?
+  guestPhone       String?
   customFieldValues CustomFieldValue[]
   lawyerRequests    LawyerRequest[]
   likes             Like[]
   PQRCustomField    PQRCustomField[]
-  assignedTo        User?              @relation("AssignedPQRS", fields: [assignedToId], references: [id])
-  creator           User?              @relation(fields: [creatorId], references: [id])
+  assignedTo        User?              @relation("AssignedPQRS", fields: [assignedToId], references: [id], onDelete: SetNull)
+  creator           User?              @relation(fields: [creatorId], references: [id], onDelete: SetNull)
   department        Department?        @relation(fields: [departmentId], references: [id])
   entity            Entity             @relation(fields: [entityId], references: [id])
   statusHistory     PQRStatusHistory[]
@@ -386,7 +392,7 @@ model PQRStatusHistory {
   pqrId     String
   userId    String
   pqr       PQRS       @relation(fields: [pqrId], references: [id], onDelete: Cascade)
-  user      User       @relation(fields: [userId], references: [id])
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([pqrId])
   @@index([userId])
@@ -478,4 +484,4 @@ model PasswordResetToken {
 
   @@unique([email, token])
   @@map("password_reset_tokens")
-} 
+}
