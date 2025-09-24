@@ -33,10 +33,7 @@ export async function GET(request: Request, { params }: any) {
   }
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request, { params }: any) {
   try {
     const { id } = params;
     const body = await request.json();
