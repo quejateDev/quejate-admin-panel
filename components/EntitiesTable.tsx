@@ -23,7 +23,6 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import ConfirmationModal from "./modals/ConfirmationModal";
 import { toast } from "@/hooks/use-toast";
-import { Badge } from "./ui/badge";
 import { Switch } from "./ui/switch";
 import axios from "axios";
 
@@ -80,9 +79,7 @@ export function EntitiesTable({ entities, categories }: EntitiesTableProps) {
           title: "Entidad eliminada correctamente",
           description: "La entidad ha sido eliminada correctamente",
         });
-        const newDataResponse = await fetch("/api/entities");
-        const newData = await newDataResponse.json();
-        setFilteredEntities(newData);
+                setFilteredEntities(filteredEntities.filter(entity => entity.id !== entityToDelete));
       } catch (error) {
         console.error(error);
         toast({
@@ -105,27 +102,70 @@ export function EntitiesTable({ entities, categories }: EntitiesTableProps) {
         });
         return;
       }
-      await axios.put(
+      
+      const response = await axios.put(
         `/api/entities/${entityId}`,
         {
           isVerified: !entity.isVerified,
         }
       );
 
-      setFilteredEntities(filteredEntities.map((e) =>
-          e.id === entityId ? { ...e, isVerified: !e.isVerified } : e
-        )
-      );
+      if (response.status === 200) {
+        setFilteredEntities(filteredEntities.map((e) =>
+            e.id === entityId ? { ...e, isVerified: !e.isVerified } : e
+          )
+        );
 
-      toast({
-        title: "Entidad verificada correctamente",
-        description: "La entidad ha sido verificada correctamente",
-      });
+        toast({
+          title: "Entidad verificada correctamente",
+          description: "La entidad ha sido verificada correctamente",
+        });
+      }
     } catch (error) {
       console.error(error);
       toast({
         title: "Error",
         description: "Error al verificar la entidad",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleActivateEntity = async (entityId: string) => {
+    try {
+      const entity = filteredEntities.find((entity) => entity.id === entityId);
+      if (!entity) {
+        toast({
+          title: "Error",
+          description: "Entidad no encontrada",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const response = await axios.put(
+        `/api/entities/${entityId}`,
+        {
+          isActive: !entity.isActive,
+        }
+      );
+
+      if (response.status === 200) {
+        setFilteredEntities(filteredEntities.map((e) =>
+            e.id === entityId ? { ...e, isActive: !e.isActive } : e
+          )
+        );
+
+        toast({
+          title: !entity.isActive ? "Entidad activada correctamente" : "Entidad desactivada correctamente",
+          description: !entity.isActive ? "La entidad ha sido activada" : "La entidad ha sido desactivada",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "Error al cambiar el estado de la entidad",
         variant: "destructive",
       });
     }
@@ -168,6 +208,7 @@ export function EntitiesTable({ entities, categories }: EntitiesTableProps) {
               <TableHead>Descripción</TableHead>
               <TableHead>Categoría</TableHead>
               <TableHead>Verificada</TableHead>
+              <TableHead>Activa</TableHead>
               <TableHead>Fecha de Creación</TableHead>
               <TableHead>Última Actualización</TableHead>
               <TableHead>Acciones</TableHead>
@@ -199,6 +240,12 @@ export function EntitiesTable({ entities, categories }: EntitiesTableProps) {
                   <Switch
                     checked={entity.isVerified}
                     onCheckedChange={() => handleVerifyEntity(entity.id)}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Switch
+                    checked={Boolean(entity.isActive)}
+                    onCheckedChange={() => handleActivateEntity(entity.id)}
                   />
                 </TableCell>
                 <TableCell>
