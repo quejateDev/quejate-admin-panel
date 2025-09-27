@@ -73,7 +73,7 @@ export default function SuperAdminChartsSection() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            PQRs Creados en {new Date().getFullYear()}
+            PQRSD Creados en {new Date().getFullYear()}
           </h3>
           {loading ? (
             <LoadingSkeleton />

@@ -26,7 +26,7 @@ import { formatText } from "@/utils/formatText";
 
 const formSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-  description: z.string().min(10, "La descripción debe tener al menos 10 caracteres"),
+  description: z.string().optional(),
   imageUrl: z.string().url().optional(),
   categoryId: z.string().min(1, "Debe seleccionar una categoría"),
   email: z.string().email().optional().or(z.literal("")),
@@ -179,7 +179,7 @@ export function EntityForm({ entity }: EntityFormProps) {
             <FormItem>
               <FormLabel>Nombre</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} className="border-muted" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -193,7 +193,7 @@ export function EntityForm({ entity }: EntityFormProps) {
             <FormItem>
               <FormLabel>Descripción</FormLabel>
               <FormControl>
-                <Textarea {...field} />
+                <Textarea {...field} className="border-muted" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -208,7 +208,7 @@ export function EntityForm({ entity }: EntityFormProps) {
               <FormLabel>Categoría</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="border-muted">
                     <SelectValue placeholder="Seleccione una categoría" />
                   </SelectTrigger>
                 </FormControl>
@@ -232,7 +232,7 @@ export function EntityForm({ entity }: EntityFormProps) {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" {...field} />
+                <Input type="email" {...field} className="border-muted" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -254,7 +254,7 @@ export function EntityForm({ entity }: EntityFormProps) {
                   value={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="border-muted">
                       <SelectValue placeholder="Seleccione un departamento" />
                     </SelectTrigger>
                   </FormControl>
@@ -283,7 +283,7 @@ export function EntityForm({ entity }: EntityFormProps) {
                   value={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="border-muted">
                       <SelectValue placeholder="Seleccione un municipio" />
                     </SelectTrigger>
                   </FormControl>

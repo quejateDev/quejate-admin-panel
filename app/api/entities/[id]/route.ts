@@ -49,6 +49,7 @@ export async function PUT(request: Request, { params }: any) {
     }
 
     if (body.name) updateData.name = body.name;
+    if (body.email !== undefined) updateData.email = body.email;
     if (body.description !== undefined)
       updateData.description = body.description;
     if (body.categoryId) updateData.categoryId = body.categoryId;
