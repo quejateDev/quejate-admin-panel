@@ -4,13 +4,19 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { Users, Building2, LayoutDashboard, Tag, Scale, FileText } from "lucide-react";
+import {
+  Users,
+  Building2,
+  LayoutDashboard,
+  Tag,
+  Scale,
+  FileText,
+} from "lucide-react";
 import Link from "next/link";
 import { UserRole } from "@prisma/client";
 import LogoutButton from "@/components/buttons/logoutButton";
 import { Logo } from "../Logo";
 import { currentRole } from "@/lib/auth";
-
 
 export default async function AppSidebar() {
   const role = await currentRole();
@@ -97,6 +103,11 @@ export default async function AppSidebar() {
       url: "/lawyers",
       icon: Scale,
     },
+    {
+      title: "Entidades Sugeridas",
+      url: "/entity-suggestions",
+      icon: Building2,
+    },
   ];
 
   return (
@@ -114,11 +125,7 @@ export default async function AppSidebar() {
             <nav className="space-y-1">
               {SUPER_ADMIN_MENU_ITEMS.map((item) => {
                 return (
-                  <Link
-                    key={item.url}
-                    href={item.url}
-                    className="sidebar-link"
-                  >
+                  <Link key={item.url} href={item.url} className="sidebar-link">
                     <item.icon className="h-5 w-5" />
                     <span className="text-sm">{item.title}</span>
                   </Link>
