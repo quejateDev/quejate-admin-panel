@@ -59,3 +59,41 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    const { status } = await request.json();
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "ID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!status || !["PENDING", "UNDER_REVIEW", "APPROVED", "REJECTED", "IMPLEMENTED"].includes(status)) {
+      return NextResponse.json(
+        { error: "Valid status is required" },
+        { status: 400 }
+      );
+    }
+
+    const updatedSuggestion = await prisma.entitySuggestion.update({
+      where: { id },
+      data: { status },
+    });
+
+    return NextResponse.json({
+      message: "Status updated successfully",
+      suggestion: updatedSuggestion,
+    });
+  } catch (error) {
+    console.error("Error updating entity suggestion status:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
