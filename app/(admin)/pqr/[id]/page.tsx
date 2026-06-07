@@ -5,9 +5,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import prisma from "@/lib/prisma";
+import { Paperclip } from "lucide-react";import prisma from "@/lib/prisma";
 import { typeMap } from "@/constants/pqrMaps";
 import { notFound } from "next/navigation";
 import { PQRResponses } from "@/components/pqr/pqr-responses";
@@ -28,13 +27,16 @@ export default async function PQRDetailPage({
       creator: true,
       customFieldValues: true,
       attachments: true,
-      comments: {
+      responses: {
         include: {
           user: {
             select: {
-              name: true
+              id: true,
+              name: true,
+              image: true,
             },
           },
+          attachments: true,
         },
         orderBy: {
           createdAt: "desc",
@@ -124,27 +126,56 @@ export default async function PQRDetailPage({
             </div>
           </div>
 
-          <Separator className="my-6" />
-
           {/* Custom Fields */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Información Adicional</h3>
-            <div className="grid gap-4">
-              {pqr.customFieldValues.map((field) => (
-                <div key={field.id} className="space-y-2">
-                  <h4 className="font-medium text-sm">{field.name}</h4>
-                  <p className="text-muted-foreground whitespace-pre-wrap">
-                    {field.value || "No especificado"}
-                  </p>
+          {pqr.customFieldValues.length > 0 && (
+            <>
+              <Separator className="my-6" />
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Información Adicional</h3>
+                <div className="grid gap-4">
+                  {pqr.customFieldValues.map((field) => (
+                    <div key={field.id} className="space-y-2">
+                      <h4 className="font-medium text-sm">{field.name}</h4>
+                      <p className="text-muted-foreground whitespace-pre-wrap">
+                        {field.value || "No especificado"}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            </>
+          )}
+
+          {/* Attachments */}
+          {pqr.attachments.length > 0 && (
+            <>
+              <Separator className="my-6" />
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Archivos Adjuntos</h3>
+                <div className="grid gap-3">
+                  {pqr.attachments.map((attachment) => (
+                    <a
+                      key={attachment.id}
+                      href={attachment.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-3 border rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <Paperclip className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="text-sm font-medium truncate">
+                        {attachment.name}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
       {/* Responses Section */}
-      <PQRResponses pqrId={pqr.id} initialResponses={pqr.comments} />
+      <PQRResponses pqrId={pqr.id} initialResponses={pqr.responses} />
     </div>
   );
 }

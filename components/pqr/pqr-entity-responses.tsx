@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 interface Response {
   id: string;
   text: string;
-  createdAt: Date | string;
+  createdAt: string;
   user: {
     id: string;
     name: string | null;
@@ -23,7 +23,6 @@ interface Response {
     id: string;
     url: string;
     name: string;
-    [key: string]: any;
   }>;
 }
 
@@ -243,4 +242,4 @@ export function PQRResponses({ pqrId, initialResponses }: PQRResponsesProps) {
       </Card>
     </div>
   );
-} 
+}
