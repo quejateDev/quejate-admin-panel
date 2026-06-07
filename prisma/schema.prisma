@@ -40,8 +40,13 @@ model User {
   following         User[]              @relation("UserFollows")
   followers         User[]              @relation("UserFollows")
   
+  pushToken         String?
+
   // NextAuth.js relations
   accounts          Account[]
+  entityResponses   EntityResponse[]
+
+  passwordResetCodes PasswordResetCode[]
 
   @@index([departmentId])
 }
@@ -142,6 +147,7 @@ model Entity {
   pqrs                 PQRS[]
   users                User[]
   favoritedBy          UserFavoriteEntity[]
+  entityResponses      EntityResponse[]
   isActive            Boolean              @default(true)
 
   @@index([categoryId])
@@ -238,7 +244,8 @@ model PQRS {
   entity            Entity             @relation(fields: [entityId], references: [id])
   statusHistory     PQRStatusHistory[]
   customFields      CustomField[]      @relation("CustomFieldToPQRS")
-
+  latitude          Float?
+  longitude         Float?
   @@index([creatorId])
   @@index([departmentId])
   @@index([assignedToId])
@@ -286,15 +293,16 @@ model PQRCustomField {
 }
 
 model Attachment {
-  id        String   @id @default(uuid())
-  url       String
-  createdAt DateTime @default(now())
-  name      String
-  pqrId     String
-  size      Int
-  type      String
-  updatedAt DateTime @updatedAt
-  pqr       PQRS     @relation(fields: [pqrId], references: [id], onDelete: Cascade)
+  id           String   @id @default(uuid())
+  url          String
+  createdAt    DateTime @default(now())
+  name         String
+  pqrId        String
+  size         Int
+  type         String
+  thumbnailUrl String?
+  updatedAt    DateTime @updatedAt
+  pqr          PQRS     @relation(fields: [pqrId], references: [id], onDelete: Cascade)
 
   @@index([pqrId])
 }
@@ -507,4 +515,44 @@ model PasswordResetToken {
 
   @@unique([email, token])
   @@map("password_reset_tokens")
+}
+
+model PasswordResetCode {
+  id        String   @id @default(cuid())
+  userId    String
+  codeHash  String
+  expiresAt DateTime
+  consumed  Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, consumed, expiresAt])
+}
+
+model EntityResponse {
+  id          String               @id @default(uuid())
+  entityId    String
+  userId      String
+  text        String
+  createdAt   DateTime             @default(now())
+  attachments ResponseAttachment[]
+  entity      Entity               @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([entityId])
+  @@index([userId])
+}
+
+model ResponseAttachment {
+  id          String          @id @default(uuid())
+  responseId  String
+  url         String
+  name        String
+  size        Int?
+  type        String?
+  createdAt   DateTime        @default(now())
+  response    EntityResponse  @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  @@index([responseId])
 }
