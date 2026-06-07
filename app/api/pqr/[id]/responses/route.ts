@@ -1,6 +1,11 @@
 import prisma from "@/lib/prisma";
 import { currentUser } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
+import { sendPQRResponseEmail } from "@/services/email/sendPQRResponseEmail";
+import {
+  NotificationFactory,
+  notificationService,
+} from "@/services/api/notification.service";
 
 export async function GET(
   request: NextRequest,
@@ -65,7 +70,25 @@ export async function POST(
 
     const pqr = await prisma.pQRS.findUnique({
       where: { id },
-      select: { id: true, entityId: true },
+      select: {
+        id: true,
+        entityId: true,
+        creatorId: true,
+        consecutiveCode: true,
+        guestEmail: true,
+        guestName: true,
+        creator: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        entity: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
 
     if (!pqr) {
@@ -110,6 +133,46 @@ export async function POST(
         attachments: true,
       },
     });
+
+    const creatorEmail = pqr.creator?.email ?? pqr.guestEmail;
+    const creatorName =
+      pqr.creator?.name ?? pqr.guestName ?? "Ciudadano";
+
+    if (creatorEmail && pqr.consecutiveCode) {
+      try {
+        await sendPQRResponseEmail({
+          email: creatorEmail,
+          userName: creatorName,
+          pqrNumber: pqr.consecutiveCode,
+          entityName: pqr.entity.name,
+          responseText: text,
+          responseDate: new Date(response.createdAt).toLocaleString("es-CO", {
+            timeZone: "America/Bogota",
+          }),
+          responderName: response.user.name ?? undefined,
+          pqrLink: `https://quejate.com.co/dashboard/pqr/${pqr.id}`,
+        });
+      } catch (emailError) {
+        console.error("Failed to send PQR response notification email:", emailError);
+      }
+    }
+
+    if (pqr.creatorId) {
+      try {
+        await notificationService.create(
+          NotificationFactory.createEntityResponse(
+            pqr.creatorId,
+            pqr.id,
+            response.id,
+            pqr.entity.name,
+            response.user.name,
+            pqr.consecutiveCode
+          )
+        );
+      } catch (notificationError) {
+        console.error("Failed to create entity response notification:", notificationError);
+      }
+    }
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
