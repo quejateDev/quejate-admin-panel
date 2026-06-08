@@ -61,7 +61,7 @@ export function EmployeeForm({
         ? z.string().min(6, "La contraseña debe tener al menos 6 caracteres")
         : z.string().optional(),
     role: z.enum(["EMPLOYEE", "ADMIN"]),
-    departmentId: z.string().nonempty("El departamento es requerido"),
+    departmentId: z.string().optional(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({

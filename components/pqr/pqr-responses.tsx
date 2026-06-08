@@ -140,7 +140,7 @@ export function PQRResponses({ pqrId, initialResponses }: PQRResponsesProps) {
               value={text}
               onChange={(e) => setText(e.target.value)}
               disabled={isLoading || !session}
-              className="min-h-[120px]"
+              className="min-h-[120px] border border-muted"
             />
             <div className="flex gap-2">
               <Button
