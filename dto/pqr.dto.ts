@@ -23,14 +23,17 @@ export const GETPQRSchema = z.object({
   departmentId: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  status: z
-    .string()
-    .optional()
-    .transform((val) => val as PQRSStatus),
-  type: z
-    .string()
-    .optional()
-    .transform((val) => val as PQRSType),
+  page: z.number().optional(),
+  limit: z.number().optional(),
+  status: z.string().optional().transform((val) => val as PQRSStatus),
+  type: z.string().optional().transform((val) => val as PQRSType),
 });
 
 export type getPQRParams = z.infer<typeof GETPQRSchema>;
+
+export type PaginatedPQRsDTO = {
+  pqrs: GetPQRsDTO[];
+  hasMore: boolean;
+  nextPage: number | null;
+  totalCount: number;
+};

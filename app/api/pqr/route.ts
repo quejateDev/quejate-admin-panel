@@ -138,21 +138,17 @@ export async function GET(request: NextRequest) {
     });
 
     const totalCount = await prisma.pQRS.count({
-      where: whereClause
-    });
+  where: whereClause
+});
 
-    const hasMore = skip + take < totalCount;
+  const hasMore = skip + take < totalCount;
 
-    // For compatibility with existing service, return just the pqrs array if no pagination params
-    if (!searchParams.get('page') && !searchParams.get('limit')) {
-      return NextResponse.json(pqrs);
-    }
-
-    return NextResponse.json({
-      pqrs,
-      hasMore,
-      nextPage: hasMore ? page + 1 : null
-    });
+  return NextResponse.json({
+    pqrs,
+    hasMore,
+    nextPage: hasMore ? page + 1 : null,
+    totalCount,
+  });
 
   } catch (error) {
     console.error("Error fetching PQRSD:", error);
