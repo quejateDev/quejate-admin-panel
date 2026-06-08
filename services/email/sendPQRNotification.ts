@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import PQRNotificationEmail from '@/emails/templates/pqr-notification';
+import { formatDate } from '@/lib/dateUtils';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -7,6 +8,7 @@ export async function sendPQRNotificationEmail(
   entityEmail: string,
   entityName: string,
   pqrData: any,
+  contactInfo?: { name: string; email: string; phone: string } | null,
 ) {
   try {
     const { data, error } = await resend.emails.send({
@@ -20,17 +22,20 @@ export async function sendPQRNotificationEmail(
           type: pqrData.type,
           subject: pqrData.subject,
           description: pqrData.description,
-          createdAt: new Date(pqrData.createdAt).toLocaleString('es-CO', {
-            timeZone: 'America/Bogota',
-          }),
+          createdAt: formatDate(pqrData.createdAt),
           status: pqrData.status,
           isAnonymous: pqrData.anonymous,
           consecutiveCode: pqrData.consecutiveCode,
+          location: pqrData.latitude && pqrData.longitude ? {
+            latitude: pqrData.latitude,
+            longitude: pqrData.longitude,
+            address: pqrData.locationAddress,
+          } : null,
         },
         creatorInfo: {
-          name: pqrData.creator ? `${pqrData.creator.name}` : 'Anónimo',
-          email: pqrData.creator ? pqrData.creator.email : 'Anónimo',
-          phone: pqrData.creator ? pqrData.creator.phone : 'Anónimo',
+          name: pqrData.anonymous ? 'Anónimo' : (contactInfo?.name || pqrData.creator?.name || 'No proporcionado'),
+          email: pqrData.anonymous ? 'Anónimo' : (contactInfo?.email || pqrData.creator?.email || 'No proporcionado'),
+          phone: pqrData.anonymous ? 'Anónimo' : (contactInfo?.phone || pqrData.creator?.phone || 'No proporcionado'),
         },
         customFields: pqrData.customFieldValues,
         attachments: pqrData.attachments,
@@ -47,4 +52,4 @@ export async function sendPQRNotificationEmail(
     console.error('Error sending PQRSD notification email:', error);
     throw error;
   }
-}
+} 
