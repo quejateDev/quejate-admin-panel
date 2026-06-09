@@ -22,14 +22,16 @@ import { toast } from "@/hooks/use-toast";
 import axios from "axios";
 import { SUGGESTION_STATUS_TRANSLATIONS } from "@/constants/suggestion-status";
 import { formatText } from "@/utils/formatText";
+import { SuggestionStatus } from "@prisma/client";
 
 interface EntitySuggestion {
   id: string;
   entityName: string;
   regionalDepartmentId: string;
   municipalityId: string | null;
-  status: keyof typeof SUGGESTION_STATUS_TRANSLATIONS;
-  createdAt: string;
+  status: SuggestionStatus; 
+  createdAt: Date;
+  updatedAt: Date;
   departmentName: string | null;
   municipalityName: string | null;
 }

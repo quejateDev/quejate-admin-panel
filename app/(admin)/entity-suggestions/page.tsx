@@ -1,30 +1,44 @@
 import { SuggestionsTable } from "@/components/SuggestionsTable";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import prisma from "@/lib/prisma";
+import geoData from "@/data/colombia-geo.json";
 
 async function getEntitySuggestions() {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/entity-suggestions?page=1&limit=10`, {
-      cache: 'no-store'
+  const page = 1;
+  const limit = 10;
+  const skip = (page - 1) * limit;
+
+  const departmentMap = new Map<string, string>();
+  const municipalityMap = new Map<string, string>();
+
+  geoData.departments.forEach((dept) => {
+    departmentMap.set(dept.id, dept.name);
+    dept.municipalities.forEach((mun) => {
+      municipalityMap.set(mun.id, mun.name);
     });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch suggestions');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching entity suggestions:', error);
-    return {
-      suggestions: [],
-      pagination: {
-        page: 1,
-        limit: 10,
-        total: 0,
-        totalPages: 0
-      }
-    };
-  }
+  });
+
+  const [suggestions, total] = await Promise.all([
+    prisma.entitySuggestion.findMany({
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.entitySuggestion.count(),
+  ]);
+
+  const result = suggestions.map((suggestion) => ({
+    ...suggestion,
+    departmentName: departmentMap.get(suggestion.regionalDepartmentId) || null,
+    municipalityName: suggestion.municipalityId
+      ? municipalityMap.get(suggestion.municipalityId) || null
+      : null,
+  }));
+
+  return {
+    suggestions: result,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  };
 }
 
 export default async function EntitySuggestionsPage() {
@@ -34,10 +48,9 @@ export default async function EntitySuggestionsPage() {
     <div className="container mx-auto">
       <h1 className="text-2xl font-bold pt-10 mb-8">Entidades Sugeridas</h1>
       <Card>
-        <CardHeader>
-        </CardHeader>
+        <CardHeader />
         <CardContent>
-          <SuggestionsTable 
+          <SuggestionsTable
             initialSuggestions={data.suggestions}
             initialPagination={data.pagination}
           />
