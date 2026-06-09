@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -53,6 +53,7 @@ export function SuggestionsTable({ initialSuggestions, initialPagination }: Sugg
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const isFirstRender = useRef(true);
 
   const fetchSuggestions = async (page = 1, status = selectedStatus, search = searchTerm) => {
     setLoading(true);
@@ -61,7 +62,7 @@ export function SuggestionsTable({ initialSuggestions, initialPagination }: Sugg
         page: page.toString(),
         limit: "10",
       });
-      
+
       if (status !== "all") {
         params.append("status", status);
       }
@@ -82,6 +83,10 @@ export function SuggestionsTable({ initialSuggestions, initialPagination }: Sugg
   };
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     fetchSuggestions(currentPage, selectedStatus, searchTerm);
   }, [currentPage, selectedStatus, searchTerm]);
 

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { SuggestionsTable } from "@/components/SuggestionsTable";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import prisma from "@/lib/prisma";
