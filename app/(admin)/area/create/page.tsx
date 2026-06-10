@@ -13,34 +13,41 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { CreateDepartmentDTO } from "@/services/api/Department.service";
+import { EntitySelectField } from "@/components/EntitySelectField";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDepartments } from "@/hooks/useDeparments";
-import useOrganizationStore from "@/store/useOrganizationStore";
 
 export default function NewAreaPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<CreateDepartmentDTO>({
+  const [entityId, setEntityId] = useState("");
+  const [formData, setFormData] = useState({
     name: "",
     description: "",
     email: "",
-    entityId: "",
   });
 
-  const { entity } = useOrganizationStore();
-
-  const { createDepartment } = useDepartments({ entityId: entity?.id ?? "" });
+  const { createDepartment } = useDepartments({ entityId });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!entityId) {
+      toast({
+        title: "Selecciona una entidad",
+        description: "Debes elegir la entidad a la que pertenece el área",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       await createDepartment.mutateAsync({
         ...formData,
-        entityId: entity?.id ?? "",
+        entityId,
       });
       toast({
         title: "Área creada",
@@ -70,6 +77,7 @@ export default function NewAreaPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <EntitySelectField value={entityId} onChange={setEntityId} />
             <div className="space-y-2">
               <Label htmlFor="name">Nombre</Label>
               <Input

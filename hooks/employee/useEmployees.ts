@@ -23,7 +23,7 @@ export function useEmployees(entityId: string) {
     },
   });
 
-  const { mutate: createEmployee, error: createEmployeeError } = useMutation({
+  const { mutateAsync: createEmployee, error: createEmployeeError } = useMutation({
     mutationFn: (employee: {
       password: string;
       name: string;

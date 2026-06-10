@@ -66,6 +66,7 @@ export async function deleteDepartmentService(data: DeleteDepartmentDTO): Promis
 }
 
 export async function updateDepartmentService(id: string, data: UpdateDepartmentDTO): Promise<Department> {
-  const response = await Client.put(`/area/${id}`, data);
+  // /api/area/[id] implementa PATCH (no PUT) -> usar PATCH para evitar 405.
+  const response = await Client.patch(`/area/${id}`, data);
   return response.data;
 }

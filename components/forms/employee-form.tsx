@@ -24,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import useOrganizationStore from "@/store/useOrganizationStore";
 
 interface EmployeeFormProps {
   initialData?: {
@@ -37,17 +36,18 @@ interface EmployeeFormProps {
   };
   mode: "create" | "edit";
   departments: any[];
+  entityId?: string;
 }
 
 export function EmployeeForm({
   initialData,
   mode,
   departments,
+  entityId,
 }: EmployeeFormProps) {
   const router = useRouter();
 
-  const { entity } = useOrganizationStore();
-  const { createEmployee, isLoading } = useEmployees(entity?.id ?? "");
+  const { createEmployee, isLoading } = useEmployees(entityId ?? "");
   const { updateEmployee, isLoading: isUpdating } = useEmployeeById(
     initialData?.id || ""
   );
@@ -79,6 +79,10 @@ export function EmployeeForm({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if (mode === "create") {
+        if (!entityId) {
+          toast.error("Selecciona una entidad para el empleado");
+          return;
+        }
         await createEmployee({
           ...values,
           name: values.name,
@@ -111,9 +115,10 @@ export function EmployeeForm({
       );
       router.push("/users");
       router.refresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in onSubmit:", error);
-      toast.error("Error al guardar el empleado");
+      const serverMessage = error?.response?.data?.error;
+      toast.error(serverMessage || "Error al guardar el empleado");
     }
   }
 
