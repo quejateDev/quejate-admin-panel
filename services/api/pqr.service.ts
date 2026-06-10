@@ -1,5 +1,5 @@
 import { Department, PQRS, User, Comment } from "@prisma/client";
-import { getPQRParams, GetPQRsDTO } from "@/dto/pqr.dto";
+import { getPQRParams, PaginatedPQRsDTO } from "@/dto/pqr.dto";
 import axios from "axios";
 
 const Client = axios.create({
@@ -40,7 +40,7 @@ export async function getAllPQRS() {
   return response.data;
 }
 
-export async function getPQRS(params: Partial<getPQRParams>): Promise<GetPQRsDTO[]> {
+export async function getPQRS(params: Partial<getPQRParams>): Promise<PaginatedPQRsDTO> {
   const response = await Client.get(`/pqr`, { params });
   return response.data;
 }

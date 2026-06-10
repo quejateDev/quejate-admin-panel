@@ -27,8 +27,8 @@ function PQRPageContent() {
 
   const { entity } = useOrganizationStore();
 
-  const { pqrs, assignPQR, isLoading } = usePQRS({
-    departmentId: departmentId,
+  const { pqrs, assignPQR, isLoading, page, setPage, pageSize, totalPages } = usePQRS({
+    departmentId,
     startDate: dateRange?.from?.toISOString(),
     endDate: dateRange?.to?.toISOString(),
     organizationId: entity?.id,
@@ -56,7 +56,15 @@ function PQRPageContent() {
           <CardTitle>Listado de PQRSD</CardTitle>
         </CardHeader>
         <CardContent>
-          <PQRTable pqrs={pqrsList} assignPQR={assignPQR.mutateAsync} isLoading={isLoading} />
+          <PQRTable
+            pqrs={Array.isArray(pqrs) ? pqrs : []}
+            assignPQR={assignPQR.mutateAsync}
+            isLoading={isLoading}
+            page={page}
+            setPage={setPage}
+            pageSize={pageSize}
+            totalPages={totalPages}
+          />
         </CardContent>
       </Card>
     </div>

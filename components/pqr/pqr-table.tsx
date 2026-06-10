@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,10 +26,15 @@ import { useEmployees } from "@/hooks/employee/useEmployees";
 import { GetPQRsDTO } from "@/dto/pqr.dto";
 import useOrganizationStore from "@/store/useOrganizationStore";
 import { useCurrentUser } from "@/hooks/use-current-user";
+
 interface PQRTableProps {
   assignPQR: any;
   pqrs: GetPQRsDTO[];
   isLoading?: boolean;
+  page: number;
+  setPage: (page: number) => void;
+  pageSize: number;
+  totalPages: number;
 }
 
 type PQRTableItem = PQRTableProps["pqrs"][number];
@@ -38,16 +43,19 @@ interface ColumnVisibility {
   [key: string]: boolean;
 }
 
-export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
+export function PQRTable({
+  pqrs,
+  assignPQR,
+  isLoading,
+  page,
+  setPage,
+  pageSize,
+  totalPages,
+}: PQRTableProps) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
-  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(
-    {}
-  );
-  const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>({});
 
   const { entity } = useOrganizationStore();
   const user = useCurrentUser();
@@ -70,7 +78,6 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
       return <Badge variant="destructive">Vencido</Badge>;
     }
   }
-
 
   const handleAssignment = async (
     pqrId: string,
@@ -154,9 +161,7 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
                 >
                   <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="Seleccionar empleado">
-                      {assignedTo?.name
-                        ? `${assignedTo?.name}`
-                        : "Sin asignar"}
+                      {assignedTo?.name ? `${assignedTo?.name}` : "Sin asignar"}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -188,58 +193,32 @@ export function PQRTable({ pqrs, assignPQR, isLoading }: PQRTableProps) {
     ],
   };
 
-  // Filter function
-  const filterData = (data: PQRTableItem[]) => {
-    return data.filter((item) => {
-      const matchesType = typeFilter === "all" || item.type === typeFilter;
-      const matchesStatus =
-        statusFilter === "all" || item.status === statusFilter;
-      const matchesDepartment =
-        departmentFilter === "all" ||
-        item.department?.name === departmentFilter;
-      const matchesGlobal =
-        !globalFilter ||
-        Object.values(item).some((val) =>
-          String(val).toLowerCase().includes(globalFilter.toLowerCase())
-        );
-
-      return matchesType && matchesStatus && matchesDepartment && matchesGlobal;
-    });
-  };
-
-  const filteredData = filterData(pqrs);
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-
-  // Reset page index when filters change
-  useEffect(() => {
-    setPageIndex(0);
-  }, [globalFilter, typeFilter, statusFilter, departmentFilter]);
-
-  // Get paginated data
-  const paginatedData = filteredData.slice(
-    pageIndex * pageSize,
-    (pageIndex + 1) * pageSize
-  );
+  const filteredData = pqrs.filter((item) => {
+    const matchesType = typeFilter === "all" || item.type === typeFilter;
+    const matchesStatus = statusFilter === "all" || item.status === statusFilter;
+    const matchesGlobal =
+      !globalFilter ||
+      Object.values(item).some((val) =>
+        String(val).toLowerCase().includes(globalFilter.toLowerCase())
+      );
+    return matchesType && matchesStatus && matchesGlobal;
+  });
 
   return (
     <div className="space-y-4">
       <Filters />
       <DataTable
         isLoading={isLoading}
-        data={paginatedData}
+        data={filteredData}
         columns={columns}
         actions={actions}
         emptyMessage="No se encontraron PQRSD"
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={setColumnVisibility}
         pageCount={totalPages}
-        pageIndex={pageIndex}
+        pageIndex={page - 1}
         pageSize={pageSize}
-        onPageIndexChange={setPageIndex}
-        onPageSizeChange={(newPageSize) => {
-          setPageSize(newPageSize);
-          setPageIndex(0);
-        }}
+        onPageIndexChange={(newIndex) => setPage(newIndex + 1)}
         enableSorting={true}
       />
     </div>

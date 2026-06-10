@@ -15,21 +15,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { toast } from "@/hooks/use-toast";
 import axios from "axios";
 import { SUGGESTION_STATUS_TRANSLATIONS } from "@/constants/suggestion-status";
 import { formatText } from "@/utils/formatText";
+import { SuggestionStatus } from "@prisma/client";
 
 interface EntitySuggestion {
   id: string;
   entityName: string;
   regionalDepartmentId: string;
   municipalityId: string | null;
-  status: keyof typeof SUGGESTION_STATUS_TRANSLATIONS;
-  createdAt: string;
+  status: SuggestionStatus; 
+  createdAt: Date;
+  updatedAt: Date;
   departmentName: string | null;
   municipalityName: string | null;
 }
@@ -51,6 +53,7 @@ export function SuggestionsTable({ initialSuggestions, initialPagination }: Sugg
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const isFirstRender = useRef(true);
 
   const fetchSuggestions = async (page = 1, status = selectedStatus, search = searchTerm) => {
     setLoading(true);
@@ -59,7 +62,7 @@ export function SuggestionsTable({ initialSuggestions, initialPagination }: Sugg
         page: page.toString(),
         limit: "10",
       });
-      
+
       if (status !== "all") {
         params.append("status", status);
       }
@@ -80,6 +83,10 @@ export function SuggestionsTable({ initialSuggestions, initialPagination }: Sugg
   };
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     fetchSuggestions(currentPage, selectedStatus, searchTerm);
   }, [currentPage, selectedStatus, searchTerm]);
 
