@@ -1,7 +1,9 @@
-export const SUGGESTION_STATUS_TRANSLATIONS = {
-  PENDING: "Pendiente por revisar",
-  REJECTED: "Rechazada",
-  IMPLEMENTED: "Implementada",
-} as const;
+import { SuggestionStatus } from "@prisma/client";
 
-export type SuggestionStatus = keyof typeof SUGGESTION_STATUS_TRANSLATIONS;
+export const SUGGESTION_STATUS_TRANSLATIONS: Record<SuggestionStatus, string> = {
+  PENDING: "Pendiente",
+  UNDER_REVIEW: "En revisión",
+  APPROVED: "Aprobado",
+  REJECTED: "Rechazado",
+  IMPLEMENTED: "Implementado",
+};
