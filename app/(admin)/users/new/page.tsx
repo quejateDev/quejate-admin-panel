@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { EmployeeForm } from "@/components/forms/employee-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserPlus, ArrowLeft } from "lucide-react";
@@ -9,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { useDepartments } from "@/hooks/useDeparments";
 import { EntitySelectField } from "@/components/EntitySelectField";
 
-export default function NewEmployeePage() {
-  const [entityId, setEntityId] = useState("");
+function NewEmployeeContent() {
+  const searchParams = useSearchParams();
+  // Pre-selecciona la entidad si viene desde /users (?entityId=...).
+  const [entityId, setEntityId] = useState(searchParams.get("entityId") ?? "");
   const { data: departments } = useDepartments({ entityId });
 
   return (
@@ -42,5 +45,13 @@ export default function NewEmployeePage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function NewEmployeePage() {
+  return (
+    <Suspense fallback={null}>
+      <NewEmployeeContent />
+    </Suspense>
   );
 }
