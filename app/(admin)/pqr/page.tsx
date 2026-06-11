@@ -7,7 +7,7 @@ import { usePQRS } from "@/hooks/pqr/usePQRs";
 import { useState, Suspense } from "react";
 import { parseISO } from "date-fns";
 import { DateRange } from "react-day-picker";
-import useOrganizationStore from "@/store/useOrganizationStore";
+import { EntitySelectField } from "@/components/EntitySelectField";
 
 function PQRPageContent() {
   const searchParams = useSearchParams();
@@ -15,23 +15,26 @@ function PQRPageContent() {
     searchParams.entries()
   );
 
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
+  // Por defecto, últimos 12 meses (no solo "hoy") para que el listado no salga vacío.
+  const defaultFrom = new Date();
+  defaultFrom.setMonth(defaultFrom.getMonth() - 12);
+  defaultFrom.setHours(0, 0, 0, 0);
   const endOfToday = new Date();
   endOfToday.setHours(23, 59, 59, 999);
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: startDate ? parseISO(startDate) : startOfToday,
+    from: startDate ? parseISO(startDate) : defaultFrom,
     to: endDate ? parseISO(endDate) : endOfToday,
   });
 
-  const { entity } = useOrganizationStore();
+  // Entidad seleccionada. Vacío = todas (para SUPER_ADMIN); ADMIN queda fijo a la suya.
+  const [entityId, setEntityId] = useState("");
 
   const { pqrs, assignPQR, isLoading, page, setPage, pageSize, totalPages } = usePQRS({
     departmentId,
     startDate: dateRange?.from?.toISOString(),
     endDate: dateRange?.to?.toISOString(),
-    organizationId: entity?.id,
+    organizationId: entityId || undefined,
   });
 
   // Ensure pqrs is always an array to prevent filter errors
@@ -41,11 +44,17 @@ function PQRPageContent() {
     <div className="flex flex-col gap-6">
       {/* Header with title and filters */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
+        <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold tracking-tight">
             Gestión de PQRSD
           </h1>
-          
+          <div className="w-72">
+            <EntitySelectField
+              value={entityId}
+              onChange={setEntityId}
+              label="Entidad"
+            />
+          </div>
         </div>
         <PqrFilters dateRange={dateRange} setDateRange={setDateRange} />
       </div>
@@ -64,6 +73,7 @@ function PQRPageContent() {
             setPage={setPage}
             pageSize={pageSize}
             totalPages={totalPages}
+            entityId={entityId}
           />
         </CardContent>
       </Card>
