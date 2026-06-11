@@ -46,8 +46,11 @@ export async function GET(request: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { email, name, phone, password, role, entityId } =
+    const { email, name, phone, password, role, entityId, departmentId } =
       await req.json();
+
+    // Persistir el rol elegido (solo EMPLOYEE/ADMIN; por defecto EMPLOYEE).
+    const safeRole = role === "ADMIN" ? "ADMIN" : "EMPLOYEE";
 
     const client = await prisma.user.create({
       data: {
@@ -55,13 +58,23 @@ export async function POST(req: Request) {
         name,
         phone,
         password: await hash(password, 10),
-        role: "EMPLOYEE",
-        entityId,
+        role: safeRole,
+        // entityId/departmentId opcionales: vacío -> null para no romper la FK.
+        entityId: entityId || null,
+        departmentId: departmentId || null,
       },
     });
 
     return NextResponse.json(client);
-  } catch (error) {
+  } catch (error: any) {
+    // Email duplicado (unique constraint) -> 409 en vez de 500.
+    if (error?.code === "P2002") {
+      return NextResponse.json(
+        { error: "Ya existe un usuario con ese correo" },
+        { status: 409 }
+      );
+    }
+
     console.error("Error creating client:", error);
     return NextResponse.json(
       { error: "Error creating client" },

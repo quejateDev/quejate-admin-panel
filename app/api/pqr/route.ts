@@ -187,8 +187,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let pqr: any;
-
   try {
     const formData = await req.formData();
     const jsonData = formData.get("data");
@@ -476,22 +474,11 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Error in POST /api/pqr:", error.stack);
 
-    if (pqr && pqr.id) {
-      await prisma.$transaction([
-        prisma.pQRS.delete({
-          where: {
-            id: pqr.id,
-          },
-        }),
-        prisma.entityConsecutive.update({
-          where: { id: pqr.entityConsecutiveId },
-          data: {
-            consecutive: pqr.entityConsecutive.consecutive - 1,
-          },
-        }),
-      ]);
-    }
-
+    // La creación del PQR y el incremento del consecutivo ocurren dentro de un
+    // prisma.$transaction atómico: si algo falla allí, nada se persiste, por lo
+    // que no hace falta un rollback manual. (El rollback anterior referenciaba
+    // campos inexistentes del modelo PQRS y, por shadowing de `pqr`, nunca se
+    // ejecutaba: solo enmascaraba el error real con un 500.)
     return NextResponse.json(
       { error: "Internal server error", details: error.message },
       { status: 500 }

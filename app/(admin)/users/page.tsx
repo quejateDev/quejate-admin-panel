@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useEmployees } from "@/hooks/employee/useEmployees";
 import { Employee } from "@/types/Employee";
-import useOrganizationStore from "@/store/useOrganizationStore";
+import { EntitySelectField } from "@/components/EntitySelectField";
 
 type SortField = "name" | "date" | "email";
 
@@ -92,8 +92,8 @@ export default function ClientsPage() {
   const [sortBy, setSortBy] = useState<SortField>("date");
   const { toast } = useToast();
 
-  const { entity } = useOrganizationStore();
-  const { data, isLoading, error, deleteEmployee } = useEmployees(entity?.id ?? "");
+  const [entityId, setEntityId] = useState("");
+  const { data, isLoading, error, deleteEmployee } = useEmployees(entityId);
 
   useEffect(() => {
     if (data) {
@@ -180,10 +180,20 @@ export default function ClientsPage() {
     ).length,
   };
 
-  if (isLoading) return <LoadingSkeleton />;
-
   return (
     <div className="container mx-auto py-6 px-4 md:px-6 space-y-6">
+      <div className="max-w-md">
+        <EntitySelectField value={entityId} onChange={setEntityId} />
+      </div>
+
+      {!entityId ? (
+        <p className="text-sm text-muted-foreground">
+          Selecciona una entidad para ver y gestionar sus empleados.
+        </p>
+      ) : isLoading ? (
+        <LoadingSkeleton />
+      ) : (
+        <>
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard icon={Users} title="Total Empleados" value={stats.total} />
         <StatCard
@@ -229,7 +239,7 @@ export default function ClientsPage() {
                   <SelectItem value="email">Email</SelectItem>
                 </SelectContent>
               </Select>
-              <Link href="/users/new">
+              <Link href={`/users/new?entityId=${entityId}`}>
                 <Button className="w-full md:w-auto gap-2">
                   <Plus className="h-4 w-4" />
                   <span className="hidden md:inline">Nuevo Empleado</span>
@@ -271,7 +281,12 @@ export default function ClientsPage() {
                   width: "w-[15%]",
                 },
                 cell: ({ row }) => {
-                  return "No asignado";
+                  const dept = (
+                    row.original as Employee & {
+                      department?: { name: string } | null;
+                    }
+                  ).department;
+                  return dept?.name ?? "No asignado";
                 },
               },
               {
@@ -321,6 +336,8 @@ export default function ClientsPage() {
           />
         </CardContent>
       </Card>
+        </>
+      )}
     </div>
   );
 }

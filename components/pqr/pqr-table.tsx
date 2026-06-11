@@ -24,7 +24,6 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { useEmployees } from "@/hooks/employee/useEmployees";
 import { GetPQRsDTO } from "@/dto/pqr.dto";
-import useOrganizationStore from "@/store/useOrganizationStore";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface PQRTableProps {
@@ -35,6 +34,7 @@ interface PQRTableProps {
   setPage: (page: number) => void;
   pageSize: number;
   totalPages: number;
+  entityId: string;
 }
 
 type PQRTableItem = PQRTableProps["pqrs"][number];
@@ -51,15 +51,15 @@ export function PQRTable({
   setPage,
   pageSize,
   totalPages,
+  entityId,
 }: PQRTableProps) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>({});
 
-  const { entity } = useOrganizationStore();
   const user = useCurrentUser();
-  const { data: employees } = useEmployees(entity?.id ?? "");
+  const { data: employees } = useEmployees(entityId);
 
   function getRemainingTimeBadge(createdAt: Date) {
     const RESPONSE_LIMIT_DAYS = 15;

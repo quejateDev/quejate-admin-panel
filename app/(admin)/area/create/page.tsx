@@ -13,34 +13,45 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { CreateDepartmentDTO } from "@/services/api/Department.service";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { EntitySelectField } from "@/components/EntitySelectField";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { useDepartments } from "@/hooks/useDeparments";
-import useOrganizationStore from "@/store/useOrganizationStore";
 
-export default function NewAreaPage() {
+function NewAreaForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<CreateDepartmentDTO>({
+  // Pre-selecciona la entidad si viene desde /area (?entityId=...).
+  const [entityId, setEntityId] = useState(
+    searchParams.get("entityId") ?? ""
+  );
+  const [formData, setFormData] = useState({
     name: "",
     description: "",
     email: "",
-    entityId: "",
   });
 
-  const { entity } = useOrganizationStore();
-
-  const { createDepartment } = useDepartments({ entityId: entity?.id ?? "" });
+  const { createDepartment } = useDepartments({ entityId });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!entityId) {
+      toast({
+        title: "Selecciona una entidad",
+        description: "Debes elegir la entidad a la que pertenece el área",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       await createDepartment.mutateAsync({
         ...formData,
-        entityId: entity?.id ?? "",
+        entityId,
       });
       toast({
         title: "Área creada",
@@ -64,12 +75,11 @@ export default function NewAreaPage() {
       <Card>
         <CardHeader>
           <CardTitle>Crear Nueva Área</CardTitle>
-          <CardDescription>
-            Ingrese los datos del área
-          </CardDescription>
+          <CardDescription>Ingrese los datos del área</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <EntitySelectField value={entityId} onChange={setEntityId} />
             <div className="space-y-2">
               <Label htmlFor="name">Nombre</Label>
               <Input
@@ -126,5 +136,13 @@ export default function NewAreaPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function NewAreaPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewAreaForm />
+    </Suspense>
   );
 }
