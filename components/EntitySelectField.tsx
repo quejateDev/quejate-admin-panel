@@ -5,13 +5,7 @@ import axios from "axios";
 import useOrganizations from "@/hooks/useOrganizations";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 
 interface EntitySelectFieldProps {
@@ -22,13 +16,14 @@ interface EntitySelectFieldProps {
 }
 
 /**
- * Selector de entidad con gating por rol:
- * - SUPER_ADMIN: puede elegir cualquier entidad (lista de GET /api/entities).
- * - ADMIN / EMPLOYEE: queda fijado (read-only) a su propia entidad, que se
- *   resuelve vía GET /api/users/{id}/entity y se auto-selecciona.
+ * Selector de entidad con gating por rol, resuelto desde el SERVIDOR
+ * (GET /api/users/{id}/entity devuelve `role` + `Entity`), no desde el `role`
+ * del `useSession()` client-side (que puede no estar hidratado a tiempo).
  *
- * Reemplaza la dependencia del store huérfano `useOrganizationStore` para
- * decidir bajo qué entidad se crea un área o un usuario.
+ * - SUPER_ADMIN: elige cualquier entidad (lista de GET /api/entities).
+ * - ADMIN / EMPLOYEE: queda fijado (read-only) a su propia entidad.
+ * - Mientras se resuelve (o si no hay sesión fiable): se muestra el selector
+ *   abierto. La autorización real la refuerza el servidor en POST /api/area.
  */
 export function EntitySelectField({
   value,
@@ -37,79 +32,74 @@ export function EntitySelectField({
   label = "Entidad",
 }: EntitySelectFieldProps) {
   const user = useCurrentUser();
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
-  const { data: organizations, isLoading } = useOrganizations();
-  const [lockedEntity, setLockedEntity] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
-  const [resolving, setResolving] = useState(false);
+  const { data: organizations, isLoading: orgsLoading } = useOrganizations();
 
-  // ADMIN/EMPLOYEE: fijar a su propia entidad y auto-seleccionarla.
+  const [role, setRole] = useState<string | null>(null);
+  const [ownEntity, setOwnEntity] = useState<{ id: string; name: string } | null>(
+    null
+  );
+  const [resolved, setResolved] = useState(false);
+
+  // Fuente de verdad de rol + entidad propia: el servidor.
   useEffect(() => {
-    if (isSuperAdmin || !user?.id) return;
+    if (!user?.id) return;
     let active = true;
-    setResolving(true);
     axios
       .get(`/api/users/${user.id}/entity`)
       .then((res) => {
-        const entity = res.data?.Entity;
-        if (active && entity?.id) {
-          setLockedEntity(entity);
-          onChange(entity.id);
-        }
+        if (!active) return;
+        setRole(res.data?.role ?? null);
+        setOwnEntity(res.data?.Entity ?? null);
       })
       .catch(() => {
-        /* sin entidad asociada: el campo queda vacío y el submit lo validará */
+        /* sin datos: se queda con el selector abierto y el server valida */
       })
       .finally(() => {
-        if (active) setResolving(false);
+        if (active) setResolved(true);
       });
     return () => {
       active = false;
     };
-    // onChange se omite a propósito: solo debe dispararse al resolver la entidad.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuperAdmin, user?.id]);
+  }, [user?.id]);
 
-  if (!isSuperAdmin) {
+  const isSuperAdmin = role === "SUPER_ADMIN";
+
+  // ADMIN/EMPLOYEE: auto-seleccionar su propia entidad.
+  useEffect(() => {
+    if (resolved && !isSuperAdmin && ownEntity?.id && value !== ownEntity.id) {
+      onChange(ownEntity.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolved, isSuperAdmin, ownEntity?.id]);
+
+  // No-superadmin ya resuelto: campo fijo a su entidad.
+  if (resolved && !isSuperAdmin) {
     return (
       <div className="space-y-2">
         <Label>{label}</Label>
-        <Input
-          value={
-            lockedEntity?.name ??
-            (resolving ? "Cargando entidad..." : "Sin entidad asignada")
-          }
-          disabled
-        />
+        <Input value={ownEntity?.name ?? "Sin entidad asignada"} disabled />
       </div>
     );
   }
 
+  // SUPER_ADMIN, o aún resolviendo: selector con buscador.
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      <Select
-        value={value || undefined}
+      <Combobox
+        options={(organizations ?? []).map((org) => ({
+          value: org.id,
+          label: org.name,
+        }))}
+        value={value}
         onValueChange={onChange}
-        disabled={disabled || isLoading}
-      >
-        <SelectTrigger>
-          <SelectValue
-            placeholder={
-              isLoading ? "Cargando entidades..." : "Selecciona una entidad"
-            }
-          />
-        </SelectTrigger>
-        <SelectContent>
-          {organizations?.map((org) => (
-            <SelectItem key={org.id} value={org.id}>
-              {org.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        placeholder={
+          orgsLoading ? "Cargando entidades..." : "Selecciona una entidad"
+        }
+        searchPlaceholder="Buscar entidad..."
+        emptyText="No se encontraron entidades."
+        disabled={disabled || orgsLoading}
+      />
     </div>
   );
 }
