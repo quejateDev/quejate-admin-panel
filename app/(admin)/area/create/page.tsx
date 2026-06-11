@@ -14,14 +14,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { EntitySelectField } from "@/components/EntitySelectField";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { useDepartments } from "@/hooks/useDeparments";
 
-export default function NewAreaPage() {
+function NewAreaForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [entityId, setEntityId] = useState("");
+  // Pre-selecciona la entidad si viene desde /area (?entityId=...).
+  const [entityId, setEntityId] = useState(
+    searchParams.get("entityId") ?? ""
+  );
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -71,9 +75,7 @@ export default function NewAreaPage() {
       <Card>
         <CardHeader>
           <CardTitle>Crear Nueva Área</CardTitle>
-          <CardDescription>
-            Ingrese los datos del área
-          </CardDescription>
+          <CardDescription>Ingrese los datos del área</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -134,5 +136,13 @@ export default function NewAreaPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function NewAreaPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewAreaForm />
+    </Suspense>
   );
 }

@@ -22,7 +22,6 @@ import {
 } from "@/services/api/Department.service";
 import useUser from "@/hooks/useUser";
 import { useDepartments } from "@/hooks/useDeparments";
-import useOrganizationStore from "@/store/useOrganizationStore";
 
 interface DepartmentWithEntity extends Department {
   entity: {
@@ -34,10 +33,12 @@ type SortField = "name" | "date" | "entity";
 
 interface DepartmentsTableProps {
   departments: DepartmentWithEntity[];
+  entityId: string;
 }
 
 export function DeparmentsTable({
   departments: initialDepartments,
+  entityId,
 }: DepartmentsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("date");
@@ -50,10 +51,7 @@ export function DeparmentsTable({
     setIsDeleteModalOpen(true);
   }
 
-  const { entity } = useOrganizationStore();
-  const { deleteDepartment } = useDepartments({
-    entityId: entity?.id ?? "",
-  });
+  const { deleteDepartment } = useDepartments({ entityId });
 
   async function handleDeleteConfirm() {
     if (!departmentToDelete) return;
@@ -125,7 +123,10 @@ export function DeparmentsTable({
                   <SelectItem value="name">Nombre</SelectItem>
                 </SelectContent>
               </Select>
-              <Link href="/area/create" className="shrink-0">
+              <Link
+                href={`/area/create?entityId=${entityId}`}
+                className="shrink-0"
+              >
                 <Button className="w-full md:w-auto gap-2 bg-primary/90 hover:bg-primary transition-colors">
                   <Plus className="h-4 w-4" />
                   <span className="hidden md:inline">Nueva Área</span>
