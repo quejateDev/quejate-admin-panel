@@ -61,7 +61,14 @@ export function PQRTable({
   const user = useCurrentUser();
   const { data: employees } = useEmployees(entityId);
 
-  function getRemainingTimeBadge(createdAt: Date) {
+  function getRemainingTimeBadge(createdAt: Date, status: PQRSStatus) {
+    // Si ya está resuelta o cerrada, el tiempo de respuesta no aplica:
+    // mostrar el estado real en vez de "Vencido".
+    if (status === "RESOLVED" || status === "CLOSED") {
+      const s = statusMap[status];
+      return <Badge variant={s.variant as any}>{s.label}</Badge>;
+    }
+
     const RESPONSE_LIMIT_DAYS = 15;
     const remainingTime =
       new Date(createdAt).getTime() + RESPONSE_LIMIT_DAYS * 24 * 60 * 60 * 1000;
@@ -134,7 +141,11 @@ export function PQRTable({
       id: "remainingTime",
       header: "Tiempo para responder",
       accessorKey: "createdAt",
-      cell: ({ row }) => getRemainingTimeBadge(row.original.createdAt),
+      cell: ({ row }) =>
+        getRemainingTimeBadge(
+          row.original.createdAt,
+          row.original.status as PQRSStatus
+        ),
       enableSorting: true,
     },
     ...(user?.role !== "EMPLOYEE"
