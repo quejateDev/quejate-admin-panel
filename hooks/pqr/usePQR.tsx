@@ -4,7 +4,7 @@ import {
     assignPQRS, getPQRSById, updatePQRS
 } from "@/services/api/pqr.service";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PQRS } from "@prisma/client";
+import type { PqrDetail } from "@/types/api";
 
 export function usePQR(id?: string) {
   const queryClient = useQueryClient();
@@ -18,14 +18,15 @@ export function usePQR(id?: string) {
 
   // implement a function to update the pqr
   const updatePQR = useMutation({
-    mutationFn: (pqr: Partial<PQRS>) => updatePQRS(pqr.id!, pqr),
+    mutationFn: (pqr: Partial<PqrDetail>) => updatePQRS(pqr.id!, pqr),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pqr", id] });
     },
   });
 
   const assignPQR = useMutation({
-    mutationFn: (pqr: Partial<PQRS>) => assignPQRS(pqr.id!, pqr.assignedToId!),
+    mutationFn: (pqr: Partial<PqrDetail> & { assignedToId?: string | null }) =>
+      assignPQRS(pqr.id!, pqr.assignedToId ?? null),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pqr", id] });
     },

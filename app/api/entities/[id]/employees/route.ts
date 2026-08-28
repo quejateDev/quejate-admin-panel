@@ -1,40 +1,25 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { proxyToBackend } from "@/lib/api/proxy";
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const employees = await prisma.user.findMany({
-      where: {
-        entityId: id,
-        role: "EMPLOYEE",
-        isActive: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        departmentId: true,
-        department: {
-          select: {
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    });
+/**
+ * Personal de una entidad → `GET|POST /admin/entities/:id/employees`.
+ *
+ * `POST` es el alta que antes vivía en `POST /api/users` con el `entityId` en
+ * el cuerpo. Dos cambios que se notan: la respuesta **ya no incluye el resumen
+ * de la contraseña** (H-02) y el `role` está sujeto a la matriz de quién puede
+ * conceder qué — nadie se concede administrador a sí mismo.
+ */
+export async function GET(request: Request, { params }: any) {
+  const { id } = await params;
+  return proxyToBackend(
+    request,
+    `/admin/entities/${encodeURIComponent(id)}/employees`,
+  );
+}
 
-    return NextResponse.json(employees);
-  } catch (error) {
-    console.error("Error fetching entity employees:", error);
-    return NextResponse.json(
-      { error: "Error fetching employees" },
-      { status: 500 }
-    );
-  }
-} 
+export async function POST(request: Request, { params }: any) {
+  const { id } = await params;
+  return proxyToBackend(
+    request,
+    `/admin/entities/${encodeURIComponent(id)}/employees`,
+  );
+}

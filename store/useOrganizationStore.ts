@@ -1,10 +1,10 @@
-import { Entity } from "@prisma/client";
+import type { AdminEntityListItem } from "@/types/api";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 interface OrganizationStore {
-  entity: Entity | null;
-  setEntity: (entity: Entity) => void;
+  entity: AdminEntityListItem | null;
+  setEntity: (entity: AdminEntityListItem) => void;
 }
 
 const useOrganizationStore = create<OrganizationStore>()(

@@ -1,4 +1,8 @@
-import { Entity, Category } from "@prisma/client";
+import type {
+  AdminEntityDetail,
+  AdminEntityListItem,
+  PublicCategory,
+} from "@/types/api";
 import axios from "axios";
 
 const Client = axios.create({
@@ -33,7 +37,7 @@ type UpdateEntityDTO = {
 export async function getOrganizationsService(params?: {
   departmentId?: string;
   municipalityId?: string;
-}): Promise<Entity[]> {
+}): Promise<AdminEntityListItem[]> {
   const queryParams = new URLSearchParams();
 
   if (params?.municipalityId) {
@@ -50,12 +54,18 @@ export async function getOrganizationsService(params?: {
   return response.data;
 }
 
-export async function getCategories(): Promise<Category[]> {
-  const response = await Client.get("/category");
+/**
+ * Catálogo de categorías para elegir una.
+ *
+ * Va al **catálogo público** y no a `/admin/categories`, que exige alcance de
+ * plataforma: esto llena desplegables que un `ADMIN` de entidad también usa.
+ */
+export async function getCategories(): Promise<PublicCategory[]> {
+  const response = await Client.get("/category/catalog");
   return response.data;
 }
 
-export async function createOrganizationService(data: CreateEntityDTO): Promise<Entity> {
+export async function createOrganizationService(data: CreateEntityDTO): Promise<AdminEntityDetail> {
   const response = await Client.post("/entities", data);
   return response.data;
 }
@@ -63,21 +73,22 @@ export async function createOrganizationService(data: CreateEntityDTO): Promise<
 export async function updateEntity(
   id: string,
   data: UpdateEntityDTO
-): Promise<Entity> {
+): Promise<AdminEntityDetail> {
   const response = await Client.put(`/entities/${id}`, data);
   return response.data;
 }
 
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  departmentId: string | null;
-}
+import type { Employee } from "@/types/api";
 
 export const EntityService = {
+  /**
+   * 🔴 Iba a `/entity/:id/employees` — **`entity` en singular**, una carpeta
+   * que no existe bajo `app/api/`. Era una de las cinco rutas muertas del
+   * panel: respondía 404 desde siempre. No tenía consumidores, así que nunca
+   * llegó a ejecutarse; ahora apunta a la ruta real.
+   */
   getEmployees: async (entityId: string): Promise<Employee[]> => {
-    const response = await Client.get(`/entity/${entityId}/employees`);
+    const response = await Client.get(`/entities/${entityId}/employees`);
     return response.data;
   },
 };

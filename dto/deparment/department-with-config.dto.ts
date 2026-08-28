@@ -1,11 +1,10 @@
-import { Prisma } from "@prisma/client";
+import type { AdminAreaDetail } from "@/types/api";
 
-export type DepartmentWithConfig = Prisma.DepartmentGetPayload<{
-    include: {
-        pqrConfig: {
-            include: {
-                customFields: true;
-            }
-        }
-    };
-}>;
+/**
+ * Un área con su configuración de PQRSD.
+ *
+ * Antes era un `Prisma.DepartmentGetPayload<...>` con `customFields` anidados.
+ * El backend devuelve la configuración en `GET /admin/areas/:id` y los campos
+ * personalizados en su propia ruta, `.../pqr-config/fields`.
+ */
+export type DepartmentWithConfig = AdminAreaDetail;

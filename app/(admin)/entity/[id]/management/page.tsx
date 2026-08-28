@@ -25,20 +25,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface EntityUser {
-  id: string;
-  name: string;
-  lastName: string;
-  email: string;
-  role: string;
-}
+import type { AdminEntityDetail, AdminEntityStaff } from "@/types/api";
 
-interface Entity {
-  id: string;
-  name: string;
-  isVerified: boolean;
-  users: EntityUser[];
-}
+type EntityUser = AdminEntityStaff;
+type Entity = AdminEntityDetail;
 
 const roles = {
   ADMIN: "Administrador",
@@ -72,9 +62,24 @@ export default function EntityManagementPage() {
     fetchEntityData();
   }, [id]);
 
+  /**
+   * Cambio de rol de un funcionario.
+   *
+   * 🔴 **Este control ha fallado siempre.** Llamaba a
+   * `PATCH /api/entities/:id/employees/:userId`, una ruta que **no existe**:
+   * bajo `app/api/entities/[id]/employees/` solo hay un `route.ts` que exporta
+   * `GET`. Es la más grave de las cinco rutas muertas del panel, porque no es
+   * código muerto sin consecuencias — es la única acción de escritura que esta
+   * pantalla ofrece, y el administrador veía «No se pudo cambiar el rol»
+   * (o nada) cada vez.
+   *
+   * El destino real es `PATCH /admin/users/:id`, que además aplica la matriz de
+   * quién puede conceder qué rol —nadie se concede administrador— y revoca las
+   * sesiones vivas de la persona afectada.
+   */
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
-      await axios.patch(`/api/entities/${params.id}/employees/${userId}`, {
+      await axios.patch(`/api/users/${userId}`, {
         role: newRole,
       });
 
@@ -151,7 +156,7 @@ export default function EntityManagementPage() {
                   {entity.users.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell>
-                        {user.name} {user.lastName}
+                        {user.name ?? "Sin nombre"}
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>

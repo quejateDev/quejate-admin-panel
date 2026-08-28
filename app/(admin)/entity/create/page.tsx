@@ -16,7 +16,7 @@ import { createOrganizationService, getCategories } from "@/services/api/organiz
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Category} from "@prisma/client";
+import type { PublicCategory } from "@/types/api";
 import {
   Select,
   SelectContent,
@@ -31,7 +31,7 @@ export default function CreateEntityPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<PublicCategory[]>([]);
   const [departments, setDepartments] = useState<{ id: string; name: string }[]>([]);
   const [municipalities, setMunicipalities] = useState<{ id: string; name: string }[]>([]);
   const [loadingMunicipalities, setLoadingMunicipalities] = useState(false);

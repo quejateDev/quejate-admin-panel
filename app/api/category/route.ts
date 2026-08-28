@@ -1,44 +1,20 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { proxyToBackend } from "@/lib/api/proxy";
 
-const prisma = new PrismaClient();
-
-export async function GET() {
-  try {
-    const categories = await prisma.category.findMany({
-      include: {
-        entities: true,
-      },
-    });
-    return NextResponse.json(categories);
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    return NextResponse.json(
-      { error: "Error fetching categories" },
-      { status: 500 }
-    );
-  }
+/**
+ * Categorías de entidad → `GET|POST /admin/categories`.
+ *
+ * Exige alcance de plataforma. El `GET` trae también las inactivas y, en vez de
+ * la lista completa de entidades de cada categoría, un `_count`. Un nombre
+ * repetido en el `POST` responde **409**, no 500.
+ *
+ * De paso desaparece un problema de infraestructura: los manejadores de
+ * `category` abrían `new PrismaClient()` por petición, que agota las conexiones
+ * de Neon (H-03).
+ */
+export async function GET(request: Request) {
+  return proxyToBackend(request, "/admin/categories");
 }
 
 export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { name, description, imageUrl } = body;
-
-    const category = await prisma.category.create({
-      data: {
-        name,
-        description,
-        imageUrl,
-      },
-    });
-
-    return NextResponse.json(category);
-  } catch (error) {
-    console.error("Error creating category:", error);
-    return NextResponse.json(
-      { error: "Error creating category" },
-      { status: 500 }
-    );
-  }
+  return proxyToBackend(request, "/admin/categories");
 }

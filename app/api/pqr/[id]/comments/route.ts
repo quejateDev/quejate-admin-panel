@@ -1,78 +1,18 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { currentUser } from "@/lib/auth";
+import { proxyToBackend } from "@/lib/api/proxy";
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const comments = await prisma.comment.findMany({
-      where: {
-        pqrId: id,
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    return NextResponse.json(comments);
-  } catch (error) {
-    console.error("Error fetching comments:", error);
-    return NextResponse.json(
-      { error: "Error fetching comments" },
-      { status: 500 }
-    );
-  }
+/**
+ * Comentarios de una PQRSD → `GET|POST /pqr/:id/comments`.
+ *
+ * Interacción social del ciudadano, no del panel, así que va a la superficie
+ * pública. El `POST` toma el autor **de la sesión** y no del cuerpo: en el
+ * original se podía comentar en nombre de otra persona (A-09).
+ */
+export async function GET(request: Request, { params }: any) {
+  const { id } = await params;
+  return proxyToBackend(request, `/pqr/${encodeURIComponent(id)}/comments`);
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await currentUser();
-    const userId = user?.id;
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const { text } = await request.json();
-    const { id } = await params;
-
-    const comment = await prisma.comment.create({
-      data: {
-        text,
-        userId,
-        pqrId: id,
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
-
-    return NextResponse.json(comment);
-  } catch (error) {
-    console.error("Error creating comment:", error);
-    return NextResponse.json(
-      { error: "Error creating comment" },
-      { status: 500 }
-    );
-  }
+export async function POST(request: Request, { params }: any) {
+  const { id } = await params;
+  return proxyToBackend(request, `/pqr/${encodeURIComponent(id)}/comments`);
 }

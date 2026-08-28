@@ -9,25 +9,34 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, User } from "lucide-react";
 import { ChangePasswordDialog } from "@/components/forms/change-password-dialog";
-import useUser from "@/hooks/useUser";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useProfile } from "@/hooks/useProfile";
 
 
+/**
+ * «Mi Perfil».
+ *
+ * 🔴 **Esta pantalla devolvía 500 siempre al guardar.** Mandaba `lastName`, un
+ * campo que **no existe en el modelo `User`** —el nombre va entero en `name`—,
+ * y lo mandaba además a `PATCH /api/users/:id`, la ruta insegura, en vez de a
+ * `/api/profile`, que existía, estaba bien hecha y no la usaba nadie.
+ *
+ * Ahora el campo «Apellido» no está (no tenía dónde guardarse) y el guardado va
+ * por `PATCH /admin/profile`, que acepta exactamente `name`.
+ */
 export default function ProfilePage() {
   const { toast } = useToast();
   const user = useCurrentUser();
-  const { data: userData, updateUser, isLoading } = useUser(user?.id || "");
+  const { data: userData, updateProfile, isLoading } = useProfile();
 
   const [formData, setFormData] = useState({
     name: userData?.name || "",
-    lastName: userData?.lastName || "",
     email: userData?.email || "",
   });
 
   useEffect(() => {
     setFormData({
       name: userData?.name || "",
-      lastName: userData?.lastName || "",
       email: userData?.email || "",
     });
   }, [userData]);
@@ -35,7 +44,9 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateUser(formData);
+      // Solo `name`: el correo es la identidad de la cuenta y no se cambia
+      // desde aquí (el backend tampoco lo acepta).
+      await updateProfile({ name: formData.name });
 
       toast({
         title: "Perfil actualizado",
@@ -97,20 +108,6 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Apellido</Label>
-                <Input
-                  id="lastName"
-                  value={formData.lastName}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      lastName: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Guardar cambios
@@ -130,7 +127,7 @@ export default function ProfilePage() {
                 <p className="text-sm text-muted-foreground">
                   Actualiza tu contraseña para mantener tu cuenta segura
                 </p>
-                {user?.id && <ChangePasswordDialog userId={user.id} />}
+                {user?.id && <ChangePasswordDialog />}
               </div>
             </div>
           </CardContent>

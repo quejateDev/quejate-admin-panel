@@ -1,27 +1,12 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { proxyToBackend } from "@/lib/api/proxy";
 
-
-export async function GET() {
-  try {
-    const departments = await prisma.regionalDepartment.findMany({
-      orderBy: {
-        name: "asc",
-      },
-      include: {
-        Municipality: { 
-          select: { name: true },
-        },
-      },
-    });
-
-    return NextResponse.json(departments);
-  } catch (error) {
-    console.error("Error fetching regional departments:", error);
-    return NextResponse.json(
-      { error: "Error fetching regional departments" },
-      { status: 500 }
-    );
-  }
+/**
+ * Catálogo de departamentos → `GET /regional-departments`.
+ *
+ * Catálogo público: mismo array pelado, mismos 33 departamentos con sus
+ * municipios anidados y ordenados. El backend lo sirve del catálogo en memoria
+ * y no de la base de datos (R-03: el JSON y las tablas son idénticos).
+ */
+export async function GET(request: Request) {
+  return proxyToBackend(request, "/regional-departments");
 }
-

@@ -1,33 +1,11 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { proxyToBackend } from "@/lib/api/proxy";
 
+/**
+ * Municipios de un departamento → `GET /municipalities?departmentId=`.
+ *
+ * Mismo parámetro y misma forma. Sin `departmentId` responde 400 (como antes) y
+ * con un departamento inexistente, 404 en vez de una lista vacía.
+ */
 export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const departmentId = searchParams.get("departmentId");
-
-    if (!departmentId) {
-      return NextResponse.json(
-        { error: "Department ID is required" },
-        { status: 400 }
-      );
-    }
-
-    const municipalities = await prisma.municipality.findMany({
-      where: {
-        regionalDepartmentId: departmentId,
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
-
-    return NextResponse.json(municipalities);
-  } catch (error) {
-    console.error("Error fetching municipalities:", error);
-    return NextResponse.json(
-      { error: "Error fetching municipalities" },
-      { status: 500 }
-    );
-  }
+  return proxyToBackend(request, "/municipalities");
 }

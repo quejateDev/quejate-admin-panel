@@ -16,13 +16,25 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
-interface ChangePasswordDialogProps {
-  userId: string;
-}
-
-export function ChangePasswordDialog({ userId }: ChangePasswordDialogProps) {
+/**
+ * Cambio de la contraseña **propia**.
+ *
+ * 🔴 **Ya no recibe un `userId`, y eso es el arreglo.** Mandaba
+ * `PATCH /api/users/:id` con `{ password }` —sin pedir la actual— sobre el
+ * identificador que le pasaran: la primitiva de toma de control de **C-01**.
+ * Ahora llama a `PATCH /api/profile/password`, que resuelve el identificador
+ * desde la sesión del servidor, y el backend exige la contraseña actual antes
+ * de cambiarla.
+ *
+ * Consecuencia visible: desde la ficha de un empleado **ya no se le puede
+ * poner la contraseña a otra persona**. No es una regresión accidental — es la
+ * capacidad que había que quitar. Quien olvida su contraseña usa el
+ * restablecimiento por correo.
+ */
+export function ChangePasswordDialog() {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
 
   async function onSubmit(e: React.FormEvent) {
@@ -30,23 +42,33 @@ export function ChangePasswordDialog({ userId }: ChangePasswordDialogProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await fetch("/api/profile/password", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ currentPassword, newPassword: password }),
       });
 
       if (!response.ok) {
-        throw new Error("Ocurrió un error al actualizar la contraseña");
+        const body = (await response.json().catch(() => null)) as
+          | { error?: string }
+          | null;
+        throw new Error(
+          body?.error ?? "Ocurrió un error al actualizar la contraseña",
+        );
       }
 
       toast.success("Contraseña actualizada exitosamente");
       setOpen(false);
+      setCurrentPassword("");
       setPassword("");
     } catch (error) {
-      toast.error("Ocurrió un error al actualizar la contraseña");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Ocurrió un error al actualizar la contraseña",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -61,11 +83,21 @@ export function ChangePasswordDialog({ userId }: ChangePasswordDialogProps) {
         <DialogHeader>
           <DialogTitle>Cambiar Contraseña</DialogTitle>
           <DialogDescription>
-            Ingresa la nueva contraseña para este empleado.
+            Ingresa tu contraseña actual y la nueva.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit}>
           <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="currentPassword">Contraseña Actual</Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+              />
+            </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Nueva Contraseña</Label>
               <Input

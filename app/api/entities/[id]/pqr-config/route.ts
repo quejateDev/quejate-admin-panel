@@ -1,84 +1,26 @@
-import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { proxyToBackend } from "@/lib/api/proxy";
 
-export async function PUT(
-  req: NextRequest,
-  { params }: any
-) {
-  try {
-    const { id } = await params;
-
-    const body = await req.json();
-    const {
-      allowAnonymous,
-      requireEvidence,
-      maxResponseTime,
-      notifyEmail,
-      autoAssign,
-    } = body;
-
-    const entity = await prisma.entity.findUnique({
-      where: { id },
-    });
-
-    if (!entity) {
-      return new NextResponse("Entity not found", { status: 404 });
-    }
-
-    let pqrConfig = await prisma.pQRConfig.findUnique({
-      where: { entityId: id },
-    });
-
-    if (!pqrConfig) {
-      pqrConfig = await prisma.pQRConfig.create({
-        data: {
-          entityId: id,
-          allowAnonymous,
-          requireEvidence,
-          maxResponseTime: parseInt(maxResponseTime),
-          notifyEmail,
-          autoAssign,
-        },
-      });
-    } else {
-      pqrConfig = await prisma.pQRConfig.update({
-        where: { id: pqrConfig.id },
-        data: {
-          allowAnonymous,
-          requireEvidence,
-          maxResponseTime: parseInt(maxResponseTime),
-          notifyEmail,
-          autoAssign,
-        },
-      });
-    }
-
-    return NextResponse.json({});
-  } catch (error) {
-    console.error("[ENTITY_PQR_CONFIG_PUT]", error);
-    return new NextResponse("Internal Error", { status: 500 });
-  }
+/**
+ * Configuración de PQRSD de una entidad →
+ * `GET|PUT /admin/entities/:id/pqr-config`.
+ *
+ * 🔴 Aquí vive **H-12**: `maxResponseTime` es el número de días hábiles del que
+ * sale la fecha límite de cada PQRSD nueva, un término de la **Ley 1755 de
+ * 2015**, y esta ruta no comprobaba sesión, ni rol, ni entidad. Ahora comprueba
+ * la entidad, valida el rango 1–15 y deja rastro de cada cambio en el log.
+ */
+export async function GET(request: Request, { params }: any) {
+  const { id } = await params;
+  return proxyToBackend(
+    request,
+    `/admin/entities/${encodeURIComponent(id)}/pqr-config`,
+  );
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: any 
-) {
-  try {
-    const { id } = await params;
-
-    const pqrConfig = await prisma.pQRConfig.findUnique({
-      where: {
-        entityId: id,
-      },
-      include: {
-        customFields: true,
-      }
-    });
-
-    return NextResponse.json(pqrConfig);
-  } catch (error) {
-    console.error("[ENTITY_PQR_CONFIG_GET]", error);
-    return new NextResponse("Internal Error", { status: 500 });
-  }
+export async function PUT(request: Request, { params }: any) {
+  const { id } = await params;
+  return proxyToBackend(
+    request,
+    `/admin/entities/${encodeURIComponent(id)}/pqr-config`,
+  );
 }

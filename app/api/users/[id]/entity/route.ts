@@ -1,44 +1,15 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { proxyToBackend } from "@/lib/api/proxy";
 
-export async function GET(
-  req: Request,
-  { params }: any 
-) {
+/**
+ * Entidad a la que pertenece un usuario → `GET /admin/users/:id/entity`.
+ *
+ * Forma intacta, clave `Entity` en mayúscula incluida. Preguntar por uno mismo
+ * siempre pasa, que es el uso real (`useUserWithEntity`).
+ */
+export async function GET(request: Request, { params }: any) {
   const { id } = await params;
-
-  try {
-    const client = await prisma.user.findUnique({
-      where: {
-        id
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        Entity: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        role: true,
-      },
-    });
-
-    if (!client) {
-      return NextResponse.json(
-        { error: "Client not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(client);
-  } catch (error) {
-    console.error("Error fetching client:", error);
-    return NextResponse.json(
-      { error: "Error fetching client" },
-      { status: 500 }
-    );
-  }
+  return proxyToBackend(
+    request,
+    `/admin/users/${encodeURIComponent(id)}/entity`,
+  );
 }

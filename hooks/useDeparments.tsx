@@ -1,5 +1,5 @@
 import { CreateDepartmentDTO, createDepartmentService, deleteDepartmentService, getDepartmentsService } from "@/services/api/Department.service";
-import { Department } from "@prisma/client";
+import type { AdminArea } from "@/types/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useDepartments({ entityId }: { entityId: string }) {
@@ -16,11 +16,11 @@ export function useDepartments({ entityId }: { entityId: string }) {
     mutationFn: (id: string) => deleteDepartmentService({ id }),
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: ["departments", entityId] });
-      const previousDepartments = queryClient.getQueryData<Department[]>([
+      const previousDepartments = queryClient.getQueryData<AdminArea[]>([
         "departments",
         entityId,
       ]);
-      queryClient.setQueryData(["departments", entityId], (old: Department[]) =>
+      queryClient.setQueryData(["departments", entityId], (old: AdminArea[]) =>
         old.filter((department) => department.id !== id)
       );
       return previousDepartments;

@@ -151,8 +151,8 @@ export default function ClientsPage() {
   const filteredClients = clients
     .filter(
       (client) =>
-        client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (client.name ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (client.email ?? "").toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
       switch (sortBy) {
@@ -161,7 +161,9 @@ export default function ClientsPage() {
             `${b.name}`
           );
         case "email":
-          return a.email.localeCompare(b.email);
+          // `name` y `email` son opcionales en el contrato del backend: el
+          // personal se puede dar de alta sin nombre.
+          return (a.email ?? "").localeCompare(b.email ?? "");
         case "date":
         default:
           return (

@@ -6,48 +6,48 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Paperclip } from "lucide-react";import prisma from "@/lib/prisma";
+import { Paperclip } from "lucide-react";
+import { backendJson, backendJsonOrNull } from "@/lib/api/backend";
+import type { EntityResponse, PqrDetail } from "@/types/api";
 import { typeMap } from "@/constants/pqrMaps";
 import { notFound } from "next/navigation";
 import { PQRResponses } from "@/components/pqr/pqr-responses";
 import { PQRStatus } from "@/components/pqr/pqr-status";
 
+/**
+ * Detalle de una PQRSD para el personal de la entidad.
+ *
+ * Dos llamadas en vez de una consulta con `include`: el detalle va a
+ * `GET /pqr/:id` —la misma lectura del ciudadano, con autenticación opcional y
+ * el gate de privadas— y las respuestas oficiales a
+ * `GET /admin/pqr/:id/responses`, que sí comprueba la entidad.
+ *
+ * 🔴 **Lo que esta pantalla deja de mostrar: el correo y el teléfono del
+ * ciudadano.** El original los sacaba de un `include: { creator: true }`, que
+ * devuelve la fila `User` entera —con su resumen bcrypt de contraseña— en un
+ * endpoint que además es público para las PQRSD no privadas (H-06). El backend
+ * publica del autor solo `id`, `name` e `image`, y no se le pide que haga una
+ * excepción aquí: el contacto entidad↔ciudadano no depende de esta pantalla,
+ * va por el correo de notificación de la PQRSD, que sale del servidor. Queda
+ * anotado en el informe de cierre por si la entidad echa en falta el dato.
+ */
 export default async function PQRDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const pqr = await prisma.pQRS.findUnique({
-    where: {
-      id,
-    },
-    include: {
-      department: true,
-      creator: true,
-      customFieldValues: true,
-      attachments: true,
-      responses: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-            },
-          },
-          attachments: true,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      },
-    },
-  });
+  const pqr = await backendJsonOrNull<PqrDetail>(
+    `/pqr/${encodeURIComponent(id)}`,
+  );
 
   if (!pqr) {
     notFound();
   }
+
+  const responses = await backendJson<EntityResponse[]>(
+    `/admin/pqr/${encodeURIComponent(id)}/responses`,
+  );
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -80,6 +80,14 @@ export default async function PQRDetailPage({
                   <span className="text-muted-foreground">Creado</span>
                   <span>{new Date(pqr.createdAt).toLocaleDateString()}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Fecha límite</span>
+                  <span>
+                    {pqr.hasLegalDeadline
+                      ? new Date(pqr.dueDate).toLocaleDateString()
+                      : "Sin plazo legal"}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -90,16 +98,12 @@ export default async function PQRDetailPage({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Nombre</span>
                   <span>
-                    {pqr.creator?.name}
+                    {pqr.anonymous ? "Anónimo" : (pqr.creator?.name ?? "Anónimo")}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Correo</span>
-                  <span>{pqr.creator?.email}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Teléfono</span>
-                  <span>{pqr.creator?.phone}</span>
+                  <span className="text-muted-foreground">Área</span>
+                  <span>{pqr.department?.name ?? "Sin área"}</span>
                 </div>
               </div>
             </div>
@@ -134,7 +138,7 @@ export default async function PQRDetailPage({
                 <h3 className="text-lg font-semibold">Información Adicional</h3>
                 <div className="grid gap-4">
                   {pqr.customFieldValues.map((field) => (
-                    <div key={field.id} className="space-y-2">
+                    <div key={field.id ?? field.name} className="space-y-2">
                       <h4 className="font-medium text-sm">{field.name}</h4>
                       <p className="text-muted-foreground whitespace-pre-wrap">
                         {field.value || "No especificado"}
@@ -175,7 +179,7 @@ export default async function PQRDetailPage({
       </Card>
 
       {/* Responses Section */}
-      <PQRResponses pqrId={pqr.id} initialResponses={pqr.responses} />
+      <PQRResponses pqrId={pqr.id} initialResponses={responses} />
     </div>
   );
 }

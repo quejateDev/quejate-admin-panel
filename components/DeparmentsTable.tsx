@@ -5,7 +5,7 @@ import { Plus, Search, Building2, Trash2, PencilLine } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/data-table";
-import { Department } from "@prisma/client";
+import type { AdminArea } from "@/types/api";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 import ConfirmationModal from "./modals/ConfirmationModal";
@@ -23,11 +23,15 @@ import {
 import useUser from "@/hooks/useUser";
 import { useDepartments } from "@/hooks/useDeparments";
 
-interface DepartmentWithEntity extends Department {
-  entity: {
-    name: string;
-  };
-}
+/**
+ * El área tal como la devuelve `GET /admin/areas`.
+ *
+ * Antes el tipo anidaba `entity` completa, porque el manejador la traía con un
+ * `include`. Ya no viene: el listado se pide siempre acotado a una entidad —la
+ * que el propio selector de esta pantalla elige— así que el nombre de la
+ * entidad no hace falta en cada fila.
+ */
+type DepartmentWithEntity = AdminArea;
 
 type SortField = "name" | "date" | "entity";
 

@@ -1,68 +1,20 @@
-import { NextResponse } from "next/server";
+import { proxyToBackend } from "@/lib/api/proxy";
 
-import prisma from "@/lib/prisma";
-import { currentUser } from "@/lib/auth";
-
-export async function GET() {
-  try {
-    const currentUs = await currentUser();
-    const userId = currentUs?.id;
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        image: true,
-      },
-    });
-
-    return NextResponse.json(user);
-  } catch (error) {
-    console.error("[PROFILE_GET]", error);
-    return new NextResponse("Internal error", { status: 500 });
-  }
+/**
+ * Perfil propio → `GET|PATCH /admin/profile`.
+ *
+ * 🔴 **Esta es la ruta que arregla «Mi Perfil».** La pantalla mandaba
+ * `lastName`, un campo que **no existe en el modelo `User`**, así que guardar
+ * devolvía 500 siempre. El `PATCH` nuevo acepta solo `name`, como el original
+ * pretendía, y la pantalla ya no manda el campo inexistente.
+ *
+ * De paso, el perfil propio deja de pasar por `/api/users/:id`: esta ruta
+ * existía, estaba bien hecha y no la usaba nadie.
+ */
+export async function GET(request: Request) {
+  return proxyToBackend(request, "/admin/profile");
 }
 
-export async function PATCH(req: Request) {
-  try {
-    const currentUs = await currentUser();
-    const userId = currentUs?.id;
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
-    }
-
-    const body = await req.json();
-    const { name } = body;
-
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        name,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        image: true,
-      },
-    });
-
-    return NextResponse.json(user);
-  } catch (error) {
-    console.error("[PROFILE_PATCH]", error);
-    return new NextResponse("Internal error", { status: 500 });
-  }
+export async function PATCH(request: Request) {
+  return proxyToBackend(request, "/admin/profile");
 }

@@ -1,5 +1,6 @@
 import { EntityForm } from '@/components/entities/entity-form'
-import prisma from '@/lib/prisma'
+import { backendJsonOrNull } from '@/lib/api/backend'
+import type { AdminEntityDetail } from '@/types/api'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Settings } from "lucide-react"
@@ -12,11 +13,19 @@ interface EditEntityPageProps {
   }>
 }
 
+/**
+ * Edición de una entidad.
+ *
+ * Antes leía la fila con Prisma sin comprobar de quién era; ahora la pide al
+ * backend con la identidad de quien edita. Una entidad ajena responde **403**,
+ * que sube como error de la página en vez de mostrar el formulario relleno con
+ * los datos de otra entidad.
+ */
 export default async function EditEntityPage({ params }: EditEntityPageProps) {
   const { id } = await params;
-  const entity = await prisma.entity.findUnique({
-    where: { id }
-  })
+  const entity = await backendJsonOrNull<AdminEntityDetail>(
+    `/admin/entities/${encodeURIComponent(id)}`,
+  );
 
   if (!entity) {
     notFound()

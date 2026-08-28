@@ -1,3 +1,73 @@
+// ============================================================================
+//  🔴 LEE ESTO ANTES DE TOCAR NADA DE ESTE FICHERO
+// ============================================================================
+//
+//  Este esquema YA NO DESCRIBE la base de datos de Quéjate. Describe **solo lo
+//  que el Auth.js de este panel necesita leer y escribir**. Es un recorte
+//  deliberado, no un esquema incompleto por descuido.
+//
+//  ## Por qué se recortó (Tarea 15, 28/08/2026)
+//
+//  Hasta el repunte había **tres** esquemas de Prisma sobre la MISMA base de
+//  producción —`quejate-app`, este panel y `quejate-backend`— y cada aplicación
+//  se creía responsable del esquema. Ese es el incidente A-01, y el peligro no
+//  era teórico: las copias iban 4 migraciones por detrás, y entre las que les
+//  faltaban estaba `20260731193901_add_tokens_valid_after`, la columna que
+//  sostiene la revocación de sesiones (ADR-0004). Ejecutar `prisma migrate dev`
+//  desde aquí habría hecho que Prisma **propusiera borrarla**, y con ella la
+//  capacidad de invalidar una sesión robada.
+//
+//  Desde la Tarea 15 este panel no consulta la base de datos para nada que no
+//  sea la sesión: todo lo demás va por el backend unificado
+//  (`lib/api/backend.ts`). Un esquema completo aquí ya no describía nada real;
+//  solo era un arma cargada.
+//
+//  ## Las reglas
+//
+//  1. **`quejate-backend` es el ÚNICO dueño del esquema.** Toda migración se
+//     escribe allí. Este repositorio no migra.
+//  2. **NO existe `prisma/migrations/` aquí, y no se vuelve a crear.** Sin
+//     historial, `migrate deploy` no tiene nada que aplicar y `migrate dev` no
+//     puede proponer un borrado en silencio.
+//  3. **Los únicos comandos válidos son `prisma generate` y `prisma db pull`.**
+//     `migrate dev`, `migrate deploy`, `db push` y `migrate reset` están
+//     prohibidos en este repositorio, sin excepción.
+//  4. **Si necesitas una columna nueva**, se añade en `quejate-backend` con su
+//     migración, y aquí solo se declara si el Auth.js de este panel la usa.
+//
+//  ## Por qué estos cuatro modelos y no otros
+//
+//  Se midió, no se supuso. Es todo lo que queda leyendo Prisma en el panel:
+//
+//  - `User`    — `auth.config.ts` (comparar la contraseña), el callback `jwt`
+//                (nombre, correo, rol, imagen), el callback `signIn` (rol y
+//                cuenta activa) y `actions/register|new-password|
+//                new-verification`.
+//  - `Account` — `data/account.ts`, para saber si la cuenta entró por Google
+//                (`isOAuth`), y el adaptador al enlazar una cuenta OAuth.
+//  - `VerificationToken`  — verificación de correo (`lib/tokens.ts`).
+//  - `PasswordResetToken` — restablecimiento de contraseña (`lib/tokens.ts`).
+//
+//  **`Session` NO hace falta**: la estrategia es `jwt`, así que el adaptador
+//  nunca crea ni lee sesiones en base de datos. De hecho tampoco estaba antes
+//  del recorte, y `PrismaAdapter` compilaba igual.
+//
+//  Los dos modelos de token están aquí porque el panel todavía tiene **su
+//  propio registro y su propio restablecimiento de contraseña**. Ese es el
+//  siguiente paso pendiente y no entra en la Tarea 15: el estado final deseado
+//  es quitar el adaptador y que el panel delegue la sesión entera en el
+//  backend, que ya resuelve Google sin adaptador en `POST /auth/mobile/google`.
+//  Cuando eso ocurra, este fichero se queda sin razón de existir.
+//
+//  ## Los campos
+//
+//  `User` declara solo las columnas que el panel usa. La tabla real tiene
+//  muchas más (`entityId`, `departmentId`, `tokensValidAfter`, `pushToken`…):
+//  no declararlas aquí no las borra ni las oculta — Prisma simplemente no las
+//  selecciona. Los `@default` se conservan **idénticos** a los del backend para
+//  que un `user.create` desde el registro del panel produzca la misma fila.
+// ============================================================================
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,427 +77,67 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// Cuenta de la plataforma. Recorte de lectura: la tabla real vive en
+/// `quejate-backend/prisma/schema.prisma`.
 model User {
-  id                String               @id @default(uuid())
-  name              String?
-  image             String?
-  password          String?
-  email             String?               @unique
-  phone             String?
-  role              UserRole             @default(CLIENT)
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  departmentId      String?
-  emailVerified     DateTime?
-  entityId          String?
-  isActive          Boolean              @default(true)
-  isVerified        Boolean              @default(false)
-  isOAuth           Boolean?              
-  comments          Comment[]
-  EmailVerification EmailVerification[]
-  EntityHasUser     EntityHasUser[]
-  lawyerProfile     Lawyer?
-  lawyerRequests    LawyerRequest[]
-  Like              Like[]
-  notifications     Notification[]
-  assignedPQRS      PQRS[]               @relation("AssignedPQRS")
-  PQRS              PQRS[]
-  statusHistory     PQRStatusHistory[]
-  givenRatings      Rating[]             @relation("ClientGivenRatings")
-  department        Department?          @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  Entity            Entity?              @relation(fields: [entityId], references: [id], onDelete: SetNull)
-  favorites         UserFavoriteEntity[]
-  following         User[]              @relation("UserFollows")
-  followers         User[]              @relation("UserFollows")
-  
-  pushToken         String?
+  id            String    @id @default(uuid())
+  name          String?
+  image         String?
+  password      String?
+  email         String?   @unique
+  phone         String?
+  role          UserRole  @default(CLIENT)
+  emailVerified DateTime?
+  /// Desactivar una cuenta le corta el acceso: lo comprueba el callback
+  /// `signIn` y, en cada petición al backend, `EntityScopeGuard`.
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  // NextAuth.js relations
-  accounts          Account[]
-  entityResponses   EntityResponse[]
-
-  passwordResetCodes PasswordResetCode[]
-
-  @@index([departmentId])
+  accounts Account[]
 }
 
-model Lawyer {
-  id                    String          @id @default(uuid())
-  userId                String          @unique
-  documentType          DocumentType
-  identityDocument      String          @unique
-  specialties           String[]
-  description           String?
-  feePerHour            Float?
-  feePerService         Float?
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @updatedAt
-  isVerified            Boolean         @default(false)
-  identityDocumentImage String
-  professionalCardImage String          
-  licenseNumber         String          @unique
-  user                  User            @relation(fields: [userId], references: [id])
-  lawyerRequests        LawyerRequest[]
-  receivedRatings       Rating[]        @relation("LawyerReceivedRatings")
+/// Cuenta de un proveedor OAuth (hoy solo Google). La necesita el adaptador.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
-  @@index([userId])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
-model LawyerRequest {
-  id                 String              @id @default(uuid())
-  userId             String
-  lawyerId           String
-  pqrId              String?
-  message            String
-  serviceType        String?
-  status             LawyerRequestStatus @default(PENDING)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  clientContactEmail String?
-  clientContactPhone String?
-  lawyer             Lawyer              @relation(fields: [lawyerId], references: [id], onDelete: Cascade)
-  pqr                PQRS?               @relation(fields: [pqrId], references: [id])
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+/// Token de verificación de correo del registro propio del panel.
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
 
-  @@index([userId])
-  @@index([lawyerId])
-  @@index([pqrId])
+  @@unique([email, token])
+  @@map("verification_tokens")
 }
 
-model Rating {
-  id        String   @id @default(uuid())
-  lawyerId  String
-  clientId  String
-  score     Int
-  createdAt DateTime @default(now())
-  comment   String?
-  client    User     @relation("ClientGivenRatings", fields: [clientId], references: [id], onDelete: Cascade)
-  lawyer    Lawyer   @relation("LawyerReceivedRatings", fields: [lawyerId], references: [id])
+/// Token de restablecimiento de contraseña del panel.
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
 
-  @@unique([lawyerId, clientId])
-  @@index([lawyerId])
-  @@index([clientId])
-}
-
-model Department {
-  id          String     @id @default(uuid())
-  name        String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  description String?
-  entityId    String
-  email       String
-  entity      Entity     @relation(fields: [entityId], references: [id])
-  pqrConfig   PQRConfig?
-  pqrs        PQRS[]
-  employees   User[]
-
-  @@index([entityId])
-}
-
-model Entity {
-  id                   String               @id @default(uuid())
-  name                 String
-  description          String?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-  categoryId           String
-  imageUrl             String?
-  email                String?
-  municipalityId       String?
-  isVerified           Boolean              @default(false)
-  regionalDepartmentId String?
-  Department           Department[]
-  category             Category             @relation(fields: [categoryId], references: [id])
-  Municipality         Municipality?        @relation(fields: [municipalityId], references: [id], onUpdate: NoAction)
-  RegionalDepartment   RegionalDepartment?  @relation(fields: [regionalDepartmentId], references: [id], onUpdate: NoAction)
-  EntityConsecutive    EntityConsecutive[]
-  EntityHasUser        EntityHasUser[]
-  pqrConfig            PQRConfig?
-  pqrs                 PQRS[]
-  users                User[]
-  favoritedBy          UserFavoriteEntity[]
-  pqrResponses        EntityResponse[]
-  isActive            Boolean              @default(true)
-
-  @@index([categoryId])
-}
-
-model UserFavoriteEntity {
-  id        String   @id @default(uuid())
-  userId    String
-  entityId  String
-  createdAt DateTime @default(now())
-  entity    Entity   @relation(fields: [entityId], references: [id])
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, entityId])
-}
-
-model EntityConsecutive {
-  id          String    @id @default(uuid())
-  entityId    String
-  code        String    @unique
-  consecutive Int       @default(1)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime? @updatedAt
-  entity      Entity    @relation(fields: [entityId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([entityId])
-}
-
-model EntityHasUser {
-  id       String   @id @default(uuid())
-  entityId String
-  userId   String
-  role     UserRole
-  entity   Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([entityId])
-  @@index([userId])
-}
-
-model Category {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  imageUrl    String?
-  isActive    Boolean  @default(true)
-  entities    Entity[]
-}
-
-model OversightEntity {
-  id                   String              @id @default(uuid())
-  name                 String              @unique
-  email                String
-  phone                String?
-  description          String?
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
-  municipalityId       String?
-  regionalDepartmentId String?
-  Municipality         Municipality?       @relation(fields: [municipalityId], references: [id], onUpdate: NoAction)
-  RegionalDepartment   RegionalDepartment? @relation(fields: [regionalDepartmentId], references: [id], onUpdate: NoAction)
-}
-
-model PQRS {
-  id                String             @id @default(uuid())
-  type              PQRSType
-  status            PQRSStatus         @default(PENDING)
-  dueDate           DateTime
-  anonymous         Boolean            @default(false)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  creatorId         String?
-  departmentId      String?
-  private           Boolean            @default(true)
-  consecutiveCode   String?
-  description       String?
-  subject           String?
-  assignedToId      String?
-  entityId          String
-  attachments       Attachment[]
-  comments          Comment[]
-  guestName        String?
-  guestEmail       String?
-  guestPhone       String?
-  customFieldValues CustomFieldValue[]
-  lawyerRequests    LawyerRequest[]
-  likes             Like[]
-  PQRCustomField    PQRCustomField[]
-  responses         EntityResponse[]
-  assignedTo        User?              @relation("AssignedPQRS", fields: [assignedToId], references: [id], onDelete: SetNull)
-  creator           User?              @relation(fields: [creatorId], references: [id], onDelete: SetNull)
-  department        Department?        @relation(fields: [departmentId], references: [id])
-  entity            Entity             @relation(fields: [entityId], references: [id])
-  statusHistory     PQRStatusHistory[]
-  customFields      CustomField[]      @relation("CustomFieldToPQRS")
-  latitude          Float?
-  longitude         Float?
-  @@index([creatorId])
-  @@index([departmentId])
-  @@index([assignedToId])
-}
-
-model Like {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  pqrId     String
-  userId    String
-  pqr       PQRS     @relation(fields: [pqrId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([pqrId, userId])
-  @@index([pqrId])
-  @@index([userId])
-}
-
-model Comment {
-  id        String   @id @default(uuid())
-  text      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String
-  pqrId     String
-  pqr       PQRS     @relation(fields: [pqrId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([pqrId])
-}
-
-model PQRCustomField {
-  id          String   @id @default(uuid())
-  name        String
-  value       String
-  type        String
-  placeholder String
-  required    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  pqrId       String
-  pqr         PQRS     @relation(fields: [pqrId], references: [id], onDelete: Cascade)
-
-  @@index([pqrId])
-}
-
-model Attachment {
-  id           String   @id @default(uuid())
-  url          String
-  createdAt    DateTime @default(now())
-  name         String
-  pqrId        String
-  size         Int
-  type         String
-  thumbnailUrl String?
-  updatedAt    DateTime @updatedAt
-  pqr          PQRS     @relation(fields: [pqrId], references: [id], onDelete: Cascade)
-
-  @@index([pqrId])
-}
-
-model PQRConfig {
-  id              String        @id @default(uuid())
-  allowAnonymous  Boolean       @default(false)
-  requireEvidence Boolean       @default(false)
-  maxResponseTime Int           @default(15)
-  notifyEmail     Boolean       @default(true)
-  autoAssign      Boolean       @default(false)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  departmentId    String?       @unique
-  entityId        String?       @unique
-  customFields    CustomField[]
-  department      Department?   @relation(fields: [departmentId], references: [id], onDelete: Cascade)
-  entity          Entity?       @relation(fields: [entityId], references: [id], onDelete: Cascade)
-}
-
-model CustomField {
-  id             String    @id @default(uuid())
-  name           String
-  type           String
-  placeholder    String?
-  required       Boolean   @default(false)
-  configId       String
-  isForAnonymous Boolean   @default(false)
-  config         PQRConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
-  PQRS           PQRS[]    @relation("CustomFieldToPQRS")
-
-  @@index([configId])
-}
-
-model CustomFieldValue {
-  id          String   @id @default(uuid())
-  name        String
-  value       String
-  type        String
-  placeholder String
-  required    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  pqrId       String
-  pqr         PQRS     @relation(fields: [pqrId], references: [id], onDelete: Cascade)
-
-  @@index([pqrId])
-}
-
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  type      String
-  message   String
-  read      Boolean  @default(false)
-  data      Json?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model EmailVerification {
-  id        String   @id @default(cuid())
-  userId    String
-  token     String   @unique
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model Municipality {
-  id                   String             @id(map: "municipality_pkey")
-  name                 String
-  regionalDepartmentId String
-  Entity               Entity[]
-  RegionalDepartment   RegionalDepartment @relation(fields: [regionalDepartmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  OversightEntity      OversightEntity[]
-  EntitySuggestion EntitySuggestion[]
-}
-
-model RegionalDepartment {
-  id              String            @id(map: "regionaldepartment_pkey")
-  name            String            @unique(map: "regionaldepartment_name_key")
-  createdAt       DateTime?         @default(now()) @db.Timestamp(6)
-  Entity          Entity[]
-  Municipality    Municipality[]
-  OversightEntity OversightEntity[]
-  EntitySuggestion EntitySuggestion[]
-}
-
-model PQRStatusHistory {
-  id        String     @id @default(uuid())
-  status    PQRSStatus
-  comment   String?
-  createdAt DateTime   @default(now())
-  pqrId     String
-  userId    String
-  pqr       PQRS       @relation(fields: [pqrId], references: [id], onDelete: Cascade)
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([pqrId])
-  @@index([userId])
-}
-
-model EntitySuggestion {
-  id          String   @id @default(cuid())
-  entityName  String   
-  regionalDepartmentId String
-  municipalityId      String?
-  status      SuggestionStatus @default(PENDING)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  RegionalDepartment RegionalDepartment @relation(fields: [regionalDepartmentId], references: [id])
-  Municipality       Municipality?      @relation(fields: [municipalityId], references: [id])
-}
-
-enum SuggestionStatus {
-  PENDING
-  UNDER_REVIEW
-  APPROVED
-  REJECTED
-  IMPLEMENTED
+  @@unique([email, token])
+  @@map("password_reset_tokens")
 }
 
 enum UserRole {
@@ -436,128 +146,4 @@ enum UserRole {
   CLIENT
   SUPER_ADMIN
   LAWYER
-}
-
-enum PQRSType {
-  PETITION
-  COMPLAINT
-  CLAIM
-  SUGGESTION
-  REPORT
-}
-
-enum PQRSStatus {
-  PENDING
-  IN_PROGRESS
-  RESOLVED
-  CLOSED
-}
-
-enum FieldType {
-  TEXT
-  TEXTAREA
-  EMAIL
-  FILE
-  NUMBER
-}
-
-enum DocumentType {
-  CC
-  CE
-  PPT
-  NIT
-  PASSPORT
-  LICENSE
-}
-
-enum LawyerRequestStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-  COMPLETED
-}
-
-// NextAuth.js Models
-
-model Account {
-  id                 String  @id @default(cuid())
-  userId             String  @map("user_id")
-  type               String
-  provider           String
-  providerAccountId  String  @map("provider_account_id")
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
- 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-  @@unique([provider, providerAccountId])
-  @@map("accounts")
-}
-model VerificationToken {
-  id         String   @id @default(cuid())
-  email      String
-  token      String @unique
-  expires    DateTime
-
-  @@unique([email, token])
-  @@map("verification_tokens")
-}
-
-model PasswordResetToken {
-  id         String   @id @default(cuid())
-  email     String
-  token      String @unique
-  expires    DateTime
-
-  @@unique([email, token])
-  @@map("password_reset_tokens")
-}
-
-model PasswordResetCode {
-  id        String   @id @default(cuid())
-  userId    String
-  codeHash  String
-  expiresAt DateTime
-  consumed  Boolean  @default(false)
-  attempts  Int      @default(0)
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, consumed, expiresAt])
-}
-
-model EntityResponse {
-  id          String               @id @default(uuid())
-  pqrId       String
-  entityId    String
-  userId      String
-  text        String
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  attachments ResponseAttachment[]
-  pqr         PQRS                 @relation(fields: [pqrId], references: [id], onDelete: Cascade)
-  entity      Entity               @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([pqrId])
-  @@index([entityId])
-  @@index([userId])
-}
-
-model ResponseAttachment {
-  id          String          @id @default(uuid())
-  responseId  String
-  url         String
-  name        String
-  size        Int?
-  type        String?
-  createdAt   DateTime        @default(now())
-  response    EntityResponse  @relation(fields: [responseId], references: [id], onDelete: Cascade)
-
-  @@index([responseId])
 }

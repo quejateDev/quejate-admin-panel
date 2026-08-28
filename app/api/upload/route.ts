@@ -1,38 +1,17 @@
-import { NextResponse } from "next/server";
-import { uploadObject } from "@/services/storage/s3.service";
-import { AWS_BUCKET, AWS_REGION } from "@/lib/config";
+import { proxyToBackend } from "@/lib/api/proxy";
 
+/**
+ * Subida directa de un fichero → `POST /upload`.
+ *
+ * 🔴 Cierra **H-07** para el panel: la ruta vieja no comprobaba sesión, la
+ * validación de tipo estaba comentada, el `folder` salía del cuerpo —quien
+ * llamaba elegía dónde escribir dentro del bucket— y no había límite de tamaño
+ * ni de cantidad. La nueva exige sesión, tiene listas blancas de tipo y de
+ * destino, sanea el nombre y pone un techo de 20 MB.
+ *
+ * El cuerpo va como stream: un fichero de 20 MB no se materializa en memoria
+ * del servidor de Next solo para reenviarlo.
+ */
 export async function POST(request: Request) {
-  try {
-    const data = await request.formData();
-    const file: File | null = data.get("file") as unknown as File;
-
-    if (!file) {
-      return NextResponse.json(
-        { error: "No file uploaded" },
-        { status: 400 }
-      );
-    }
-
-    const bytes = await file.arrayBuffer();
-    
-    // Create unique filename
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const filename = `${uniqueSuffix}-${file.name}`;
-
-    // Upload to S3
-    await uploadObject(filename, bytes);
-
-    return NextResponse.json({ 
-      success: true,
-      path: `https://${AWS_BUCKET}.s3.${AWS_REGION}.amazonaws.com/${filename}`
-
-    });
-  } catch (error) {
-    console.error('Error uploading file:', error);
-    return NextResponse.json(
-      { error: "Error uploading file" },
-      { status: 500 }
-    );
-  }
+  return proxyToBackend(request, "/upload");
 }

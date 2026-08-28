@@ -34,7 +34,7 @@ function PQRPageContent() {
     departmentId,
     startDate: dateRange?.from?.toISOString(),
     endDate: dateRange?.to?.toISOString(),
-    organizationId: entityId || undefined,
+    entityId: entityId || undefined,
   });
 
   // Ensure pqrs is always an array to prevent filter errors

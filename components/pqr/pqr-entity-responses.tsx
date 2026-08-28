@@ -14,11 +14,14 @@ interface Response {
   id: string;
   text: string;
   createdAt: string;
+  // `null` cuando el autor de la respuesta ya no existe: `EntityResponse.user`
+  // es `SetNull`, así que una respuesta oficial sobrevive al borrado de quien
+  // la escribió — que es lo correcto para un documento con efectos jurídicos.
   user: {
     id: string;
     name: string | null;
     image: string | null;
-  };
+  } | null;
   attachments: Array<{
     id: string;
     url: string;
@@ -193,14 +196,14 @@ export function PQRResponses({ pqrId, initialResponses }: PQRResponsesProps) {
                   {index > 0 && <Separator className="my-4" />}
                   <div className="flex gap-4">
                     <Avatar>
-                      <AvatarImage src={response.user.image || ""} />
+                      <AvatarImage src={response.user?.image || ""} />
                       <AvatarFallback>
-                        {response.user.name?.charAt(0).toUpperCase() || "?"}
+                        {response.user?.name?.charAt(0).toUpperCase() || "?"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-semibold">{response.user.name || "Usuario"}</h4>
+                        <h4 className="font-semibold">{response.user?.name || "Usuario"}</h4>
                         <span className="text-sm text-muted-foreground">
                           {new Date(response.createdAt).toLocaleDateString("es-ES", {
                             year: "numeric",
