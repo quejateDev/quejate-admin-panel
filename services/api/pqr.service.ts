@@ -1,4 +1,4 @@
-import type { PqrDetail } from "@/types/api";
+import type { PqrByUserPage, PqrDetail } from "@/types/api";
 import { getPQRParams, PaginatedPQRsDTO } from "@/dto/pqr.dto";
 import axios from "axios";
 
@@ -37,7 +37,14 @@ export async function getPQRSById(id: string): Promise<PqrDetail> {
   return response.data;
 }
 
-export async function getPQRSByUser(userId: string) {
+/**
+ * PQRSD creadas por un usuario.
+ *
+ * Devuelve la **envoltura paginada** `{ pqrs, totalCount, hasMore, nextPage }`.
+ * La ruta vieja devolvía un array pelado; el tipo se declara aquí para que el
+ * cambio de forma no se pueda leer mal en silencio.
+ */
+export async function getPQRSByUser(userId: string): Promise<PqrByUserPage> {
   const response = await Client.get(`/pqr/user/${userId}`);
   return response.data;
 }

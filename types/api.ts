@@ -289,6 +289,26 @@ export interface AdminPqrPage {
 }
 
 /**
+ * Respuesta de `GET /pqr/user/:id` — las PQRSD creadas por un usuario.
+ *
+ * 🔴 **Cambio de forma respecto del panel:** la ruta vieja devolvía un **array
+ * pelado**; la nueva devuelve esta envoltura paginada. El dato está, pero un
+ * nivel más adentro, y quien lo lea como si fuera un array recibe un objeto
+ * sobre el que `.map` revienta.
+ *
+ * Detectado por la verificación de deriva de la Tarea 15 (R-12). En el panel
+ * **no hay ninguna pantalla que lo consuma** —`useUserPQRS` existe y no lo monta
+ * nadie—, así que no rompió nada; pero el hook lo leía mal y habría roto en
+ * cuanto alguien lo montara. Se corrigió el hook, no se disfrazó la respuesta.
+ */
+export interface PqrByUserPage {
+  pqrs: AdminPqrListItem[];
+  hasMore: boolean;
+  nextPage: number | null;
+  totalCount: number;
+}
+
+/**
  * Detalle de una PQRSD (`GET /pqr/:id`).
  *
  * ⚠️ **`creator` ya no trae `email` ni `phone`.** El original hacía
