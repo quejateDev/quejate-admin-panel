@@ -5,7 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Form } from "@/components/ui/form"
 import { ImageUpload } from "@/components/ui/image-upload"
-import { Entity, Category, Department, Municipality } from "@prisma/client"
+import type {
+  AdminEntityDetail,
+  Municipality,
+  PublicCategory,
+  RegionalDepartment,
+} from "@/types/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -35,13 +40,13 @@ const formSchema = z.object({
 })
 
 interface EntityFormProps {
-  entity?: Entity
+  entity?: AdminEntityDetail
 }
 
 export function EntityForm({ entity }: EntityFormProps) {
   const router = useRouter()
-  const [categories, setCategories] = useState<Category[]>([])
-  const [departments, setDepartments] = useState<Department[]>([])
+  const [categories, setCategories] = useState<PublicCategory[]>([])
+  const [departments, setDepartments] = useState<RegionalDepartment[]>([])
   const [municipalities, setMunicipalities] = useState<Municipality[]>([])
   const [loadingMunicipalities, setLoadingMunicipalities] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -65,7 +70,10 @@ export function EntityForm({ entity }: EntityFormProps) {
       try {
         setIsLoading(true)
         
-        const categoriesResponse = await fetch("/api/category")
+        // El **catálogo público**, no `/admin/categories`: aquí las
+        // categorías solo llenan un desplegable, y la ruta de administración
+        // exige alcance de plataforma — un `ADMIN` recibiría 403.
+        const categoriesResponse = await fetch("/api/category/catalog")
         const categoriesData = await categoriesResponse.json()
         setCategories(categoriesData)
 

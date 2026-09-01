@@ -1,4 +1,4 @@
-import { Department, PQRS, User, Comment } from "@prisma/client";
+import type { PqrByUserPage, PqrDetail } from "@/types/api";
 import { getPQRParams, PaginatedPQRsDTO } from "@/dto/pqr.dto";
 import axios from "axios";
 
@@ -9,19 +9,6 @@ const Client = axios.create({
   },
   timeout: 10000, 
 });
-
-type createPQRS = {
-  type: PQRS["type"];
-  departmentId: Department["id"];
-  creatorId: User["id"];
-  customFields: {
-    name: string;
-    value: string;
-    type: string;
-    required: boolean;
-  }[];
-  isAnonymous: boolean;
-};
 
 
 
@@ -45,22 +32,24 @@ export async function getPQRS(params: Partial<getPQRParams>): Promise<PaginatedP
   return response.data;
 }
 
-export async function getPQRSById(id: PQRS["id"]): Promise<PQRS> {
+export async function getPQRSById(id: string): Promise<PqrDetail> {
   const response = await Client.get(`/pqr/${id}`);
   return response.data;
 }
 
-export async function getPQRSByUser(userId: User["id"]) {
+/**
+ * PQRSD creadas por un usuario.
+ *
+ * Devuelve la **envoltura paginada** `{ pqrs, totalCount, hasMore, nextPage }`.
+ * La ruta vieja devolvía un array pelado; el tipo se declara aquí para que el
+ * cambio de forma no se pueda leer mal en silencio.
+ */
+export async function getPQRSByUser(userId: string): Promise<PqrByUserPage> {
   const response = await Client.get(`/pqr/user/${userId}`);
   return response.data;
 }
 
-export async function getPQRSByDepartment(departmentId: Department["id"]) {
-  const response = await Client.get(`/pqr/department/${departmentId}`);
-  return response.data;
-}
-
-export async function updatePQRS(id: PQRS["id"], pqrs: Partial<PQRS>) {
+export async function updatePQRS(id: string, pqrs: Partial<PqrDetail>) {
   const response = await Client.patch(`/pqr/${id}`, pqrs);
   return response.data;
 }
@@ -70,12 +59,12 @@ export async function toggleLike(pqrId: string, userId: string) {
   return response.data;
 }
 
-export async function createCommentService(comment: {text: string; userId: string; pqrId: string; }): Promise<Comment> {
+export async function createCommentService(comment: {text: string; userId: string; pqrId: string; }) {
   const response = await Client.post(`/pqr/${comment.pqrId}/comments`, comment);
   return response.data;
 }
 
-export async function assignPQRS(id: PQRS["id"], assignedToId: User["id"] | null) {
+export async function assignPQRS(id: string, assignedToId: string | null) {
   const response = await Client.patch(`/pqr/${id}/assign`, { assignedToId });
   return response.data;
 }

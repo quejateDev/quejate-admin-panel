@@ -1,84 +1,45 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { hash } from "bcryptjs";
+import { proxyToBackend } from "@/lib/api/proxy";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const entityId = searchParams.get("entityId");
-
-  try {
-    const clients = await prisma.user.findMany({
-      where: {
-        role: {
-          in: ["EMPLOYEE", "ADMIN"],
-        },
-        entityId,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        phone: true,
-        createdAt: true,
-        updatedAt: true,
-        isActive: true,
-        role: true,
-        department: {
-          select: {
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    return NextResponse.json(clients);
-  } catch (error) {
-    console.error("Error fetching clients:", error);
-    return NextResponse.json(
-      { error: "Error fetching clients" },
-      { status: 500 }
-    );
-  }
+/**
+ * Personal de una entidad → `GET|POST /admin/entities/:entityId/employees`.
+ *
+ * 🔴 **La entidad pasa de la query al path.** Era `?entityId=` en el `GET` y un
+ * campo del cuerpo en el `POST`; ahora es un segmento de la ruta, y el backend
+ * comprueba que quien pregunta pertenece a ella. Sin `entityId` no hay a quién
+ * preguntar, así que se responde 400 en vez de listar a todo el mundo.
+ *
+ * Lo que cambia además: la respuesta del alta **ya no trae el resumen de la
+ * contraseña** (H-02), el listado no trae `phone`, ordena por nombre y por
+ * defecto solo devuelve personal activo (`?includeInactive=true` para la tabla
+ * de gestión).
+ */
+function entityIdFrom(request: Request): string | null {
+  return new URL(request.url).searchParams.get("entityId");
 }
 
-export async function POST(req: Request) {
-  try {
-    const { email, name, phone, password, role, entityId, departmentId } =
-      await req.json();
-
-    // Persistir el rol elegido (solo EMPLOYEE/ADMIN; por defecto EMPLOYEE).
-    const safeRole = role === "ADMIN" ? "ADMIN" : "EMPLOYEE";
-
-    const client = await prisma.user.create({
-      data: {
-        email,
-        name,
-        phone,
-        password: await hash(password, 10),
-        role: safeRole,
-        // entityId/departmentId opcionales: vacío -> null para no romper la FK.
-        entityId: entityId || null,
-        departmentId: departmentId || null,
-      },
-    });
-
-    return NextResponse.json(client);
-  } catch (error: any) {
-    // Email duplicado (unique constraint) -> 409 en vez de 500.
-    if (error?.code === "P2002") {
-      return NextResponse.json(
-        { error: "Ya existe un usuario con ese correo" },
-        { status: 409 }
-      );
-    }
-
-    console.error("Error creating client:", error);
-    return NextResponse.json(
-      { error: "Error creating client" },
-      { status: 500 }
-    );
+export async function GET(request: Request) {
+  const entityId = entityIdFrom(request);
+  if (!entityId) {
+    return NextResponse.json({ error: "entityId is required" }, { status: 400 });
   }
+  const searchParams = new URL(request.url).searchParams;
+  searchParams.delete("entityId");
+  return proxyToBackend(
+    request,
+    `/admin/entities/${encodeURIComponent(entityId)}/employees`,
+    { searchParams },
+  );
+}
+
+export async function POST(request: Request) {
+  const entityId = entityIdFrom(request);
+  if (!entityId) {
+    return NextResponse.json({ error: "entityId is required" }, { status: 400 });
+  }
+  return proxyToBackend(
+    request,
+    `/admin/entities/${encodeURIComponent(entityId)}/employees`,
+    { searchParams: "drop" },
+  );
 }

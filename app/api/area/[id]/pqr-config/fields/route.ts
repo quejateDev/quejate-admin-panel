@@ -1,37 +1,25 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { PqrFieldsSchema } from "@/types/pqr-config";
+import { proxyToBackend } from "@/lib/api/proxy";
+
+/**
+ * Campos personalizados del formulario de un área →
+ * `GET|PUT /admin/areas/:id/pqr-config/fields`.
+ *
+ * El `GET` es **nuevo** en el backend (el panel solo tenía `PUT`), por simetría
+ * con la entidad. El `PUT` deja además de reventar con `P2025` sobre un área
+ * que todavía no tiene configuración.
+ */
+export async function GET(request: Request, { params }: any) {
+  const { id } = await params;
+  return proxyToBackend(
+    request,
+    `/admin/areas/${encodeURIComponent(id)}/pqr-config/fields`,
+  );
+}
 
 export async function PUT(request: Request, { params }: any) {
-  try {
-    const { id } = await params;
-    const body = await request.json();
-    const { customFields } = PqrFieldsSchema.parse(body);
-
-    console.log(customFields);
-
-    // Update or create PQR config with custom fields
-    const pqrConfig = await prisma.pQRConfig.update({
-      where: {
-        departmentId: id,
-      },
-      data: {
-        customFields: {
-          deleteMany: {}, // Remove all existing fields
-          create: customFields.map((field) => ({
-            name: field.name,
-            type: field.type,
-            required: field.required,
-            placeholder: field.placeholder,
-            isForAnonymous: field.isForAnonymous,
-          })),
-        },
-      },
-    });
-
-    return NextResponse.json(pqrConfig);
-  } catch (error) {
-    console.error("[PQR_CONFIG_FIELDS]", error);
-    return new NextResponse("Internal error", { status: 500 });
-  }
+  const { id } = await params;
+  return proxyToBackend(
+    request,
+    `/admin/areas/${encodeURIComponent(id)}/pqr-config/fields`,
+  );
 }

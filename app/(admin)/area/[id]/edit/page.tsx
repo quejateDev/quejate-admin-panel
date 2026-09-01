@@ -11,10 +11,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import axios from "axios";
-import { Department } from "@prisma/client";
+import type { AdminAreaDetail } from "@/types/api";
 
 export default function EditAreaPage({ params }: any) {
-  const [area, setArea] = useState<Department | null>(null);
+  const [area, setArea] = useState<AdminAreaDetail | null>(null);
   const { id } = params;
 
   useEffect(() => {

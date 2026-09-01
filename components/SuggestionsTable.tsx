@@ -22,19 +22,10 @@ import { toast } from "@/hooks/use-toast";
 import axios from "axios";
 import { SUGGESTION_STATUS_TRANSLATIONS } from "@/constants/suggestion-status";
 import { formatText } from "@/utils/formatText";
-import { SuggestionStatus } from "@prisma/client";
-
-interface EntitySuggestion {
-  id: string;
-  entityName: string;
-  regionalDepartmentId: string;
-  municipalityId: string | null;
-  status: SuggestionStatus; 
-  createdAt: Date;
-  updatedAt: Date;
-  departmentName: string | null;
-  municipalityName: string | null;
-}
+// La forma la fija el backend (`GET /admin/entity-suggestions`), no el
+// esquema de Prisma: `departmentName` y `municipalityName` los resuelve él
+// contra el catálogo geográfico, que antes recorría la propia página.
+import type { EntitySuggestion } from "@/types/api";
 
 interface SuggestionsTableProps {
   initialSuggestions: EntitySuggestion[];

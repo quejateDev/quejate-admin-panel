@@ -1,5 +1,5 @@
 "use client";
-import { Entity, Category } from "@prisma/client";
+import type { AdminEntityListItem, PublicCategory } from "@/types/api";
 import {
   Table,
   TableBody,
@@ -27,12 +27,10 @@ import { Switch } from "./ui/switch";
 import axios from "axios";
 
 interface EntitiesTableProps {
-  entities: (Entity & {
-    category: {
-      name: string;
-    };
-  })[];
-  categories: Category[];
+  /** Lo que devuelve `GET /admin/entities`, ya acotado por entidad. */
+  entities: AdminEntityListItem[];
+  /** Catálogo público, solo para el filtro. */
+  categories: PublicCategory[];
 }
 
 export function EntitiesTable({ entities, categories }: EntitiesTableProps) {

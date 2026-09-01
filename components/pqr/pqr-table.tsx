@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EyeIcon, SlidersHorizontal } from "lucide-react";
 import { typeMap, statusMap } from "@/constants/pqrMaps";
-import { PQRS, PQRSStatus } from "@prisma/client";
+import type { AdminPqrListItem, PqrStatusName } from "@/types/api";
 import {
   Select,
   SelectContent,
@@ -23,12 +23,12 @@ import {
 } from "@/components/ui/select";
 import { ColumnDef } from "@tanstack/react-table";
 import { useEmployees } from "@/hooks/employee/useEmployees";
-import { GetPQRsDTO } from "@/dto/pqr.dto";
+
 import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface PQRTableProps {
   assignPQR: any;
-  pqrs: GetPQRsDTO[];
+  pqrs: AdminPqrListItem[];
   isLoading?: boolean;
   page: number;
   setPage: (page: number) => void;
@@ -61,29 +61,56 @@ export function PQRTable({
   const user = useCurrentUser();
   const { data: employees } = useEmployees(entityId);
 
-  function getRemainingTimeBadge(createdAt: Date, status: PQRSStatus) {
-    // Si ya está resuelta o cerrada, el tiempo de respuesta no aplica:
-    // mostrar el estado real en vez de "Vencido".
-    if (status === "RESOLVED" || status === "CLOSED") {
-      const s = statusMap[status];
+  /**
+   * Badge de plazo. **Lo decide el servidor, no esta función.**
+   *
+   * 🔴 Antes se calculaba aquí: 15 días **calendario** contados desde
+   * `createdAt`. Estaban mal las tres cosas. El plazo de la Ley 1755 se cuenta
+   * en días **hábiles** —sin fines de semana ni festivos colombianos—, no
+   * siempre son 15 (cada entidad y cada área tienen el suyo, entre 1 y 15), y
+   * el punto de partida es `dueDate`, que el backend calcula al radicar y que
+   * además descuenta la jornada si la PQRSD entra pasadas las 18:00.
+   *
+   * Consecuencia medida: la entidad veía «Vencido» unos **cuatro días antes**
+   * de que el plazo venciera de verdad, sobre un trámite regulado.
+   *
+   * Ahora se pintan los tres campos que `GET /admin/pqr` ya trae calculados:
+   * `hasLegalDeadline`, `isOverdue` y `businessDaysOverdue`. Los días que
+   * faltan se derivan de `dueDate` para el aviso, pero quién está vencida y por
+   * cuánto lo dice el servidor — que es el mismo `getOverdueInfo` con el que se
+   * generan los avisos de vencimiento y se pinta el muro público. Una cuarta
+   * definición de «vencida» en el cliente es justo lo que la Tarea 22 vino a
+   * quitar.
+   */
+  function getRemainingTimeBadge(pqr: PQRTableItem) {
+    if (pqr.status === "RESOLVED" || pqr.status === "CLOSED") {
+      const s = statusMap[pqr.status];
       return <Badge variant={s.variant as any}>{s.label}</Badge>;
     }
 
-    const RESPONSE_LIMIT_DAYS = 15;
-    const remainingTime =
-      new Date(createdAt).getTime() + RESPONSE_LIMIT_DAYS * 24 * 60 * 60 * 1000;
-    const currentTime = new Date().getTime();
-    const remaining = Math.floor(
-      (remainingTime - currentTime) / (1000 * 60 * 60 * 24)
-    );
-
-    if (remaining > 5) {
-      return <Badge variant="success">{remaining} días</Badge>;
-    } else if (remaining > 0) {
-      return <Badge variant="warning">{remaining} días</Badge>;
-    } else {
-      return <Badge variant="destructive">Vencido</Badge>;
+    // Una sugerencia no tiene término legal de respuesta: no se le pinta
+    // ninguna etiqueta de plazo, ni «vence en» ni «vencida».
+    if (!pqr.hasLegalDeadline) {
+      return <Badge variant="secondary">Sin plazo</Badge>;
     }
+
+    if (pqr.isOverdue) {
+      const days = pqr.businessDaysOverdue;
+      return (
+        <Badge variant="destructive">
+          {days > 0 ? `Vencido (${days} d. hábiles)` : "Vencido"}
+        </Badge>
+      );
+    }
+
+    const remaining = Math.ceil(
+      (new Date(pqr.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    );
+    return (
+      <Badge variant={remaining > 5 ? "success" : "warning"}>
+        {remaining} días
+      </Badge>
+    );
   }
 
   const handleAssignment = async (
@@ -117,9 +144,9 @@ export function PQRTable({
       accessorKey: "status",
       cell: ({ row }) => (
         <Badge
-          variant={statusMap[row.original.status as PQRSStatus].variant as any}
+          variant={statusMap[row.original.status as PqrStatusName].variant as any}
         >
-          {statusMap[row.original.status as PQRSStatus].label}
+          {statusMap[row.original.status as PqrStatusName].label}
         </Badge>
       ),
       enableSorting: true,
@@ -133,19 +160,19 @@ export function PQRTable({
     {
       id: "creator",
       header: "Creador",
-      accessorKey: "creator.email",
-      accessorFn: (row) => row.creator?.email || "Anónimo",
+      // Leía `creator.email`, que ni la ruta vieja ni la nueva devuelven: la
+      // columna decía «Anónimo» para todo el mundo. El backend publica del
+      // autor `id`, `name` e `image`, y el nombre es lo que esta columna
+      // quiere decir.
+      accessorKey: "creator.name",
+      accessorFn: (row) => (row.anonymous ? "Anónimo" : row.creator?.name || "Anónimo"),
       enableSorting: true,
     },
     {
       id: "remainingTime",
       header: "Tiempo para responder",
-      accessorKey: "createdAt",
-      cell: ({ row }) =>
-        getRemainingTimeBadge(
-          row.original.createdAt,
-          row.original.status as PQRSStatus
-        ),
+      accessorKey: "dueDate",
+      cell: ({ row }) => getRemainingTimeBadge(row.original),
       enableSorting: true,
     },
     ...(user?.role !== "EMPLOYEE"
@@ -196,7 +223,7 @@ export function PQRTable({
       {
         icon: EyeIcon,
         label: "Ver PQRSD",
-        onClick: (item: PQRS) => {
+        onClick: (item: { id: string }) => {
           window.location.href = `/pqr/${item.id}`;
         },
         variant: "outline" as const,

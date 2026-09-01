@@ -1,75 +1,23 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { proxyToBackend } from "@/lib/api/proxy";
 
-// GET endpoint to fetch a specific area by ID
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const area = await prisma.department.findUnique({
-      where: { id },
-      include: {
-        pqrConfig: {
-          include: {
-            customFields: true,
-          },
-        },
-      },
-    });
-
-    if (!area) {
-      return NextResponse.json({ error: "Area not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(area);
-  } catch (error) {
-    console.error("Error fetching area:", error);
-    return NextResponse.json({ error: "Error fetching area" }, { status: 500 });
-  }
+/**
+ * Un área → `GET|PATCH|DELETE /admin/areas/:id`.
+ *
+ * El `PATCH` va contra un DTO cerrado y **no acepta `entityId`**: antes era
+ * asignación masiva y se podía mover un área a otra entidad (H-03). El `DELETE`
+ * comprueba dependencias y responde 409 con el motivo.
+ */
+export async function GET(request: Request, { params }: any) {
+  const { id } = await params;
+  return proxyToBackend(request, `/admin/areas/${encodeURIComponent(id)}`);
 }
 
-// DELETE endpoint to remove a specific area by ID
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const area = await prisma.department.delete({
-      where: {
-        id,
-      },
-    });
-
-    return NextResponse.json(area);
-  } catch (error) {
-    console.error("Error deleting area:", error);
-    return NextResponse.json({ error: "Error deleting area" }, { status: 500 });
-  }
+export async function PATCH(request: Request, { params }: any) {
+  const { id } = await params;
+  return proxyToBackend(request, `/admin/areas/${encodeURIComponent(id)}`);
 }
 
-// PATCH endpoint to update a specific area by ID
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const body = await request.json();
-    const { id } = await params;
-    const area = await prisma.department.update({
-      where: {
-        id,
-      },
-      data: {
-        ...body,
-      },
-    });
-
-    return NextResponse.json(area);
-  } catch (error) {
-    console.error("Error updating area:", error);
-    return NextResponse.json({ error: "Error updating area" }, { status: 500 });
-  }
+export async function DELETE(request: Request, { params }: any) {
+  const { id } = await params;
+  return proxyToBackend(request, `/admin/areas/${encodeURIComponent(id)}`);
 }

@@ -60,6 +60,8 @@ export function AdminManager({ entityId }: AdminManagerProps) {
   const [users, setUsers] = useState<EntityUser[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<EntityUser | null>(null);
   const { toast } = useToast();
@@ -76,9 +78,26 @@ export function AdminManager({ entityId }: AdminManagerProps) {
     }
   };
 
+  /**
+   * Áreas de la entidad, para el desplegable de asignación.
+   *
+   * `departments` se declaraba y **nunca se llenaba**: no había ninguna llamada
+   * que lo poblara, así que el selector de área de esta pantalla salía siempre
+   * vacío.
+   */
+  const fetchDepartments = async () => {
+    try {
+      const response = await axios.get(`/api/area?entityId=${entityId}`);
+      setDepartments(response.data);
+    } catch {
+      // El desplegable se queda vacío: no vale la pena un aviso propio.
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchUsers();
+      fetchDepartments();
     }
   }, [isOpen, entityId]);
 
@@ -87,8 +106,20 @@ export function AdminManager({ entityId }: AdminManagerProps) {
     setIsLoading(true);
 
     try {
-      await axios.post(`/api/entities/${entityId}/users`, {
+      // 🔴 Iba a `POST /api/entities/:id/users`, que **no existe**: bajo
+      // `app/api/entities/[id]/` solo hay `employees`, `pqr-config` y
+      // `route.ts`. Mandaba `{ email, role }` como si diera de alta a alguien
+      // que ya existe, algo que ningún manejador ha implementado nunca.
+      //
+      // La operación real es **crear la cuenta**, que necesita nombre y
+      // contraseña inicial (mínimo 6, el mismo criterio que el registro de
+      // ciudadanos). La respuesta ya no devuelve el resumen de la contraseña
+      // (H-02) y el rol queda sujeto a la matriz: nadie se concede
+      // administrador a sí mismo.
+      await axios.post(`/api/users?entityId=${entityId}`, {
+        name,
         email,
+        password,
         role: "EMPLOYEE",
       });
 
@@ -98,6 +129,8 @@ export function AdminManager({ entityId }: AdminManagerProps) {
       });
 
       setEmail("");
+      setName("");
+      setPassword("");
       await fetchUsers();
     } catch (error) {
       toast({
@@ -112,7 +145,9 @@ export function AdminManager({ entityId }: AdminManagerProps) {
 
   const removeUser = async (userId: string) => {
     try {
-      await axios.delete(`/api/entities/${entityId}/users/${userId}`);
+      // Otra ruta muerta: el borrado real es `DELETE /admin/users/:id`, que
+      // además comprueba que la persona sea personal de la propia entidad.
+      await axios.delete(`/api/users/${userId}`);
 
       toast({
         title: "Éxito",
@@ -131,7 +166,9 @@ export function AdminManager({ entityId }: AdminManagerProps) {
 
   const updateUser = async (userId: string, data: { role?: string; departmentId?: string }) => {
     try {
-      await axios.patch(`/api/entities/${entityId}/users/${userId}`, data);
+      // Ídem: `PATCH /admin/users/:id`. Aplica la matriz de roles y, si el
+      // cambio desactiva la cuenta, revoca sus sesiones vivas.
+      await axios.patch(`/api/users/${userId}`, data);
 
       toast({
         title: "Éxito",
@@ -171,12 +208,31 @@ export function AdminManager({ entityId }: AdminManagerProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={addUser} className="flex gap-2">
+          {/*
+            El alta crea la cuenta, así que pide lo que hace falta para
+            crearla. Antes solo pedía el correo, porque llamaba a una ruta que
+            no existía y nunca llegó a dar de alta a nadie.
+          */}
+          <form onSubmit={addUser} className="flex flex-col gap-2">
+            <Input
+              placeholder="Nombre"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
             <Input
               placeholder="Email del usuario"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
+              required
+            />
+            <Input
+              placeholder="Contraseña inicial (mínimo 6 caracteres)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              minLength={6}
               required
             />
             <Button type="submit" disabled={isLoading}>

@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ChangePasswordDialog } from "./change-password-dialog";
 import { useEmployeeById, useEmployees } from "@/hooks/employee/useEmployees";
 import {
   Select,
@@ -263,9 +262,13 @@ export function EmployeeForm({
           </Button>
         </div>
 
-        {mode !== "create" && initialData?.id && (
-          <ChangePasswordDialog userId={initialData.id} />
-        )}
+        {/*
+          🔴 Aquí había un «Cambiar contraseña» que ponía la contraseña de
+          ESTE empleado sin pedir la suya actual. Es la primitiva de C-01 y el
+          backend ya no la ofrece: `PATCH /admin/users/:id` no acepta
+          `password`. Quien olvida su contraseña la restablece por correo; el
+          resto se cambia la propia desde «Mi Perfil».
+        */}
       </form>
     </Form>
   );

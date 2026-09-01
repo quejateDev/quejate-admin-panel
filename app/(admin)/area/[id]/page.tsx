@@ -2,7 +2,8 @@ import { AreaForm } from "@/components/forms/area-form"
 import { PQRConfigForm } from "@/components/forms/pqr-config-form"
 import PqrFieldsForm from "@/components/forms/pqr-fields-form"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import prisma from "@/lib/prisma"
+import { backendJsonOrNull } from "@/lib/api/backend"
+import type { AdminAreaDetail, PqrCustomField } from "@/types/api"
 import { notFound } from "next/navigation"
 
 interface AreaPageProps {
@@ -11,22 +12,31 @@ interface AreaPageProps {
   }>
 }
 
+/**
+ * Edición de un área, con su configuración de PQRSD y sus campos.
+ *
+ * 🔴 Esta pantalla es la que escribe el **plazo legal de respuesta** del área
+ * (`maxResponseTime`, Ley 1755). Antes leía y guardaba sin comprobar ni sesión
+ * ni entidad — **H-12**. Ahora el área se pide al backend con la identidad de
+ * quien edita, y una de otra entidad responde 403.
+ *
+ * Los campos personalizados se piden aparte, a
+ * `GET /admin/areas/:id/pqr-config/fields`, que es una ruta **nueva** del
+ * backend: el panel solo tenía el `PUT`, y aquí los sacaba de un `include`
+ * anidado en la propia área.
+ */
 export default async function AreaPage({ params }: AreaPageProps) {
   const { id } = await params;
-  const area = await prisma.department.findUnique({
-    where: { id },
-    include: {
-      pqrConfig: {
-        include: {
-          customFields: true
-        }
-      },
-    },
-  })
+  const path = `/admin/areas/${encodeURIComponent(id)}`;
 
+  const area = await backendJsonOrNull<AdminAreaDetail>(path);
   if (!area) {
     notFound()
   }
+
+  const fields = await backendJsonOrNull<{ customFields: PqrCustomField[] }>(
+    `${path}/pqr-config/fields`,
+  );
 
   return (
     <div className="flex flex-col gap-4 mx-auto py-10">
@@ -64,12 +74,12 @@ export default async function AreaPage({ params }: AreaPageProps) {
       <PqrFieldsForm 
         areaId={area.id} 
         initialData={{
-          customFields: area.pqrConfig?.customFields?.map(field => ({
+          customFields: (fields?.customFields ?? []).map((field) => ({
             name: field.name,
             required: field.required,
-            type: field.type as "text" | "email" | "phone",
+            type: field.type,
             isForAnonymous: field.isForAnonymous,
-          })) || [],
+          })),
         }} 
       />
     </div>
