@@ -45,3 +45,11 @@ next-env.d.ts
 
 # Dependencies
 node_modules/
+
+# Guia local para agentes de IA. No forma parte del producto y se mantiene
+# en la maquina del responsable, igual que docs/.
+CLAUDE.md
+
+# Cache de compilacion de TypeScript. Estaba versionado por error y aparecia
+# modificado tras cada build, estorbando en cada cambio de rama.
+tsconfig.tsbuildinfo
