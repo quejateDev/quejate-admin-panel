@@ -18,7 +18,7 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CHART_COLORS } from "@/lib/config";
+import { CHART_COLORS } from "@/lib/chart-colors";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 interface PqrVsTimeChartProps {

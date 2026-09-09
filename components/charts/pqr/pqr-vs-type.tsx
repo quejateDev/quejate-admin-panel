@@ -7,7 +7,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { CHART_COLORS } from "@/lib/config";
+import { CHART_COLORS } from "@/lib/chart-colors";
 import {
   BarChart,
   CartesianGrid,
