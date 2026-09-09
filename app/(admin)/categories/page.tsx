@@ -13,7 +13,12 @@ interface Category {
   description: string | null;
   createdAt: Date;
   updatedAt: Date;
-  entities: any[];
+  /**
+   * `GET /admin/categories` devuelve el número de entidades, no la lista.
+   * Antes aquí decía `entities: any[]`, y como el tipo era `any` nada avisó
+   * de que el campo había dejado de llegar.
+   */
+  _count: { entities: number };
   imageUrl: string | null;
 }
 
