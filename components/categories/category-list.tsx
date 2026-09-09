@@ -29,7 +29,8 @@ interface Category {
   imageUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
-  entities: any[];
+  /** Número de entidades de la categoría; ver la nota de la página. */
+  _count: { entities: number };
 }
 
 interface CategoryListProps {
@@ -126,7 +127,7 @@ export default function CategoryList({ categories }: CategoryListProps) {
               </TableCell>
               <TableCell className="font-medium">{category.name}</TableCell>
               <TableCell>{category.description || "Sin descripción"}</TableCell>
-              <TableCell>{category.entities.length}</TableCell>
+              <TableCell>{category._count.entities}</TableCell>
               <TableCell>
                 {new Date(category.createdAt).toLocaleDateString("es-ES")}
               </TableCell>
