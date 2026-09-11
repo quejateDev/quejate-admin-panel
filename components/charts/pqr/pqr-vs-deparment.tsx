@@ -8,7 +8,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CHART_COLORS } from "@/lib/config";
+import { CHART_COLORS } from "@/lib/chart-colors";
 import {
   BarChart,
   CartesianGrid,
