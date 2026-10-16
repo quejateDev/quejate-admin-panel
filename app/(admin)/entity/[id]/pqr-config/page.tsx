@@ -14,6 +14,10 @@ export default function EntityPQRConfigPage() {
   const entityId = params.id as string;
   const [pqrConfig, setPqrConfig] = useState<any>(null);
   const [customFields, setCustomFields] = useState<any[]>([]);
+  // El backend responde 200 con `null` (JSON literal) si la entidad no tiene
+  // configuración. Si la petición falla, tampoco se sabe que exista, y se trata
+  // igual: mejor no dejar guardar los campos que crearla con anónimas apagadas.
+  const [hasConfig, setHasConfig] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -25,6 +29,7 @@ export default function EntityPQRConfigPage() {
         if (configResponse.ok) {
           const configData = await configResponse.json();
           setPqrConfig(configData);
+          setHasConfig(configData !== null);
         }
 
         const fieldsResponse = await fetch(`/api/entities/${entityId}/pqr-config/fields`);
@@ -97,12 +102,16 @@ export default function EntityPQRConfigPage() {
               areaId={entityId} 
               initialData={configInitialData}
               isEntity={true}
+              // `router.refresh()` no vuelve a ejecutar el `useEffect` de esta
+              // página cliente: hay que avisarle de que ya existe.
+              onSaved={() => setHasConfig(true)}
             />
-            
-            <PqrFieldsForm 
-              areaId={entityId} 
+
+            <PqrFieldsForm
+              areaId={entityId}
               initialData={fieldsInitialData}
               isEntity={true}
+              configExists={hasConfig}
             />
           </>
         )}

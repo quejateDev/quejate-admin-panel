@@ -36,10 +36,17 @@ export default function PqrFieldsForm({
   areaId,
   initialData,
   isEntity = false,
+  configExists = true,
 }: {
   areaId: string;
   initialData: PQRFieldsFormValues;
   isEntity?: boolean;
+  /**
+   * Si es `false`, no se deja guardar: sin configuración previa, el `PUT` de
+   * los campos la crea con los valores por defecto del esquema, entre ellos
+   * `allowAnonymous: false`.
+   */
+  configExists?: boolean;
 }) {
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
@@ -242,8 +249,17 @@ export default function PqrFieldsForm({
                 </Card>
               ))}
             </div>
-            <div className="flex justify-end">
-              <Button type="submit" isLoading={isSaving}>
+            <div className="flex items-center justify-end gap-4">
+              {!configExists && (
+                <p className="text-sm text-muted-foreground">
+                  Guarda primero la configuración general.
+                </p>
+              )}
+              <Button
+                type="submit"
+                isLoading={isSaving}
+                disabled={!configExists}
+              >
                 Guardar Campos
               </Button>
             </div>

@@ -14,6 +14,8 @@ export interface PQRConfigFormProps {
   areaId: string;
   initialData?: PQRConfigFormValues;
   isEntity?: boolean;
+  /** Se llama tras guardar con éxito. */
+  onSaved?: () => void;
 }
 
 export const PqrFieldsSchema = z.object({

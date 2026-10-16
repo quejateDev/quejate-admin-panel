@@ -31,7 +31,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-export function PQRConfigForm({ areaId, initialData, isEntity = false }: PQRConfigFormProps) {
+export function PQRConfigForm({ areaId, initialData, isEntity = false, onSaved }: PQRConfigFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
 
@@ -57,6 +57,7 @@ export function PQRConfigForm({ areaId, initialData, isEntity = false }: PQRConf
         title: "Éxito",
         description: "Configuración actualizada correctamente",
       });
+      onSaved?.();
       router.refresh();
     } catch (error) {
       console.error("Error submitting:", error);
