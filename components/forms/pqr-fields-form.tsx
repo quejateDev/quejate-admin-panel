@@ -23,6 +23,7 @@ import {
   FormItem,
   FormLabel,
   FormControl,
+  FormDescription,
   FormMessage,
 } from "@/components/ui/form";
 import { PQRFieldsFormValues, PqrFieldsSchema } from "@/types/pqr-config";
@@ -36,10 +37,17 @@ export default function PqrFieldsForm({
   areaId,
   initialData,
   isEntity = false,
+  configExists = true,
 }: {
   areaId: string;
   initialData: PQRFieldsFormValues;
   isEntity?: boolean;
+  /**
+   * Si es `false`, no se deja guardar: sin configuración previa, el `PUT` de
+   * los campos la crea con los valores por defecto del esquema, entre ellos
+   * `allowAnonymous: false`.
+   */
+  configExists?: boolean;
 }) {
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
@@ -189,8 +197,8 @@ export default function PqrFieldsForm({
                           )}
                         />
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start space-x-4">
                           <FormField
                             control={form.control}
                             name={`customFields.${index}.isForAnonymous`}
@@ -203,7 +211,14 @@ export default function PqrFieldsForm({
                                   />
                                 </FormControl>
                                 <div className="space-y-1 leading-none">
-                                  <FormLabel className="cursor-pointer">Solo para PQRSD Anónimas</FormLabel>
+                                  <FormLabel className="cursor-pointer">
+                                    Pedirlo también en las PQRSD anónimas
+                                  </FormLabel>
+                                  <FormDescription>
+                                    Si no la marcas, este campo no se pide ni se
+                                    envía cuando la persona radica de forma
+                                    anónima.
+                                  </FormDescription>
                                 </div>
                               </FormItem>
                             )}
@@ -242,8 +257,17 @@ export default function PqrFieldsForm({
                 </Card>
               ))}
             </div>
-            <div className="flex justify-end">
-              <Button type="submit" isLoading={isSaving}>
+            <div className="flex items-center justify-end gap-4">
+              {!configExists && (
+                <p className="text-sm text-muted-foreground">
+                  Guarda primero la configuración general.
+                </p>
+              )}
+              <Button
+                type="submit"
+                isLoading={isSaving}
+                disabled={!configExists}
+              >
                 Guardar Campos
               </Button>
             </div>

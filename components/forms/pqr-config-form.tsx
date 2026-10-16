@@ -31,14 +31,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-export function PQRConfigForm({ areaId, initialData, isEntity = false }: PQRConfigFormProps) {
+export function PQRConfigForm({ areaId, initialData, isEntity = false, onSaved }: PQRConfigFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
 
   const form = useForm<PQRConfigFormValues>({
     resolver: zodResolver(pqrConfigSchema),
     defaultValues: {
-      allowAnonymous: initialData?.allowAnonymous ?? false,
+      allowAnonymous: initialData?.allowAnonymous ?? true,
       requireEvidence: initialData?.requireEvidence ?? false,
       maxResponseTime: initialData?.maxResponseTime ?? "72",
       notifyEmail: initialData?.notifyEmail ?? true,
@@ -57,6 +57,7 @@ export function PQRConfigForm({ areaId, initialData, isEntity = false }: PQRConf
         title: "Éxito",
         description: "Configuración actualizada correctamente",
       });
+      onSaved?.();
       router.refresh();
     } catch (error) {
       console.error("Error submitting:", error);
@@ -81,26 +82,32 @@ export function PQRConfigForm({ areaId, initialData, isEntity = false }: PQRConf
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* <FormField
-              control={form.control}
-              name="allowAnonymous"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Permitir PQRSD anónimos</FormLabel>
-                    <FormDescription>
-                      Permite que los usuarios envíen PQRSD sin identificarse
-                    </FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            /> */}
+            {/* Solo en la entidad: `POST /pqr` lee `allowAnonymous` de la
+                configuración de la entidad y nunca de la del área, así que en
+                un área la casilla no tendría efecto. */}
+            {isEntity && (
+              <FormField
+                control={form.control}
+                name="allowAnonymous"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Permitir PQRSD anónimas</FormLabel>
+                      <FormDescription>
+                        MinTIC obliga a recibirlas. Si la apagas, nadie podrá
+                        radicar de forma anónima a esta entidad.
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
