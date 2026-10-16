@@ -23,6 +23,7 @@ import {
   FormItem,
   FormLabel,
   FormControl,
+  FormDescription,
   FormMessage,
 } from "@/components/ui/form";
 import { PQRFieldsFormValues, PqrFieldsSchema } from "@/types/pqr-config";
@@ -196,8 +197,8 @@ export default function PqrFieldsForm({
                           )}
                         />
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start space-x-4">
                           <FormField
                             control={form.control}
                             name={`customFields.${index}.isForAnonymous`}
@@ -210,7 +211,14 @@ export default function PqrFieldsForm({
                                   />
                                 </FormControl>
                                 <div className="space-y-1 leading-none">
-                                  <FormLabel className="cursor-pointer">Solo para PQRSD Anónimas</FormLabel>
+                                  <FormLabel className="cursor-pointer">
+                                    Pedirlo también en las PQRSD anónimas
+                                  </FormLabel>
+                                  <FormDescription>
+                                    Si no la marcas, este campo no se pide ni se
+                                    envía cuando la persona radica de forma
+                                    anónima.
+                                  </FormDescription>
                                 </div>
                               </FormItem>
                             )}
