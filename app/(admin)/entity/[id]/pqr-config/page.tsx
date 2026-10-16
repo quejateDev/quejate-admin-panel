@@ -65,7 +65,8 @@ export default function EntityPQRConfigPage() {
   }
 
   const configInitialData = {
-    allowAnonymous: pqrConfig?.allowAnonymous ?? false,
+    // Sin configuración, encendida: MinTIC obliga a recibir anónimas.
+    allowAnonymous: pqrConfig?.allowAnonymous ?? true,
     requireEvidence: pqrConfig?.requireEvidence ?? false,
     maxResponseTime: pqrConfig?.maxResponseTime?.toString() ?? "15",
     notifyEmail: pqrConfig?.notifyEmail ?? true,
